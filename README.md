@@ -1,5 +1,5 @@
 # huawei-sun2000-API-CLI
-huawei sun2000-(3KTL-10KTL)-M0 all models comand line bash API for download data from their FusionSolarApp. To use this tool you need an acount in their service and then request developer account. That all mean that you need Huawei sun2000 series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
+huawei sun2000-(3KTL-10KTL)-M0 all models comand line bash API for download data from their FusionSolarApp. To use this tool you need an acount in their service and then request developer account. That all mean that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
 
 
 Tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
