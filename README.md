@@ -1,16 +1,16 @@
 # huawei-sun2000-API-CLI
 Huawei sun2000-(3KTL-10KTL)-M0 all models comand line bash API for download data from their FusionSolarApp web service. To use this tool you need an acount in their service and then request developer account. That all mean that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device. Device itself must be equipped with Smart Dongle there are two types: 
 
-Smart Dongle-4G (sends data through cellular network to internet and then stright to cloud service)
+Smart Dongle-4G (sends data through cellular network -> to internet -> and then stright to cloud service)
 
-SmartDongle-WLAN-FE (sends data with use of user lan or wlan through user getway to cloud service)
+SmartDongle-WLAN-FE (sends data with use of user lan or wlan -> through user getway -> internet -> to cloud service)
 
 Whatever dongle is in use there must be an connection to internet if not cloud service simple don't recieve new data. 
 
 ![Huawei-sun2000](pictures/3-10-FROUNT-Dongle.png)
 
 
-Tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
+This is tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
 This tool use oficial FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer 
 
 You must have installed on your linux tools like curl, jq, httpie
