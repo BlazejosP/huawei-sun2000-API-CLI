@@ -16,15 +16,16 @@ sudo apt-get install grep
 sudo apt-get install httpie
 
 To use this script you need account on Huawei FusionSolar https://eu5.fusionsolar.huawei.com and developer privilege.
-Contact service team at eu_inverter_support@huawei.com to create an openAPI account for your plant.
 
-in email like this:
----------------------------------------------------------------------------
+Contact service team at eu_inverter_support@huawei.com to create an openAPI account for your plant. in email like this:
+
+Email Template
+-
 Hi, I hereby request an openAPI user account to access the data from my inverter(s) through the new #FusionSolar API:
 
 System name: <--here data-->
 Username: <--here data-->
 Plant Name: <--here data-->
 SN Inverter: <--here data-->
----------------------------------------------------------------------------
+
 
