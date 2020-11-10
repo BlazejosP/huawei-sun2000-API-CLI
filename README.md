@@ -29,7 +29,8 @@ Whatever dongle is in use there must be an connection to internet if not cloud s
 
 ![Huawei-sun2000](pictures/3-10-FROUNT-Dongle.png)
 
-
+Installation
+-
 This is tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
 This tool use official FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer. Data from official API are refresched every 1h that is why we also use unofficial API called "Kiosk Mode" to grab especially power production every 5 minutes. 
 
