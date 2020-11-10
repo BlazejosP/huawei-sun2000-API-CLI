@@ -7,6 +7,8 @@ SmartDongle-WLAN-FE (sends data with use of user lan or wlan through user getway
 
 Whatever dongle is in use there must be an connection to internet if not cloud service simple don't recieve new data. 
 
+pictures/3-10-FROUNT-Dongle.png
+
 
 Tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
 This tool use oficial FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer 
