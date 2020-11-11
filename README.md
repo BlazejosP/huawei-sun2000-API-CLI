@@ -17,7 +17,7 @@ Plant Name: <--here data-->
 
 SN Inverter: <--here data-->
 
-Device sun2000-(3KTL-10KTL)-M0
+Device Sun2000-(fom 3KTL to 10KTL meaby also others)-M0
 -
 Device itself must be equipped with Smart Dongle there are two types: 
 
@@ -44,7 +44,7 @@ sudo apt-get install grep
 
 sudo apt-get install httpie
 
-On other linux distributions check used package system but that are standatd linux command line tool so should be avaiable without problem if are not installed already. 
+On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problem if are not installed already. 
 
 
 
