@@ -34,7 +34,7 @@ Installation
 This is tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
 This tool use official FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer. Data from official API are refresched every 1h that is why we also use unofficial API called "Kiosk Mode" to grab especially power production every 5 minutes. 
 
-You must have installed on your linux tools like curl, jq, httpie, grep
+You must have installed on your linux tools like curl, jq, httpie, grep on debian and similar systems that is necessary done this
 
 sudo apt-get install curl
 
@@ -44,6 +44,7 @@ sudo apt-get install grep
 
 sudo apt-get install httpie
 
+On other linux distributions check used package system but that are standatd linux command line tool so should be avaiable without problem if are not installed already. 
 
 
 
