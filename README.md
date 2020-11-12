@@ -17,7 +17,7 @@ Plant Name: <--here data-->
 
 SN Inverter: <--here data-->
 
-Device Sun2000-(fom 3KTL to 10KTL meaby also others)-M0
+Device Sun2000-(from 3KTL to 10KTL meaby also others)-M0
 -
 Device itself must be equipped with Smart Dongle there are two types: 
 
