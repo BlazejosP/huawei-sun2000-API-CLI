@@ -49,7 +49,10 @@ On other linux distributions check used package system but that are standard lin
 Usage
 -
 There are two scripts
+
+
 fusionsolarapp.sh - which using official Huawei API data are refreshed every 1 hour on server when inverter works so in cron just configure starting of this script around two-three minutes after full hour during sunlight.
+
 
 kioskmode.sh  - wich use unofficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight.
 
