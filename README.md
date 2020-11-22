@@ -46,6 +46,9 @@ sudo apt-get install httpie
 
 On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problem if are not installed already. 
 
+Usage
+-
+There are two scripts
 
 
 
