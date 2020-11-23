@@ -340,11 +340,10 @@ if [[ $send_data_to_influxDB == true ]];
 	
 	echo "Inserting data into influxDB"
 	
-	# Which devices are aviable in our installation section
-	
+	# Which devices are aviable in our installation section	
 	#Device which is aviable in your setup: has Inverter avaiable
 	curl -i -XPOST 'http://'$influxdb_server':'$influxdb_port'/write?db='$influxdb_database'&u='$influxdb_db_insert_user'&p='$influxdb_db_insert_password'&precision=s' --data-binary 'Power=hasinverter value='$hasInverter''
-		#Device which is aviable in your setup: has Power Storage avaiable
+	#Device which is aviable in your setup: has Power Storage avaiable
 	curl -i -XPOST 'http://'$influxdb_server':'$influxdb_port'/write?db='$influxdb_database'&u='$influxdb_db_insert_user'&p='$influxdb_db_insert_password'&precision=s' --data-binary 'Power=hasEnergyStore value='$hasEnergyStore''
 	#Device which is aviable in your setup: Huawei Power meter avaiable
 	curl -i -XPOST 'http://'$influxdb_server':'$influxdb_port'/write?db='$influxdb_database'&u='$influxdb_db_insert_user'&p='$influxdb_db_insert_password'&precision=s' --data-binary 'Power=hasMeter value='$hasMeter''
@@ -354,8 +353,7 @@ if [[ $send_data_to_influxDB == true ]];
 	curl -i -XPOST 'http://'$influxdb_server':'$influxdb_port'/write?db='$influxdb_database'&u='$influxdb_db_insert_user'&p='$influxdb_db_insert_password'&precision=s' --data-binary 'Power=hasUserPower value='$hasUserPower''
 	
 	
-	#power data section
-	
+	#power data section	
 	#actual power production every 5 minutes
 	curl -i -XPOST 'http://'$influxdb_server':'$influxdb_port'/write?db='$influxdb_database'&u='$influxdb_db_insert_user'&p='$influxdb_db_insert_password'&precision=s' --data-binary 'Power=curPower_every5_min value='$curPower''
 	#daily power production every 5 minutes
@@ -367,8 +365,7 @@ if [[ $send_data_to_influxDB == true ]];
 	#All total power production every 5 minutes
 	curl -i -XPOST 'http://'$influxdb_server':'$influxdb_port'/write?db='$influxdb_database'&u='$influxdb_db_insert_user'&p='$influxdb_db_insert_password'&precision=s' --data-binary 'Power=allCapacity_every5_min value='$allCapacity''
 	
-	#social contribution section
-	
+	#social contribution section	
 	#trees saved number
 	curl -i -XPOST 'http://'$influxdb_server':'$influxdb_port'/write?db='$influxdb_database'&u='$influxdb_db_insert_user'&p='$influxdb_db_insert_password'&precision=s' --data-binary 'Power=trees_saved_total value='$forest''
 	#Co2 reduction number
