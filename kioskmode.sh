@@ -38,8 +38,7 @@ fi
 
 
 # export to Domoticz data taken from Kiosk mode Cloud Service 
-# not done yet
-#send_data_to_Domoticz=false
+send_data_to_Domoticz=false
 
 if [[ $send_data_to_Domoticz == true ]];
 	then
@@ -66,7 +65,8 @@ if [[ $send_data_to_Domoticz == true ]];
 fi
 
 # export to Domoticz data taken from Kiosk mode Cloud Service 
-send_data_to_MQTT=false
+# not done yet
+# send_data_to_MQTT=false
 
 #----------------------
 
