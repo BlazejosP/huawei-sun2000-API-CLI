@@ -28,11 +28,11 @@ send_data_to_influxDB=false
 
 if [[ $send_data_to_influxDB == true ]];
 	then
-	influxdb_server="<--here data--> " #for example "localhost" or "192.168.1.4"
-	influxdb_port="<--here data--> " #for example "8080"
-	influxdb_database="<--here data--> " #for example "solar_panels_data" 
-	influxdb_db_insert_user="<--here data--> " #for example "my_root_user" 
-	influxdb_db_insert_password="<--here data--> " #for example "secret_password" 
+	influxdb_server="<--here data-->" #for example "localhost" or "192.168.1.4"
+	influxdb_port="<--here data-->" #for example "8080"
+	influxdb_database="<--here data-->" #for example "solar_panels_data" 
+	influxdb_db_insert_user="<--here data-->" #for example "my_root_user" 
+	influxdb_db_insert_password="<--here data-->" #for example "secret_password" 
 fi
 
 
@@ -47,20 +47,20 @@ if [[ $send_data_to_Domoticz == true ]];
 		
 	if [[ $Domoticz_with_username_and_password == true ]];
 	then
-		$domtoicz_username="<--here data--> " #for example "my_root_user"
-		$domtoicz_password="<--here data--> " #for example "secret_password" 
+		$domtoicz_username="<--here data-->" #for example "my_root_user"
+		$domtoicz_password="<--here data-->" #for example "secret_password" 
 	fi
 	
-	domtoicz_server="<--here data--> " #for example "localhost" or "192.168.1.4"
-	domoticz_port="<--here data--> " #for example "8080"
-	
-	#IDX for our data in domoticz
-	domoticz_device_configuration_idx="<--here data--> " #Text Sensor for instalation configuration info example "111"
-	domoticz_current_power_idx="<--here data--> " #Usage Electric Sensor for actutual production
-	domoticz_daily_power_idx="<--here data--> " #Daily production Sensor
-	domoticz_monthly_power_idx="<--here data--> " #Monthly production Sensor
-	domoticz_yearly_power_idx="<--here data--> " #Yearly production Sensor
-	domoticz_all_power_idx="<--here data--> " #Total production Sensor
+	domtoicz_server="<--here data-->" #for example "localhost" or "192.168.1.4"
+	domoticz_port="<--here data-->" #for example "8080"
+
+	#IDX for our data in domoticz for example "111"
+	domoticz_device_configuration_idx="<--here data-->" #Text Sensor for instalation configuration info 
+	domoticz_current_power_idx="<--here data-->" #Usage Electric Sensor for actutual production
+	domoticz_daily_power_idx="<--here data-->" #Daily Electric production Sensor
+	domoticz_monthly_power_idx="<--here data-->" #Monthly Electric production Sensor
+	domoticz_yearly_power_idx="<--here data-->" #Yearly Electric production Sensor
+	domoticz_all_power_idx="<--here data-->" #Total Electric production Sensor
 
 fi
 
