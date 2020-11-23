@@ -26,7 +26,7 @@ show_data_in_terminal=true
 # export to InfluxDB data taken from Kiosk mode Cloud Service 
 send_data_to_influxDB=false
 
-if [[ $send_data_to_influxDB == false ]];
+if [[ $send_data_to_influxDB == true ]];
 	then
 	influxdb_server="<--here data--> " #for example "localhost" or "192.168.1.4"
 	influxdb_port="<--here data--> " #for example "8080"
