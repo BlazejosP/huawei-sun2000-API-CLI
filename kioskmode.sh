@@ -68,7 +68,7 @@ if [[ $send_data_to_Domoticz == true ]];
 fi
 
 # export with use of MQTT as transport layer to Domoticz data taken from Kiosk mode Cloud Service after modification can be used to send data to any topic what means any software which use MQTT not only Domoticz. 
-send_data_to_MQTT=true
+send_data_to_MQTT=false
 MQTT_with_username_and_password=true
 
 if [[ $send_data_to_MQTT == true ]];
