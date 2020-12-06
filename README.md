@@ -92,7 +92,7 @@ if [[ $send_data_to_influxDB == true ]];
 	influxdb_server="<--here data-->" #for example "localhost" or "192.168.1.4"
 	influxdb_port="<--here data-->" # influxdb input port for example "8086"
 	influxdb_database="<--here data--> #database name for example "solar_panels_data" 
-	influxdb_db_insert_user="<--here data-->" # user fith privilge to insert for example "my_root_user" 
+	influxdb_db_insert_user="<--here data-->" # user with privilge to insert for example "my_root_user" 
 	influxdb_db_insert_password="<--here data-->" #for example "secret_password" 
 fi
 ```
