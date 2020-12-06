@@ -85,5 +85,16 @@ After that you can configure inserting data to InfluxDB
 send_data_to_influxDB=true
 ```
 but you need working server with this database. The same is with sending data to stright to Domoticz or with use of MQTT.
-There is necesary to have working Domoticz home automation system and in secound case also MQTT server.
+There is necesary to have working Domoticz home automation system and in secound case also MQTT server. For all of them are configuration sections like this for influxDB
+```
+if [[ $send_data_to_influxDB == true ]];
+	then
+	influxdb_server="<--here data-->" #for example "localhost" or "192.168.1.4"
+	influxdb_port="<--here data-->" # influxdb input port for example "8086"
+	influxdb_database="<--here data--> #database name for example "solar_panels_data" 
+	influxdb_db_insert_user="<--here data-->" # user fith privilge to insert for example "my_root_user" 
+	influxdb_db_insert_password="<--here data-->" #for example "secret_password" 
+fi
+```
+
 
