@@ -1,4 +1,4 @@
-
+  https://img.shields.io/static/v1?label=platform&message=linux&color=yellowgreen
   https://img.shields.io/badge/platform-linux-yellowgreen
     [![GitHub license](https://img.shields.io/github/license/BlazejosP/huawei-sun2000-API-CLI)](https://github.com/BlazejosP/huawei-sun2000-API-CLI/blob/master/LICENSE)
     [![GitHub issues](https://img.shields.io/github/issues/BlazejosP/huawei-sun2000-API-CLI)](https://github.com/BlazejosP/huawei-sun2000-API-CLI/issues)
