@@ -58,11 +58,11 @@ Usage
 There are two files
 
 
-fusionsolarapp.sh - which using official Huawei API data are refreshed every 1 hour on server when inverter works so in cron just configure starting of this script around two-three minutes afterfull hour. Crontab example:
+<b>fusionsolarapp.sh</b> - which using official Huawei API data are refreshed every 1 hour on server when inverter works so in cron just configure starting of this script around two-three minutes after full hour. Crontab example:
 ```
 4 5-22 * * *            /home/WhateverFolder/fusionsolarapp.sh
 ```
-kioskmode.sh  - which use unoficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight. Crontab example:
+<b>kioskmode.sh</b> - which use unoficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight. Crontab example:
 ```
 */5 5-22 * * *          /home/WhateverFolder/huawei-sun2000-API-CLI/kioskmode.sh`
 ```
