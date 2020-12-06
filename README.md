@@ -37,9 +37,9 @@ Whatever dongle is in use there must be an connection to internet if not cloud s
 Installation
 -
 This is tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
-This tool use official FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer. Data from official API are refresched every 1h that is why we also use unofficial API called "Kiosk Mode" to grab especially power production every 5 minutes. 
+This tool use official FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer. Data from official API are refreshed every 1h that is why we also use unofficial API called "Kiosk Mode" to grab especially power production every 5 minutes. 
 
-You must have installed on your linux tools like curl, jq, httpie, grep on debian and similar systems that is necessary done this
+You must have installed on your linux tools like curl, jq, httpie, grep, mosquitto_pub on debian and similar systems that is necessary done this with
 
 sudo apt-get install curl
 
@@ -49,16 +49,21 @@ sudo apt-get install grep
 
 sudo apt-get install httpie
 
+sudo apt-get install mosquitto-clients (if you use MQTT sending option)
+
 On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problem if are not installed already. 
 
 Usage
 -
-There are two scripts
+There are two files
 
 
-fusionsolarapp.sh - which using official Huawei API data are refreshed every 1 hour on server when inverter works so in cron just configure starting of this script around two-three minutes after full hour during sunlight.
-
-
-kioskmode.sh  - which use unofficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight.
-
+fusionsolarapp.sh - which using official Huawei API data are refreshed every 1 hour on server when inverter works so in cron just configure starting of this script around two-three minutes afterfull hour. Crontab example:
+```
+4 5-22 * * *            /home/WhateverFolder/fusionsolarapp.sh
+```
+kioskmode.sh  - which use unoficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight. Crontab example:
+```
+*/5 5-22 * * *          /home/WhateverFolder/huawei-sun2000-API-CLI/kioskmode.sh`
+```
 
