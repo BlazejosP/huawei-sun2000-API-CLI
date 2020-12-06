@@ -67,3 +67,4 @@ There are two files
 */5 5-22 * * *          /home/WhateverFolder/huawei-sun2000-API-CLI/kioskmode.sh`
 ```
 
+![Kioskmode](pictures/kioskmode.png)
