@@ -62,7 +62,7 @@ There are two files
 ```
 4 5-22 * * *            /home/WhateverFolder/fusionsolarapp.sh
 ```
-<b>kioskmode.sh</b> - which use unoficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight. Crontab example:
+<b>kioskmode.sh</b> - use unoficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight. Crontab example:
 ```
 */5 5-22 * * *          /home/WhateverFolder/huawei-sun2000-API-CLI/kioskmode.sh`
 ```
