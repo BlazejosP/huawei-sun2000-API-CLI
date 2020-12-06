@@ -1,4 +1,4 @@
-# huawei-sun2000-API-CLI
+# Huawei sun2000 API CLI
 
  [![GitHub license](https://img.shields.io/github/license/BlazejosP/huawei-sun2000-API-CLI)](https://github.com/BlazejosP/huawei-sun2000-API-CLI/blob/master/LICENSE)
  [![GitHub issues](https://img.shields.io/github/issues/BlazejosP/huawei-sun2000-API-CLI)](https://github.com/BlazejosP/huawei-sun2000-API-CLI/issues)
@@ -12,6 +12,7 @@ Contact service team at eu_inverter_support@huawei.com to create an openAPI acco
 
 Email Template
 -
+```
 Hi, I hereby request an openAPI user account to access the data from my inverter(s) through the new #FusionSolar API:
 
 System name: <--here data--> 
@@ -21,6 +22,7 @@ Username: <--here data-->
 Plant Name: <--here data--> 
 
 SN Inverter: <--here data-->
+```
 
 Device Sun2000-(from 3KTL to 10KTL meaby also others)-M0
 -
@@ -53,7 +55,7 @@ sudo apt-get install mosquitto-clients (if you use MQTT sending option)
 
 On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problem if are not installed already. 
 
-Usage
+Configuration&Usage
 -
 There are two files
 
@@ -74,8 +76,14 @@ Check if in Configuration section
 ```
 show_data_in_terminal=true
 ```
-to see important data on screen
+to see important data on screen from your inverter
 
 ![Kioskmode](pictures/kioskmode.png)
 
+After that you can configure inserting data to InfluxDB
+```
+send_data_to_influxDB=true
+```
+but you need working server with this database. The same is with sending data to stright to Domoticz or with use of MQTT.
+There is necesary to have working Domoticz home automation system and in secound case also MQTT server.
 
