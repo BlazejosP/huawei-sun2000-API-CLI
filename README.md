@@ -76,7 +76,7 @@ Check if in Configuration section
 ```
 show_data_in_terminal=true
 ```
-to see important data on screen from your inverter
+to see important data on screen from your inverter. But leter after initial tests if you use kioskmode.sh only by cron in automatic way you can simply swith this mode to false you do not need data on screen if main task of this script will be pull data from webservice and insert to influxdb or Domoticz.  
 
 ![Kioskmode](pictures/kioskmode.png)
 
@@ -84,8 +84,8 @@ After that you can configure inserting data to InfluxDB
 ```
 send_data_to_influxDB=true
 ```
-but you need working server with this database. The same is with sending data to stright to Domoticz or with use of MQTT.
-There is necesary to have working Domoticz home automation system and in secound case also MQTT server. For all of them are configuration sections like this for influxDB
+but you need working server with this database. The same is with sending data stright to Domoticz or with use of MQTT.
+There is necesary to have working Domoticz home automation system and in secound case also MQTT server. For all of them are configuration sections like this for influxDB. BTW in case of sending data to Domoticz I myself prefer using MQTT more flexible in my opinion but you can chose whatever you prefer just remember to made option with you do not need as false. 
 ```
 if [[ $send_data_to_influxDB == true ]];
 	then
