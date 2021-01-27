@@ -102,8 +102,8 @@ fi
 
 
 # extract token from url
-token=`echo "$kiosk_mode_url" | grep -o 'kk=[[:digit:]].*'`
-token=`echo "$token" | grep -o '[[:digit:]].*'`
+token=`echo "$kiosk_mode_url" | grep -o 'kk=.*'`
+token=$(echo "${token:3:${#token}}")
 
 # echo $token
 
