@@ -2,14 +2,11 @@
 
 # Tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
 # This tool use oficial FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer 
-# You must have installed on your linux tools like curl, jq, httpie
-# sudo apt-get install curl
+# You must have installed on your linux tools like jq, httpie
 # sudo apt-get install jq
 # sudo apt-get install httpie
-
 # To use this script you need account on Huawei FusionSolar https://eu5.fusionsolar.huawei.com and developer privilege.
 # Contact service team at eu_inverter_support@huawei.com to create an openAPI account for your plant.
-
 # in email like this
 #Hi, I hereby request an openAPI user account to access the data from my inverter(s) through the new #FusionSolar API:
 #
@@ -21,31 +18,124 @@
 #
 #SN Inverter: <--here data-->
 
-userName="<--here data-->"
-systemCode="<--here data-->"
+# Configuration section
+#----------------------
+userName="<--here data-->" #your login name to openAPI user account
+systemCode="<--here data-->" #Password of the third-party system openAPI user account
+#----------------------
 
+Error_Codes_List () {
+   
+if [ $1 == "0"  ];
+then
+	echo "Normal Status"
+elif [ $1 == "20001"  ];
+then	
+	echo "The third-party system ID does not exist."
+elif [ $1 == "305"  ];
+then	
+	echo "You are not in the login state. You need to log in again."
+elif [ $1 == "401"  ];
+then	
+	echo "You do not have the related data interface permission."
+elif [ $1 == "407"  ];
+then	
+	echo "The interface access frequency is too high."
+elif [ $1 == "20002"  ];
+then	
+	echo "The third-party system is forbidden."
+elif [ $1 == "20003"  ];
+then	
+	echo "The third-party system has expired."
+elif [ $1 == "20003"  ];
+then	
+	echo "The third-party system has expired."
+elif [ $1 == "20004"  ];
+then	
+	echo "The server is abnormal."
+elif [ $1 == "20005"  ];
+then	
+	echo "The device ID cannot be empty."
+elif [ $1 == "20006"  ];
+then	
+	echo "Some devices do not match the device type."
+elif [ $1 == "20007"  ];
+then	
+	echo "The system does not have the desired power plant resources."
+elif [ $1 == "20008"  ];
+then	
+	echo "The system does not have the desired device resources."
+elif [ $1 == "20009"  ];
+then	
+	echo "Queried KPIs are not configured in the system."
+elif [ $1 == "20010"  ];
+then	
+	echo "The plant list cannot be empty."
+elif [ $1 == "20011"  ];
+then	
+	echo "The device list cannot be empty."
+elif [ $1 == "20012"  ];
+then	
+	echo "The query time cannot be empty."
+elif [ $1 == "20013"  ];
+then	
+	echo "The device type is incorrect. The interface does not support operations on some devices."
+elif [ $1 == "20014" ] || [ $1 = "20015" ];
+then	
+	echo "A maximum of 100 plants can be queried at a time."
+elif [ $1 == "20016" ] || [ $1 = "20017" ];
+then	
+	echo "A maximum of 100 devices can be queried at a time."
+elif [ $1 == "20018"  ];
+then	
+	echo "A maximum of 10 devices can be manipulated at a time."
+elif [ $1 == "20019"  ];
+then	
+	echo "The switch type is incorrect. 1 and 2 indicate switch-on and switch-off respectively."
+elif [ $1 == "20020"  ];
+then	
+	echo "The upgrade package specific to the device version cannot be found"
+elif [ $1 == "20021"  ];
+then	
+	echo "The upgrade file does not exist."
+elif [ $1 == "20022"  ];
+then	
+	echo "The upgrade records of the devices in the system are not found."
+elif [ $1 == "20023"  ];
+then	
+	echo "The query start time cannot be later than the query end time."
+elif [ $1 == "20024"  ];
+then	
+	echo "The language cannot be empty."
+elif [ $1 == "20025"  ];
+then	
+	echo "The language parameter value is incorrect."
+elif [ $1 == "20026"  ];
+then	
+	echo "Only data of the latest 365 days can be queried."
+elif [ $1 == "20027"  ];
+then	
+	echo "The query time period cannot span more than 31 days."
+else
+	echo "Unknow error."
+fi
+
+}
+
+
+function login_to_API {
 
 # Login to FusionSolarAPI with Username and Password
-logowanie=$(curl -X POST -H "Content-Type: application/json" -d '{userName:"'$userName'",systemCode:"'$systemCode'"}' -i https://eu5.fusionsolar.huawei.com/thirdData/login )
+logowanie=$(echo '{userName: "'$userName'", systemCode: "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
 
 
-#Operations on string for 
-IFS='{'
-array=( $logowanie )
+#show as answer of of API for question
 #echo $logowanie
-#echo "value = ${array[1]}"
-question=${array[1]}
+
+#coping a long string with answer to new variable from which we extract JOSN answer
+logowanie_for_josn_extraction=$(echo $logowanie)
 
 
-IFS=','
-array=( $question )
-#echo "value = ${array[5]}"
-question=${array[5]}
-
-#echo "${question::-1}"
-
-
-#Operations on string for extract xsrl token necessary for next questions
 IFS=';'
 array=( $logowanie )
 #echo "value = ${array[4]}"
@@ -60,35 +150,146 @@ logowanie=${array[4]}
 
 IFS='='
 array=( $logowanie )
-header="XSRF-TOKEN"
 xsrf_token=${array[1]}
 
 
 IFS=':'
 array=( $jsesionid )
-#echo "value = ${array[1]}"
 jsesionid=${array[1]}
 
 IFS='='
 array=( $jsesionid )
-header_jsesion="JSESSIONID"
 jsesionid=${array[1]}
 
-echo ""
-#echo $header
-echo ""
-#echo $xsrf_token
-echo ""
-#echo $jsesionid
+#echo ""
+#echo "XSRF-TOKEN: "$xsrf_token
+#echo "JSESSIONID: "$jsesionid
+#echo ""
 
+#extracting from rubish string JOSN answer part
+array2=( $logowanie_for_josn_extraction )
+
+
+usucesfully_login=$(echo ${array2[7]})
+sucesfully_login=$(echo ${array2[11]})
+
+if [[ $usucesfully_login =~ "false"  ]];
+	then		
+			echo ""
+			echo -e "Login to server \e[41mError :(\e[0m"
+			josn=$(echo ${array2[7]})
+elif [[ $sucesfully_login =~ "true"  ]];
+	then			
+			echo ""
+			echo -e "Login to server \e[42mOK :)\e[0m"
+			josn=$(echo ${array2[11]})
+else
+	echo ""
+	echo -e "Problems with conection to Huawei Server" 
+fi
+#echo $josn
+
+
+josn_final=`echo "$josn" | grep -o '{.*'`
+
+#show response from API in JOSON
+#echo $josn_final | jq
+
+
+success=$(echo ''$josn_final''  | jq '.success' )
+buildCode=$(echo ''$josn_final''  | jq '.buildCode' )
+failCode=$(echo ''$josn_final''  | jq '.failCode' )
+message=$(echo ''$josn_final''  | jq '.message' )
+data=$(echo ''$josn_final''  | jq '.data' )
+
+if [[ $usucesfully_login =~ "false"  ]];
+	then		
+		params=$(echo ''$josn_final''  | jq '.params' )	
+			currentTime=$(echo ''$josn_final''  | jq '.params.currentTime' )
+			systemCode=$(echo ''$josn_final''  | jq '.params.systemCode' )
+			userName=$(echo ''$josn_final''  | jq '.params.userName' )
+elif [[ $sucesfully_login =~ "true"  ]];
+	then
+		params=$(echo ''$josn_final''  | jq '.params' )	
+fi
+
+
+#removing " on begining and end
+buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
+
+#echo "Request success or failure flag: " $success
+if [[ $success == "true"  ]];
+	then	
+		echo "Username & Password accepted by Huawei Server"
+		login_status=true
+elif [[ $success == "false" ]];
+	then
+		echo "Username & Password not accepted by Huawei Server"
+		login_status=false
+else
+	echo ""
+	echo -e "\e[41mNetwork Error :(\e[0m" 
+	#program stops
+	exit
+fi
+
+#echo "Error code: " $failCode " (0: Normal)"
+# we call to function with errors list
+Error_Codes_List $failCode
+
+#echo "Optional message: " $message
+if [[ ! $message == "\"\""  ]];
+then	
+	echo "Optional message: " $message
+fi
+
+echo "Build Code: "$buildCode
+
+if [[ $usucesfully_login =~ "false"  ]];
+then	
+	#shorter time for read in unix
+	curent_time_actually=$(echo ${currentTime::-3})
+	curent_time_actually=$(date -d @$curent_time_actually)
+	echo "Time of your Request: "$curent_time_actually
+	
+	echo "Your data:"
+	echo "	Username: "$userName
+	echo "	Password: "$systemCode
+
+fi
+		
+if [[ $sucesfully_login =~ "true"  ]];
+then	
+	if [[ ! $params == "null"  ]];
+	then	
+		echo "Request parameter: "$params
+	fi
+fi
+
+
+if [[ ! $data == "null"  ]];
+then	
+	echo "Returned data: "$data
+fi
+
+echo ""
+
+
+}
+
+
+
+function getStationList {
 
 # Request to API getStationList
 getStationList=$(printf '{ }'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-#echo $getStationList 
+#echo $getStationList  | jq
 
 
 AlarmID=$(echo ''$getStationList''  | jq '.failCode' )
+
+: <<'END_COMMENT'
 AlarmID=$(expr $AlarmID)
 
 	if [[ $AlarmID == 0 ]];
@@ -287,6 +488,13 @@ AlarmID=$(expr $AlarmID)
 
 echo $opis_bledow
 
+END_COMMENT
+
+success=$(echo ''$getStationList''  | jq '.success' )
+buildCode=$(echo ''$getStationList''  | jq '.buildCode' )
+failCode=$(echo ''$getStationList''  | jq '.failCode' )
+message=$(echo ''$getStationList''  | jq '.message' )
+
 curent_time=$(echo ''$getStationList''  | jq '.params' )
 curent_time=$(echo ''$curent_time''  | jq '.currentTime' )
 
@@ -301,18 +509,133 @@ curent_time_actually=$(echo ${curent_time::-3})
 #echo $data
 
 data=$(echo ''$getStationList''  | jq '.data[]' )
-
-capacity=$(echo ''$data''  | jq '.capacity' )
-owner_phone=$(echo ''$data''  | jq '.linkmanPho' )
-station_Addres=$(echo ''$data''  | jq '.stationAddr' )
-station_Code=$(echo ''$data''  | jq '.stationCode' )
-station_Linkman=$(echo ''$data''  | jq '.stationLinkman' )
-station_Name=$(echo ''$data''  | jq '.stationName' )
+	aidType=$(echo ''$data''  | jq '.aidType' )
+	buildState=$(echo ''$data''  | jq '.buildState' )
+	combineType=$(echo ''$data''  | jq '.combineType' )
+	capacity=$(echo ''$data''  | jq '.capacity' )
+	owner_phone=$(echo ''$data''  | jq '.linkmanPho' )
+	station_Addres=$(echo ''$data''  | jq '.stationAddr' )
+	station_Code=$(echo ''$data''  | jq '.stationCode' )
+	station_Linkman=$(echo ''$data''  | jq '.stationLinkman' )
+	station_Name=$(echo ''$data''  | jq '.stationName' )
 #echo $station_Code
 #echo $station_Name
 
 #removing " on begining and end
 #station_Addres="$(echo "$station_Addres" | tr -d '[:punct:]')"
+
+#removing " on begining and end
+buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
+buildState=`echo "$buildState" | grep -o '[[:digit:]]'`
+combineType=`echo "$combineType" | grep -o '[[:digit:]]'`
+
+echo "Request success or failure flag: " $success
+echo "Error code: " $failCode " (0: Normal)"
+echo "Optional message: " $message
+echo "Build Code: "$buildCode
+echo "Plant ID:  "$station_Code
+echo "Current Time: "$curent_time
+echo "Plant Name: "$station_Name
+echo "Address of the plant: "$station_Addres
+echo "Installed capacity: "$capacity"kWp"
+echo "Plant Status: "$buildState" (1: Not built, 2: Under construction, 3:Grid-connected)"
+echo "Grid connection type: "$combineType " (1: Utility, 2: C&I plant, 3: Residential plant)"
+echo "Poverty alleviation plant flag: "$aidType " (0: Poverty alleviation plant, 1: Not poverty alleviation plant)"
+echo "Plant contact: "$station_Linkman
+echo "Contact phone number :"$owner_phone
+echo ""
+
+
+}
+
+: <<'END_COMMENT'
+
+# Request to API getDevList
+getDevList=$(printf '{"stationCodes": '$station_Code'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+
+
+#echo $getDevList | jq
+
+success=$(echo ''$getDevList''  | jq '.success' )
+buildCode=$(echo ''$getDevList''  | jq '.buildCode' )
+failCode=$(echo ''$getDevList''  | jq '.failCode' )
+message=$(echo ''$getDevList''  | jq '.message' )
+
+data=$(echo ''$getDevList''  | jq '.data[]' )
+	device_Name=$(echo ''$data''  | jq '.devName' )
+	device_TypeId=$(echo ''$data''  | jq '.devTypeId' )
+	esnCode=$(echo ''$data''  | jq '.esnCode' )
+	Id=$(echo ''$data''  | jq '.id' )
+	inverter_Type=$(echo ''$data''  | jq '.invType' )
+	latitude=$(echo ''$data''  | jq '.latitude' )
+	longitude=$(echo ''$data''  | jq '.longitude' )
+	software_Version=$(echo ''$data''  | jq '.softwareVersion' )
+	stationCode=$(echo ''$data''  | jq '.stationCode' )
+
+parms=$(echo ''$getDevList''  | jq '.params' )
+	currentTime=$(echo ''$parms''  | jq '.currentTime' )
+	stationCodes=$(echo ''$parms''  | jq '.stationCodes' )
+
+#echo $device_Name | jq
+
+
+
+# Conversion of long variable string with answers to array
+eval "device_Name_array=(${device_Name})"
+eval "device_TypeId_array=(${device_TypeId})"
+eval "device_esnCode_array=(${esnCode})"
+eval "device_Id_array=(${Id})"
+eval "device_inverter_Type_array=(${inverter_Type})"
+eval "device_latitude_array=(${latitude})"
+eval "device_longitude_array=(${longitude})"
+eval "device_software_Version_array=(${software_Version})"
+eval "device_stationCode_array=(${stationCode})"
+
+#printf '%s\n' "${device_Name_array[@]}"
+#printf '%s\n' "${device_TypeId_array[@]}"
+#printf '%s\n' "${device_esnCode_array[@]}"
+#printf '%s\n' "${device_Id_array[@]}"
+#printf '%s\n' "${device_inverter_Type_array[@]}"
+#printf '%s\n' "${device_latitude_array[@]}"
+#printf '%s\n' "${device_longitude_array[@]}"
+#printf '%s\n' "${device_software_Version_array[@]}"
+#printf '%s\n' "${device_stationCode_array[@]}"
+
+#count number of devices in station taken from number of postions in one array
+number_of_devices=${#device_Name_array[@]}
+
+#Removing both " from string
+buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
+inverter_Type="$(echo "$inverter_Type" | tr -d '[:punct:]')"
+
+
+echo "Request success or failure flag: " $success
+echo "Error code: " $failCode " (0: Normal)"
+echo "Optional message: " $message
+echo "Build Code: "$buildCode
+echo "Station Codes: "$stationCodes
+echo "Current Time: "$currentTime
+echo "Number of Devices in Station: "$number_of_devices
+echo ""
+
+count=0
+for s in "${device_Name_array[@]}"; do 
+	echo -e "	\e[93mDevice: "$count"\e[0m"
+	echo ""
+	echo "	Device ID: "${device_Id_array[$count]}
+	echo "	Device Name: "${device_Name_array[$count]}
+	echo "	Device SN: "${device_esnCode_array[$count]}
+	echo "	Device type ID: "${device_TypeId_array[$count]}
+	echo "	Inverter Type: "${device_inverter_Type_array[$count]}
+	echo "	Plant name: "${device_stationCode_array[$count]}
+	echo "	Software version: "${device_software_Version_array[$count]}
+	echo "	longitude: "${device_longitude_array[$count]}
+	echo "	latitude: "${device_latitude_array[$count]}
+	echo ""
+    (( count++ ))
+done
+
+echo ""
 
 
 # Request to API getStationRealKpi
@@ -321,56 +644,59 @@ getStationRealKpi=$(printf '{"stationCodes": '$station_Code'}'| http  --follow -
 
 
 #echo $getStationRealKpi | jq
+success=$(echo ''$getStationRealKpi''  | jq '.success' )
+buildCode=$(echo ''$getStationRealKpi''  | jq '.buildCode' )
+failCode=$(echo ''$getStationRealKpi''  | jq '.failCode' )
+message=$(echo ''$getStationRealKpi''  | jq '.message' )
 
 data_RealKpi=$(echo ''$getStationRealKpi''  | jq '.data[]' )
-data_RealKpi=$(echo ''$data_RealKpi''  | jq '.dataItemMap' )
+	stationCode=$(echo ''$data_RealKpi''  | jq '.stationCode' )
+	data_RealKpi=$(echo ''$data_RealKpi''  | jq '.dataItemMap' )
+		Day_power=$(echo ''$data_RealKpi''  | jq '.day_power' )
+		month_power=$(echo ''$data_RealKpi''  | jq '.month_power' )
+		total_power=$(echo ''$data_RealKpi''  | jq '.total_power' )
+		day_income=$(echo ''$data_RealKpi''  | jq '.day_income' )
+		total_income=$(echo ''$data_RealKpi''  | jq '.total_income' )
+		real_health_state=$(echo ''$data_RealKpi''  | jq '.real_health_state' )
 
-Day_power=$(echo ''$data_RealKpi''  | jq '.day_power' )
-month_power=$(echo ''$data_RealKpi''  | jq '.month_power' )
-total_power=$(echo ''$data_RealKpi''  | jq '.total_power' )
-day_income=$(echo ''$data_RealKpi''  | jq '.day_income' )
-total_income=$(echo ''$data_RealKpi''  | jq '.total_income' )
+data_RealKpi=$(echo ''$getStationRealKpi''  | jq '.params' )
+	currentTime=$(echo ''$data_RealKpi''  | jq '.currentTime' )
+	stationCodes=$(echo ''$data_RealKpi''  | jq '.stationCodes' )
 
 #removing " on begining and end
+buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
 Day_power=`echo "$Day_power" | grep -o '[[:digit:]].*[[:digit:]]'`
 month_power=`echo "$month_power" | grep -o '[[:digit:]].*[[:digit:]]'`
 total_power=`echo "$total_power" | grep -o '[[:digit:]].*[[:digit:]]'`
-
-
-
+day_income=`echo "$day_income" | grep -o '[[:digit:]].*[[:digit:]]'`
+total_income=`echo "$total_income" | grep -o '[[:digit:]].*[[:digit:]]'`
+real_health_state=`echo "$real_health_state" | grep -o '[[:digit:]]'`
 #echo $data_RealKpi | jq
 
+echo "Request success or failure flag: " $success
+echo "Error code: " $failCode " (0: Normal)"
+echo "Optional message: " $message
+echo "Build Code: "$buildCode
+echo "Plant ID:  "$stationCode
+echo "Station Codes: "$stationCodes
+echo "Current Time: "$currentTime
+echo "Daily energy: "$Day_power"kWh"
+echo "Monthly energy: "$month_power"kWh"
+echo "Lifetime energy: "$total_power"kWh"
+echo "Daily revenue: "$day_income"¥ (Currency conversion is not performed.)"
+echo "Total revenue: "$total_income"¥ (Currency conversion is not performed.)"
+echo "Status: "$real_health_state" (Plant status: 1: Disconnected 2: Faulty 3: Healthy)"
+echo ""
 
 
-# Request to API getDevList
-getDevList=$(printf '{"stationCodes": '$station_Code'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
-
-
-#echo $getDevList | jq
-
-getDevList=$(echo ''$getDevList''  | jq '.data[]' )
-
-device_Name=$(echo ''$getDevList''  | jq '.devName' )
-device_TypeId=$(echo ''$getDevList''  | jq '.devTypeId' )
-esnCode=$(echo ''$getDevList''  | jq '.esnCode' )
-Id=$(echo ''$getDevList''  | jq '.id' )
-inverter_Type=$(echo ''$getDevList''  | jq '.invType' )
-latitude=$(echo ''$getDevList''  | jq '.latitude' )
-longitude=$(echo ''$getDevList''  | jq '.longitude' )
-software_Version=$(echo ''$getDevList''  | jq '.softwareVersion' )
-stationCode=$(echo ''$getDevList''  | jq '.stationCode' )
-
-#echo $device_Name | jq
-
-#Removing both " from string
-inverter_Type="$(echo "$inverter_Type" | tr -d '[:punct:]')"
 
 
 # Request to API getKpiStationHour
 getKpiStationHour=$(printf '{"stationCodes": '$station_Code', "collectTime": '$curent_time'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-# echo $getKpiStationHour | jq '.data[]'
-# echo $getKpiStationHour | jq '.data[].collectTime, .data[].dataItemMap.inverter_power'
+#echo $getKpiStationHour | jq
+#echo $getKpiStationHour | jq '.data[]'
+#echo $getKpiStationHour | jq '.data[].collectTime, .data[].dataItemMap.inverter_power'
 
 hour_of_the_day=( $(echo ''$getKpiStationHour''  | jq '.data[].collectTime' ) )
 power_iverted=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.inverter_power' ) )
@@ -386,7 +712,7 @@ count=0
 for s in "${hour_of_the_day_array[@]}"; do 
     date_with_cut_three_digits=$(echo ${s::-3})
 
-    #convert UCT timestamp to CEST  we add +1h in secounds
+    #convert UCT timestamp to CEST we add +1h in secounds
     date_with_cut_three_digits=$(( $date_with_cut_three_digits+3600 ))
 
     hour_of_the_day_array[$count]=$date_with_cut_three_digits
@@ -414,7 +740,7 @@ eval "power_iverted_array=(${power_iverted})"
 getKpiStationDay=$(printf '{"stationCodes": '$station_Code', "collectTime": '$curent_time'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationDay  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
 
-# echo $getKpiStationDay | jq
+#echo $getKpiStationDay | jq
 
 day=( $(echo ''$getKpiStationDay''  | jq '.data[].collectTime' ) )
 power_iverted_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.inverter_power' ) )
@@ -470,7 +796,7 @@ eval "reduction_total_coal_whole_day_array=(${reduction_total_coal_whole_day})"
 # Request to API getKpiStationMonth
 getKpiStationMonth=$(printf '{"stationCodes": '$station_Code', "collectTime": '$curent_time'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationMonth  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-# echo $getKpiStationMonth | jq
+#echo $getKpiStationMonth | jq
 
 month=( $(echo ''$getKpiStationMonth''  | jq '.data[].collectTime' ) )
 power_iverted_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.inverter_power' ) )
@@ -571,15 +897,14 @@ eval "reduction_total_tree_year_array=(${reduction_total_tree_year})"
 
 
 
+END_COMMENT
 
 
 
 
 
 
-
-
-
+: <<'END_COMMENT'
 
 
 # Sending data to influxDB
@@ -706,3 +1031,20 @@ for s in "${year_array[@]}"; do
 
 	(( count_years++ ))
 done
+
+END_COMMENT
+
+
+login_to_API
+
+if [[ $login_status == true  ]];
+	then	
+		getStationList
+elif [[ $login_status == false ]];
+	then	
+
+		exit
+else
+	exit
+fi
+
