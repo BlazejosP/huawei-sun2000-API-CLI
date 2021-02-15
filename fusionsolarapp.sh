@@ -2,11 +2,14 @@
 
 # Tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
 # This tool use oficial FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer 
-# You must have installed on your linux tools like jq, httpie
+# You must have installed on your linux tools like curl, jq, httpie
+# sudo apt-get install curl
 # sudo apt-get install jq
 # sudo apt-get install httpie
+
 # To use this script you need account on Huawei FusionSolar https://eu5.fusionsolar.huawei.com and developer privilege.
 # Contact service team at eu_inverter_support@huawei.com to create an openAPI account for your plant.
+
 # in email like this
 #Hi, I hereby request an openAPI user account to access the data from my inverter(s) through the new #FusionSolar API:
 #
@@ -18,288 +21,31 @@
 #
 #SN Inverter: <--here data-->
 
-# Configuration section
-#----------------------
-userName="<--here data-->" #your login name to openAPI user account
-systemCode="<--here data-->" #Password of the third-party system openAPI user account
-#----------------------
+userName="<--here data-->"
+systemCode="<--here data-->"
 
-Device_type_ID () {
-# List of possible smart devices in Power Plant by Huawei. Based on documentation SmartPVMS.V300R006C10_API_Northbound.Interface.Reference.1.pdf pages 28-30 
-if [ $1 == "1"  ];
-then
-	echo "	Smart String Inverter"
-elif [ $1 == "2"  ];
-then	
-	echo "	SmartLogger"
-elif [ $1 == "3"  ];
-then	
-	echo "	String"
-elif [ $1 == "3"  ];
-then	
-	echo "	String"
-elif [ $1 == "6"  ];
-then	
-	echo "	Bay"
-elif [ $1 == "7"  ];
-then	
-	echo "	Busbar"
-elif [ $1 == "8"  ];
-then	
-	echo "	Transformer"
-elif [ $1 == "9"  ];
-then	
-	echo "	Transformer meter"
-elif [ $1 == "10"  ];
-then	
-	echo "	EMI"
-elif [ $1 == "11"  ];
-then	
-	echo "	AC combiner box"
-elif [ $1 == "13"  ];
-then	
-	echo "	DPU"
-elif [ $1 == "14"  ];
-then	
-	echo "	Central Inverter"
-elif [ $1 == "15"  ];
-then	
-	echo "	DC combiner box"
-elif [ $1 == "16"  ];
-then	
-	echo "	General device"
-elif [ $1 == "17"  ];
-then	
-	echo "	Grid meter"
-elif [ $1 == "18"  ];
-then	
-	echo "	Step-up station"
-elif [ $1 == "19"  ];
-then	
-	echo "	Factory-used energy generation area meter"
-elif [ $1 == "20"  ];
-then	
-	echo "	Solar power forecasting system"
-elif [ $1 == "21"  ];
-then	
-	echo "	Factory-used energy non-generation area meter"
-elif [ $1 == "22"  ];
-then	
-	echo "	PID"
-elif [ $1 == "23"  ];
-then	
-	echo "	Virtual device of plant monitoring system"
-elif [ $1 == "24"  ];
-then	
-	echo "	Power quality device"
-elif [ $1 == "25"  ];
-then	
-	echo "	Step-up transformer"
-elif [ $1 == "26"  ];
-then	
-	echo "	Photovoltaic grid-connection cabinet"
-elif [ $1 == "27"  ];
-then	
-	echo "	Photovoltaic grid-connection panel"
-elif [ $1 == "37"  ];
-then	
-	echo "	Pinnet SmartLogger"
-elif [ $1 == "38"  ];
-then	
-	echo "	Smart Energy Center"
-elif [ $1 == "39"  ];
-then	
-	echo "	Battery"
-elif [ $1 == "40"  ];
-then	
-	echo "	Smart Backup Box"
-elif [ $1 == "45"  ];
-then	
-	echo "	MBUS"
-elif [ $1 == "46"  ];
-then	
-	echo "	Optimizer"
-elif [ $1 == "47"  ];
-then	
-	echo "	Power Sensor"
-elif [ $1 == "52"  ];
-then	
-	echo "	SAJ data logger"
-elif [ $1 == "53"  ];
-then	
-	echo "	High voltage bay of the main transformer"
-elif [ $1 == "54"  ];
-then	
-	echo "	Main transformer"
-elif [ $1 == "55"  ];
-then	
-	echo "	Low voltage bay of the main transformer"
-elif [ $1 == "56"  ];
-then	
-	echo "	Bus bay"
-elif [ $1 == "57"  ];
-then	
-	echo "	Line bay"
-elif [ $1 == "58"  ];
-then	
-	echo "	Plant transformer bay"
-elif [ $1 == "59"  ];
-then	
-	echo "	SVC/SVG bay"
-elif [ $1 == "60"  ];
-then	
-	echo "	Bus tie/section bay"
-elif [ $1 == "61"  ];
-then	
-	echo "	Plant power supply device"
-elif [ $1 == "62"  ];
-then	
-	echo "	Dongle"
-elif [ $1 == "63"  ];
-then	
-	echo "	Distributed SmartLogger"
-elif [ $1 == "70"  ];
-then	
-	echo "	Safety box"
-else
-	echo "	Unknown Device"
-fi
-
-}
-
-Error_Codes_List () {
-
-#Errors which are possible during login and connection to Huawei SolarFussion API based on documentation SmartPVMS.V300R006C10_API_Northbound.Interface.Reference.1.pdf pages 109-110. and own experiments.
-  
-if [ $1 == "0"  ];
-then
-	echo "Normal Status"
-elif [ $1 == "20001"  ];
-then	
-	echo "The third-party system ID does not exist."
-elif [ $1 == "305"  ] || [ $1 = "306" ];
-then	
-	echo "You are not in the login state. You need to log in again."
-elif [ $1 == "401"  ];
-then	
-	echo "You do not have the related data interface permission."
-elif [ $1 == "407"  ];
-then	
-	echo "The interface access frequency is too high."
-elif [ $1 == "413"  ];
-then	
-	echo "Your IP is locked."
-elif [ $1 == "20002"  ];
-then	
-	echo "The third-party system is forbidden."
-elif [ $1 == "20003"  ];
-then	
-	echo "The third-party system has expired."
-elif [ $1 == "20004"  ];
-then	
-	echo "The server is abnormal."
-elif [ $1 == "20005"  ];
-then	
-	echo "The device ID cannot be empty."
-elif [ $1 == "20006"  ];
-then	
-	echo "Some devices do not match the device type."
-elif [ $1 == "20007"  ];
-then	
-	echo "The system does not have the desired power plant resources."
-elif [ $1 == "20008"  ];
-then	
-	echo "The system does not have the desired device resources."
-elif [ $1 == "20009"  ];
-then	
-	echo "Queried KPIs are not configured in the system."
-elif [ $1 == "20010"  ];
-then	
-	echo "The plant list cannot be empty."
-elif [ $1 == "20011"  ];
-then	
-	echo "The device list cannot be empty."
-elif [ $1 == "20012"  ];
-then	
-	echo "The query time cannot be empty."
-elif [ $1 == "20013"  ];
-then	
-	echo "The device type is incorrect. The interface does not support operations on some devices."
-elif [ $1 == "20014" ] || [ $1 = "20015" ];
-then	
-	echo "A maximum of 100 plants can be queried at a time."
-elif [ $1 == "20016" ] || [ $1 = "20017" ];
-then	
-	echo "A maximum of 100 devices can be queried at a time."
-elif [ $1 == "20018"  ];
-then	
-	echo "A maximum of 10 devices can be manipulated at a time."
-elif [ $1 == "20019"  ];
-then	
-	echo "The switch type is incorrect. 1 and 2 indicate switch-on and switch-off respectively."
-elif [ $1 == "20020"  ];
-then	
-	echo "The upgrade package specific to the device version cannot be found"
-elif [ $1 == "20021"  ];
-then	
-	echo "The upgrade file does not exist."
-elif [ $1 == "20022"  ];
-then	
-	echo "The upgrade records of the devices in the system are not found."
-elif [ $1 == "20023"  ];
-then	
-	echo "The query start time cannot be later than the query end time."
-elif [ $1 == "20024"  ];
-then	
-	echo "The language cannot be empty."
-elif [ $1 == "20025"  ];
-then	
-	echo "The language parameter value is incorrect."
-elif [ $1 == "20026"  ];
-then	
-	echo "Only data of the latest 365 days can be queried."
-elif [ $1 == "20027"  ];
-then	
-	echo "The query time period cannot span more than 31 days."
-else
-	echo "Unknown error."
-fi
-
-}
-
-
-function in_case_of_error_with_connection_to_API {
-
-	local immediately=$(echo ''$1''  | jq '.data.immediately' )
-		if [[ $immediately == true ]];
-			then
-				local when_relogin="NOW"
-		elif [[ $immediately == false ]];
-			then
-				local when_relogin="NOT NOW"
-		else
-				local when_relogin="Don't know when"
-		fi	
-
-		local message=$(echo ''$1''  | jq '.data.message' )
-		echo "Message: "$when_relogin" "$message
-
-}
-
-
-function login_to_API {
 
 # Login to FusionSolarAPI with Username and Password
-logowanie=$(echo '{userName: "'$userName'", systemCode: "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
+logowanie=$(curl -X POST -H "Content-Type: application/json" -d '{userName:"'$userName'",systemCode:"'$systemCode'"}' -i https://eu5.fusionsolar.huawei.com/thirdData/login )
 
 
-#show as answer of of API for question
+#Operations on string for 
+IFS='{'
+array=( $logowanie )
 #echo $logowanie
+#echo "value = ${array[1]}"
+question=${array[1]}
 
-#coping a long string with answer to new variable from which we extract JOSN answer
-logowanie_for_josn_extraction=$(echo $logowanie)
+
+IFS=','
+array=( $question )
+#echo "value = ${array[5]}"
+question=${array[5]}
+
+#echo "${question::-1}"
 
 
+#Operations on string for extract xsrl token necessary for next questions
 IFS=';'
 array=( $logowanie )
 #echo "value = ${array[4]}"
@@ -314,153 +60,236 @@ logowanie=${array[4]}
 
 IFS='='
 array=( $logowanie )
+header="XSRF-TOKEN"
 xsrf_token=${array[1]}
 
 
 IFS=':'
 array=( $jsesionid )
+#echo "value = ${array[1]}"
 jsesionid=${array[1]}
 
 IFS='='
 array=( $jsesionid )
+header_jsesion="JSESSIONID"
 jsesionid=${array[1]}
 
-#echo ""
-#echo "XSRF-TOKEN: "$xsrf_token
-#echo "JSESSIONID: "$jsesionid
-#echo ""
-
-#extracting from rubish string JOSN answer part
-array2=( $logowanie_for_josn_extraction )
-
-
-usucesfully_login=$(echo ${array2[7]})
-sucesfully_login=$(echo ${array2[11]})
-
-if [[ $usucesfully_login =~ "false"  ]];
-	then		
-			echo ""
-			echo -e "Login to server \e[41mError :(\e[0m"
-			josn=$(echo ${array2[7]})
-elif [[ $sucesfully_login =~ "true"  ]];
-	then			
-			echo ""
-			echo -e "Login to server \e[42mOK :)\e[0m"
-			josn=$(echo ${array2[11]})
-else
-	echo ""
-	echo -e "Problems with conection to Huawei Server" 
-fi
-#echo $josn
-
-
-josn_final=`echo "$josn" | grep -o '{.*'`
-
-#show response from API in JOSN
-#echo $josn_final | jq
-
-
-success=$(echo ''$josn_final''  | jq '.success' )
-buildCode=$(echo ''$josn_final''  | jq '.buildCode' )
-failCode=$(echo ''$josn_final''  | jq '.failCode' )
-message=$(echo ''$josn_final''  | jq '.message' )
-data=$(echo ''$josn_final''  | jq '.data' )
-
-if [[ $usucesfully_login =~ "false"  ]];
-	then		
-		params=$(echo ''$josn_final''  | jq '.params' )	
-			currentTime=$(echo ''$josn_final''  | jq '.params.currentTime' )
-			systemCode=$(echo ''$josn_final''  | jq '.params.systemCode' )
-			userName=$(echo ''$josn_final''  | jq '.params.userName' )
-elif [[ $sucesfully_login =~ "true"  ]];
-	then
-		params=$(echo ''$josn_final''  | jq '.params' )	
-fi
-
-
-#removing " on begining and end
-buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo "Username & Password accepted by Huawei Server"
-		login_status=true
-elif [[ $success == "false" ]];
-	then
-		echo "Username & Password not accepted by Huawei Server"
-		login_status=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	echo "Returned data: "$data
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-echo "Build Code: "$buildCode
-
-if [[ $usucesfully_login =~ "false"  ]];
-then	
-	#shorter time for read in unix
-	local curent_time_actually=$(echo ${currentTime::-3})
-	local curent_time_actually=$(date -d @$curent_time_actually)
-	echo "Time of your Request to API: "$curent_time_actually
-	
-	echo "Your data:"
-	echo "	Username: "$userName
-	echo "	Password: "$systemCode
-
-fi
-		
-if [[ $sucesfully_login =~ "true"  ]];
-then	
-	if [[ ! $params == "null"  ]];
-	then	
-		echo "Request parameter: "$params
-	fi
-fi
-
-
-if [[ ! $data == "null"  ]];
-then	
-	echo "Returned data: "$data
-fi
-
 echo ""
+#echo $header
+echo ""
+#echo $xsrf_token
+echo ""
+#echo $jsesionid
 
-
-}
-
-
-
-function getStationList {
 
 # Request to API getStationList
-local getStationList=$(printf '{ }'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+getStationList=$(printf '{ }'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-#show result of qustion in JOSN
-#echo $getStationList  | jq
+#echo $getStationList 
 
 
-local success=$(echo ''$getStationList''  | jq '.success' )
-local buildCode=$(echo ''$getStationList''  | jq '.buildCode' )
-local failCode=$(echo ''$getStationList''  | jq '.failCode' )
-local message=$(echo ''$getStationList''  | jq '.message' )
+AlarmID=$(echo ''$getStationList''  | jq '.failCode' )
+AlarmID=$(expr $AlarmID)
 
-# we take actually time for other question to API too
+	if [[ $AlarmID == 0 ]];
+		
+		#Alarm severity 3=Major 2=Minor 1=Warning
+		then
+			opis_bledow=$(echo "No Errors device working correctly" )
+			Alarm_severity=0
+	
+		elif [$AlarmID -ge 2001]
+		then
+			opis_bledow=$(echo "High String Input Voltage" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Excessive PV modules are connected in series in the PV array. Therefore, the open-circuit voltage exceeds the maximum input voltage of the SUN2000.")
+
+		elif [$AlarmID -ge 2002]
+		then
+			opis_bledow=$(echo "DC Arc Fault" )
+			Alarm_severity=3
+			Possible_cause=$(echo "The PV string power cable arcs or is in poor contact.")
+	
+		elif [$AlarmID -ge 2011]
+		then
+			opis_bledow=$(echo "String Reversed" )
+			Alarm_severity=3
+			Possible_cause=$(echo "The PV string is reversely connected.")
+	
+		elif [$AlarmID -ge 2012]
+		then
+			opis_bledow=$(echo "String Current Backfeed" )
+			Alarm_severity=1
+			Possible_cause=$(echo "Only a few PV modules are connected in series in the PV string. Therefore, the end voltage is lower than that of other PV strings")
+
+		elif [$AlarmID -ge 2013]
+		then
+			opis_bledow=$(echo "Abnormal String" )
+			Alarm_severity=1
+			Possible_cause=$(echo " ")
+	
+		elif [$AlarmID -ge 2021]
+		then
+			opis_bledow=$(echo "AFCI Self-test Fault" )
+			Alarm_severity=3
+			Possible_cause=$(echo " ")
+	
+
+		elif [$AlarmID -ge 2031]
+		then
+			opis_bledow=$(echo "Power grid phase wire short-circuit to PE" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The impedance of the output phase wire is low or short-circuited to PE")	
+
+		elif [$AlarmID -ge 2032]
+		then
+			opis_bledow=$(echo "Grid Failure" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The power grid experiences an outage. The AC circuit is disconnected or the AC switch is off.")
+
+		elif [$AlarmID -ge 2033]
+		then
+			opis_bledow=$(echo "Grid Undervoltage" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The power grid voltage is below the lower threshold or the undervoltage duration exceeds the value specified by LVRT")
+
+		elif [$AlarmID -ge 2034]
+		then
+			opis_bledow=$(echo "Grid Overvoltage" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The power grid voltage is beyond the upper threshold or the overvoltage duration exceeds the value specified by HVRT.")
+		
+		elif [$AlarmID -ge 2035]
+		then
+			opis_bledow=$(echo "Unbalanced Grid Voltage" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The difference between grid phase voltages exceeds the upper threshold.")
+
+		elif [$AlarmID -ge 2036]
+		then
+			opis_bledow=$(echo "Grid Overfrequency" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 Power grid exception: The actual power grid frequency is higher than the standard requirement for the local power grid.")
+
+		elif [$AlarmID -ge 2037]
+		then
+			opis_bledow=$(echo "Grid Underfrequency" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 Power grid exception: The actual power grid frequency is lower than the standard requirement for the local power grid.")
+	
+		elif [$AlarmID -ge 2038]
+		then
+			opis_bledow=$(echo "Grid Frequency Instability" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 Power grid exception: The actual grid frequency change rate does not comply with the local power grid standard.")
+	
+		elif [$AlarmID -ge 2039]
+		then
+			opis_bledow=$(echo "Output Overcurrent" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The power grid voltage drops dramatically or the power grid is short-circuited. As a result, the SUN2000 transient output current exceeds the upper threshold and therefore the protection is triggered.")
+										
+		elif [$AlarmID -ge 2040]
+		then
+			opis_bledow=$(echo "Large DC of Output current" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The DC component of the SUN2000 output current exceeds the specified upper threshold.")
+
+		elif [$AlarmID -ge 2051]
+		then
+			opis_bledow=$(echo "Abnormal Leakage Current" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The insulation impedance of the input side to PE decreases when the SUN2000 is operating.")
+	
+		elif [$AlarmID -ge 2061]
+		then
+			opis_bledow=$(echo "Abnormal Ground" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The N cable or ground cable is not connected or When a PV array is grounded, the inverter output is not connected to an isolation transformer.")												
+	
+		elif [$AlarmID -ge 2062]
+		then
+			opis_bledow=$(echo "Low Insulation Resistance" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 PV arrays are short-circuited with PE. Or the ambient air of the PV array is damp and the insulation between the PV array and the ground is poor.")
+		
+		elif [$AlarmID -ge 2063]
+		then
+			opis_bledow=$(echo "High Temperature" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The SUN2000 is installed in a place with poor ventilation. Or The ambient temperature is too high. Or The SUN2000 is not working properly.")
+		
+		elif [$AlarmID -ge 2064]
+		then
+			opis_bledow=$(echo "Abnormal Equipment" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1–12 An unrecoverable fault has occurred on a circuit inside the SUN2000.")
+	
+		elif [$AlarmID -ge 2065]
+		then
+			opis_bledow=$(echo "Upgrade Failed" )
+			Alarm_severity=2
+			Possible_cause=$(echo "Cause ID = 1, 2 and 4 The upgrade does not complete normally. NOTE Upgrade the inverter again if it is stuck in initialization state without generating any alarms and cannot be restored to the normal state during the upgrade when the PV inputs are disconnected and reconnected next time.")
+
+		elif [$AlarmID -ge 2066]
+		then
+			opis_bledow=$(echo "License Expired" )
+			Alarm_severity=1
+			Possible_cause=$(echo "Cause ID = 1 The privilege certificate has entered the grace period. Or the privilege feature will be invalid soon.")	
+
+		elif [$AlarmID -ge 61440]
+		then
+			opis_bledow=$(echo "Abnormal Monitor Unit" )
+			Alarm_severity=2
+			Possible_cause=$(echo "Cause ID = 1 The flash memory is insufficient. Or the flash memory has bad sectors.")
+
+		elif [$AlarmID -ge 2067]
+		then
+			opis_bledow=$(echo "Power collector fault" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The power meter communication is interrupted.")
+	
+		elif [$AlarmID -ge 2068]
+		then
+			opis_bledow=$(echo "Abnormal energy storage device" )
+			Alarm_severity=2
+			Possible_cause=$(echo " ")
+
+		elif [$AlarmID -ge 2070]
+		then
+			opis_bledow=$(echo "Active islanding" )
+			Alarm_severity=3
+			Possible_cause=$(echo " ")
+		
+		elif [$AlarmID -ge 2071]
+		then
+			opis_bledow=$(echo "Passive islanding" )
+			Alarm_severity=3
+			Possible_cause=$(echo " ")
+
+		elif [$AlarmID -ge 2072]
+		then
+			opis_bledow=$(echo "Transient AC overvoltage" )
+			Alarm_severity=3
+			Possible_cause=$(echo "Cause ID = 1 The inverter detects that the phase voltage exceeds the transient AC overvoltage protection threshold.")
+
+		elif [$AlarmID -ge 2080]
+		then
+			opis_bledow=$(echo "Abnormal PV module configuration" )
+			Alarm_severity=3
+			Possible_cause=$(echo " ")
+
+		else	
+			echo "nothing propably problem with server where is service connection"
+			Alarm_severity=1
+		
+	fi
+
+echo $opis_bledow
+
 curent_time=$(echo ''$getStationList''  | jq '.params' )
-	curent_time=$(echo ''$curent_time''  | jq '.currentTime' )
+curent_time=$(echo ''$curent_time''  | jq '.currentTime' )
+
 
 curent_time_actually=$(echo ${curent_time::-3})
 
@@ -471,505 +300,83 @@ curent_time_actually=$(echo ${curent_time::-3})
 #data=$(date -d @'$curent_time')
 #echo $data
 
-local data=$(echo ''$getStationList''  | jq '.data[]' )
-	local aidType=$(echo ''$data''  | jq '.aidType' )
-	local buildState=$(echo ''$data''  | jq '.buildState' )
-	local combineType=$(echo ''$data''  | jq '.combineType' )
-	local capacity=$(echo ''$data''  | jq '.capacity' ) # in kWp Kilo-Watt-pik
-	local owner_phone=$(echo ''$data''  | jq '.linkmanPho' )
-	local station_Addres=$(echo ''$data''  | jq '.stationAddr' )
-	local station_Code=$(echo ''$data''  | jq '.stationCode' )
-	local station_Linkman=$(echo ''$data''  | jq '.stationLinkman' )
-	local station_Name=$(echo ''$data''  | jq '.stationName' )
-	#echo $station_Code
-	#echo $station_Name
-	
-	
-# Conversion of long variable string with answers to array
-eval "stations_aidType_array=(${aidType})"
-eval "stations_buildState_array=(${buildState})"
-eval "stations_combineType_array=(${combineType})"
-eval "stations_capacity_array=(${capacity})"
-eval "stations_owner_phone_array=(${owner_phone})"
-eval "stations_Addres_array=(${station_Addres})"
-eval "stations_Code_array=(${station_Code})"
-eval "stations_Linkman_array=(${station_Linkman})"
-eval "stations_Name_array=(${station_Name})"
+data=$(echo ''$getStationList''  | jq '.data[]' )
 
-#printf '%s\n' "${stations_aidType_array[@]}"
-#printf '%s\n' "${stations_buildState_array[@]}"
-#printf '%s\n' "${stations_combineType_array[@]}"
-#printf '%s\n' "${stations_capacity_array[@]}"
-#printf '%s\n' "${stations_owner_phone_array[@]}"
-#printf '%s\n' "${stations_Addres_array[@]}"
-#printf '%s\n' "${stations_Code_array[@]}"
-#printf '%s\n' "${stations_Linkman_array[@]}"
-#printf '%s\n' "${stations_Name_array[@]}"
-
-#count number of plants in your possesion
-number_of_plants=${#stations_Name_array[@]}
+capacity=$(echo ''$data''  | jq '.capacity' )
+owner_phone=$(echo ''$data''  | jq '.linkmanPho' )
+station_Addres=$(echo ''$data''  | jq '.stationAddr' )
+station_Code=$(echo ''$data''  | jq '.stationCode' )
+station_Linkman=$(echo ''$data''  | jq '.stationLinkman' )
+station_Name=$(echo ''$data''  | jq '.stationName' )
+#echo $station_Code
+#echo $station_Name
 
 #removing " on begining and end
 #station_Addres="$(echo "$station_Addres" | tr -d '[:punct:]')"
 
-#removing " on begining and end
-local buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
-local buildState=`echo "$buildState" | grep -o '[[:digit:]]'`
-local combineType=`echo "$combineType" | grep -o '[[:digit:]]'`
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetStationList\e[0m connection \e[42mOK\e[0m"
-		getStationList_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetStationList\e[0m connection \e[41mError\e[0m"
-		getStationList_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-#echo "Current Time: "$curent_time
-#shorter time for read in unix
-if [[ $success == "true"  ]];
-	then	
-		curent_time_actually=$(echo ${curent_time::-3})
-		curent_time_actually=$(date -d @$curent_time_actually)
-		echo "Time of your Request to API: "$curent_time_actually
-fi
-
-local count=0
-for s in "${#stations_Name_array[@]}"; do
-	local number_plant=$(( $count+1 ))
-	echo ""
-	echo -e "	\e[93mPlant "$number_plant": \e[0m\e[1m"${stations_Code_array[$count]}"\e[0m"
-	echo "	Plant Name: "${stations_Name_array[$count]}
-	echo "	Address of the plant: "${stations_Addres_array[$count]}
-	echo "	Installed capacity: "${stations_capacity_array[$count]}" kWp"
-	echo "	Plant contact: "${stations_Linkman_array[$count]}
-	echo "	Contact phone number :"${stations_owner_phone_array[$count]}
-	
-	if [[ ${stations_buildState_array[$count]} == 1 ]];
-		then	
-		plant_status="Not built"
-	elif [[ ${stations_buildState_array[$count]} == 2 ]];
-		then
-		plant_status="Under construction"
-	elif [[ ${stations_buildState_array[$count]} == 3 ]];
-		then
-		plant_status="Grid-connected"
-	else
-		plant_status="Unknown"
-	fi
-	echo "	Plant Status: "$plant_status
-	
-	
-	if [[ ${stations_combineType_array[$count]} == 1 ]];
-		then	
-		Grid_connection_type="Utility"
-	elif [[ ${stations_combineType_array[$count]} == 2 ]];
-		then
-		Grid_connection_type="C&I plant"
-	elif [[ ${stations_combineType_array[$count]} == 3 ]];
-		then
-		Grid_connection_type="Residential plant"
-	else
-		Grid_connection_type="Unknown"
-	fi
-	echo "	Grid connection type: "$Grid_connection_type
-	
-	
-	if [[ ${stations_aidType_array[$count]} == 0 ]];
-		then	
-		Poverty_alleviation_plant_flag="Yes"
-	elif [[ ${stations_aidType_array[$count]} == 1 ]];
-		then
-		Poverty_alleviation_plant_flag="No"
-	else
-		Poverty_alleviation_plant_flag="Unknown"
-	fi
-	echo "	Poverty alleviation plant: "$Poverty_alleviation_plant_flag
-
-	echo ""
-    (( count++ ))
-done
-
-# in case of error
-if [[ $success == "false"  ]];
-	then	
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $getStationList
-fi
-
-
-}
-
-
-
-function getDevList {
-
-# Request to API getDevList
-local getDevList=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
-
-#show result of qustion in JOSN
-#echo $getDevList | jq
-
-local success=$(echo ''$getDevList''  | jq '.success' )
-local buildCode=$(echo ''$getDevList''  | jq '.buildCode' )
-local failCode=$(echo ''$getDevList''  | jq '.failCode' )
-local message=$(echo ''$getDevList''  | jq '.message' )
-
-local data=$(echo ''$getDevList''  | jq '.data[]' )
-	local device_Name=$(echo ''$data''  | jq '.devName' )
-	local device_TypeId=$(echo ''$data''  | jq '.devTypeId' )
-	local esnCode=$(echo ''$data''  | jq '.esnCode' )
-	local Id=$(echo ''$data''  | jq '.id' )
-	local inverter_Type=$(echo ''$data''  | jq '.invType' )
-	local latitude=$(echo ''$data''  | jq '.latitude' )
-	local longitude=$(echo ''$data''  | jq '.longitude' )
-	local software_Version=$(echo ''$data''  | jq '.softwareVersion' )
-	local stationCode=$(echo ''$data''  | jq '.stationCode' )
-
-local parms=$(echo ''$getDevList''  | jq '.params' )
-	local currentTime=$(echo ''$parms''  | jq '.currentTime' )
-	local stationCodes=$(echo ''$parms''  | jq '.stationCodes' )
-
-#echo $device_Name | jq
-
-
-
-# Conversion of long variable string with answers to array
-eval "device_Name_array=(${device_Name})"
-eval "device_TypeId_array=(${device_TypeId})"
-eval "device_esnCode_array=(${esnCode})"
-eval "device_Id_array=(${Id})"
-eval "device_inverter_Type_array=(${inverter_Type})"
-eval "device_latitude_array=(${latitude})"
-eval "device_longitude_array=(${longitude})"
-eval "device_software_Version_array=(${software_Version})"
-eval "device_stationCode_array=(${stationCode})"
-
-#printf '%s\n' "${device_Name_array[@]}"
-#printf '%s\n' "${device_TypeId_array[@]}"
-#printf '%s\n' "${device_esnCode_array[@]}"
-#printf '%s\n' "${device_Id_array[@]}"
-#printf '%s\n' "${device_inverter_Type_array[@]}"
-#printf '%s\n' "${device_latitude_array[@]}"
-#printf '%s\n' "${device_longitude_array[@]}"
-#printf '%s\n' "${device_software_Version_array[@]}"
-#printf '%s\n' "${device_stationCode_array[@]}"
-
-#count number of devices in station taken from number of postions in one array
-local number_of_devices=${#device_Name_array[@]}
-
-#Removing both " from string
-local buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
-local inverter_Type="$(echo "$inverter_Type" | tr -d '[:punct:]')"
-
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetDevList\e[0m connection \e[42mOK\e[0m"
-		getDevList_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetDevList\e[0m connection \e[41mError\e[0m"
-		getDevList_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-#echo "Current Time: "$currentTime
-#shorter time for read in unix
-if [[ $success == "true"  ]];
-	then	
-		local curent_time_actually=$(echo ${currentTime::-3})
-		local curent_time_actually=$(date -d @$curent_time_actually)
-		echo "Time of your Request to API: "$curent_time_actually
-#fi
-
-echo ""
-echo -e "\e[93mPlant "$2": \e[0m\e[1m"${device_stationCode_array[$count]}"\e[0m"
-echo "Number of devices: "$number_of_devices
-echo ""
-
-local count=0
-for s in "${device_Name_array[@]}"; do 
-	local number_of_device=$(( $count+1 ))
-	echo -e "	\e[93mDevice "$number_of_device":\e[0m ${device_Id_array[$count]}"
-	#echo "	Device type ID: "${device_TypeId_array[$count]}
-	# we call to function with Devices ID list
-	
-	Device_type_ID ${device_TypeId_array[$count]}
-
-	if [ ! -z "${device_inverter_Type_array[$count]}" ]
-	then
-		echo "	Inverter Type: "${device_inverter_Type_array[$count]}
-	fi
-	
-	echo "	Device Name: "${device_Name_array[$count]}
-	echo "	Device SN: "${device_esnCode_array[$count]}
-	
-	
-	if [[ ! $1 == ${device_stationCode_array[$count]}  ]];
-	then	
-		echo "	Plant name: "${device_stationCode_array[$count]}
-	fi
-		
-	echo "	Software version: "${device_software_Version_array[$count]}
-	
-	if [[ ! ${device_longitude_array[$count]} == null  ]];
-	then	
-		echo "	longitude: "${device_longitude_array[$count]}
-	fi
-	if [[ ! ${device_latitude_array[$count]} == null  ]];
-	then	
-		echo "	latitude: "${device_latitude_array[$count]}
-	fi
-	echo ""
-    (( count++ ))
-done
-
-fi
-
-# in case of error
-if [[ $success == "false"  ]];
-	then	
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $getDevList
-fi
-
-echo ""
-
-}
-
-
-function getStationRealKpi {
-
 
 # Request to API getStationRealKpi
-local getStationRealKpi=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+getStationRealKpi=$(printf '{"stationCodes": '$station_Code'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
 
-#show result of qustion in JOSN
+
 #echo $getStationRealKpi | jq
 
-local success=$(echo ''$getStationRealKpi''  | jq '.success' )
-local buildCode=$(echo ''$getStationRealKpi''  | jq '.buildCode' )
-local failCode=$(echo ''$getStationRealKpi''  | jq '.failCode' )
-local  message=$(echo ''$getStationRealKpi''  | jq '.message' )
+data_RealKpi=$(echo ''$getStationRealKpi''  | jq '.data[]' )
+data_RealKpi=$(echo ''$data_RealKpi''  | jq '.dataItemMap' )
 
-local data_RealKpi=$(echo ''$getStationRealKpi''  | jq '.data[]' )
-	local stationCode=$(echo ''$data_RealKpi''  | jq '.stationCode' )
-	local data_RealKpi=$(echo ''$data_RealKpi''  | jq '.dataItemMap' )
-		local Day_power=$(echo ''$data_RealKpi''  | jq '.day_power' )
-		local month_power=$(echo ''$data_RealKpi''  | jq '.month_power' )
-		local total_power=$(echo ''$data_RealKpi''  | jq '.total_power' )
-		local day_income=$(echo ''$data_RealKpi''  | jq '.day_income' )
-		local total_income=$(echo ''$data_RealKpi''  | jq '.total_income' )
-		local real_health_state=$(echo ''$data_RealKpi''  | jq '.real_health_state' )
-
-local data_RealKpi=$(echo ''$getStationRealKpi''  | jq '.params' )
-	local currentTime=$(echo ''$data_RealKpi''  | jq '.currentTime' )
-	local stationCodes=$(echo ''$data_RealKpi''  | jq '.stationCodes' )
+Day_power=$(echo ''$data_RealKpi''  | jq '.day_power' )
+month_power=$(echo ''$data_RealKpi''  | jq '.month_power' )
+total_power=$(echo ''$data_RealKpi''  | jq '.total_power' )
+day_income=$(echo ''$data_RealKpi''  | jq '.day_income' )
+total_income=$(echo ''$data_RealKpi''  | jq '.total_income' )
 
 #removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-local Day_power="$(echo "$Day_power" | tr -d '"')"
-local month_power="$(echo "$month_power" | tr -d '"')"
-local total_power="$(echo "$total_power" | tr -d '"')"
-local day_income="$(echo "$day_income" | tr -d '"')"
-local total_income="$(echo "$total_income" | tr -d '"')"
-local real_health_state="$(echo "$real_health_state" | tr -d '"')"
-local stationCodes="$(echo "$stationCodes" | tr -d '"')"
-local stationCode="$(echo "$stationCode" | tr -d '"')"
+Day_power=`echo "$Day_power" | grep -o '[[:digit:]].*[[:digit:]]'`
+month_power=`echo "$month_power" | grep -o '[[:digit:]].*[[:digit:]]'`
+total_power=`echo "$total_power" | grep -o '[[:digit:]].*[[:digit:]]'`
+
+
+
 #echo $data_RealKpi | jq
 
 
-# Here comma is our delimiter value to array of stations codes given by user as a parameter in question
-IFS="," read -a stationCodes_array <<< $stationCodes
 
-#echo "My array Station Codes: ${stationCodes_array[@]}"
-#echo "Number of elements in the array Station Code: ${#stationCodes_array[@]}"
-
-# Conversion of long variable string with answers to array
-eval "stationCode_array=(${stationCode})"
-eval "Day_power_array=(${Day_power})"
-eval "month_power_array=(${month_power})"
-eval "total_power_array=(${total_power})"
-eval "day_income_array=(${day_income})"
-eval "total_income_array=(${total_income})"
-eval "real_health_state_array=(${real_health_state})"
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetStationRealKpi\e[0m connection \e[42mOK\e[0m"
-		getStationRealKpi_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetStationRealKpi\e[0m connection \e[41mError\e[0m"
-		getStationRealKpi_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
+# Request to API getDevList
+getDevList=$(printf '{"stationCodes": '$station_Code'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
 
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
+#echo $getDevList | jq
 
-#echo "Current Time: "$currentTime
-#shorter time for read in unix
-if [[ $success == "true"  ]];
-	then	
-		local curent_time_actually=$(echo ${currentTime::-3})
-		local curent_time_actually=$(date -d @$curent_time_actually)
-		echo "Time of your Request to API: "$curent_time_actually
+getDevList=$(echo ''$getDevList''  | jq '.data[]' )
 
-echo ""
-echo "Numbers of plants to check: "${#stationCodes_array[@]}
+device_Name=$(echo ''$getDevList''  | jq '.devName' )
+device_TypeId=$(echo ''$getDevList''  | jq '.devTypeId' )
+esnCode=$(echo ''$getDevList''  | jq '.esnCode' )
+Id=$(echo ''$getDevList''  | jq '.id' )
+inverter_Type=$(echo ''$getDevList''  | jq '.invType' )
+latitude=$(echo ''$getDevList''  | jq '.latitude' )
+longitude=$(echo ''$getDevList''  | jq '.longitude' )
+software_Version=$(echo ''$getDevList''  | jq '.softwareVersion' )
+stationCode=$(echo ''$getDevList''  | jq '.stationCode' )
 
+#echo $device_Name | jq
 
-local count=0
-for s in "${#stationCode_array[@]}"; do
-	local number_plant=$(( $count+1 ))
-	echo ""
-	echo -e "	\e[93mPlant "$number_plant": \e[0m\e[1m"${stationCode_array[$count]}"\e[0m"
-	
-	if [[ ${real_health_state_array[$count]} == 1 ]];
-		then	
-		plant_healt="Disconnected"
-	elif [[ ${real_health_state_array[$count]} == 2 ]];
-		then
-		plant_healt="Faulty"
-	elif [[ ${real_health_state_array[$count]} == 3 ]];
-		then
-		plant_healt="Healthy"
-	else
-		plant_healt="Unknown"
-	fi
-	echo "	Plant Status: "$plant_healt
-	
-	echo "	Daily energy: "${Day_power_array[$count]}" kWh"
-	echo "	Monthly energy: "${month_power_array[$count]}" kWh"
-	echo "	Lifetime energy: "${total_power_array[$count]}" kWh"
-	echo "	Daily revenue: "${day_income_array[$count]}" ¥"
-	echo "	Total revenue: "${total_income_array[$count]}" ¥"
-	echo ""
-	(( count++ ))
-done
+#Removing both " from string
+inverter_Type="$(echo "$inverter_Type" | tr -d '[:punct:]')"
 
-fi
-
-# in case of error
-if [[ $success == "false"  ]];
-	then
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $getStationRealKpi
-fi
-
-echo ""
-
-
-}
-
-
-
-function getKpiStationHour {
 
 # Request to API getKpiStationHour
-local getKpiStationHour=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+getKpiStationHour=$(printf '{"stationCodes": '$station_Code', "collectTime": '$curent_time'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-#echo $getKpiStationHour | jq
-#echo $getKpiStationHour | jq '.data[]'
-#echo $getKpiStationHour | jq '.data[].collectTime, .data[].dataItemMap.inverter_power'
+# echo $getKpiStationHour | jq '.data[]'
+# echo $getKpiStationHour | jq '.data[].collectTime, .data[].dataItemMap.inverter_power'
 
-local success=$(echo ''$getKpiStationHour''  | jq '.success' )
-local buildCode=$(echo ''$getKpiStationHour''  | jq '.buildCode' )
-local failCode=$(echo ''$getKpiStationHour''  | jq '.failCode' )
-local message=$(echo ''$getKpiStationHour''  | jq '.message' )
+hour_of_the_day=( $(echo ''$getKpiStationHour''  | jq '.data[].collectTime' ) )
+power_iverted=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.inverter_power' ) )
+power_profit=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.power_profit' ) )
 
 
-local hour_of_the_day=( $(echo ''$getKpiStationHour''  | jq '.data[].collectTime' ) )
-	local stationCode=( $(echo ''$getKpiStationHour''  | jq '.data[].stationCode' ) )
-		local radiation_intensity=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.radiation_intensity' ) )
-		local theory_power=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.theory_power' ) )
-		local power_inverted=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.inverter_power' ) )
-		local ongrid_power=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.ongrid_power' ) )
-		local power_profit=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.power_profit' ) )
-
-local data_getKpiStationHour=$(echo ''$getKpiStationHour''  | jq '.params' )
-	local currentTime=$(echo ''$data_getKpiStationHour''  | jq '.currentTime' )
-	local collectTime=$(echo ''$data_getKpiStationHour''  | jq '.collectTime' )
-	local stationCodes=$(echo ''$data_getKpiStationHour''  | jq '.stationCodes' )
-
-#removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-
-
-# Here comma is our delimiter value to array of stations codes given by user as a parameter in question
-IFS="," read -a stationCodes_array <<< $stationCodes
 
 # Conversion of long variable string with hours in unix format to bash array 
 eval "hour_of_the_day_array=(${hour_of_the_day})"
@@ -977,186 +384,49 @@ eval "hour_of_the_day_array=(${hour_of_the_day})"
 #we cut last three digits for corect time and date  in loop + corect timezone for grafana
 count=0
 for s in "${hour_of_the_day_array[@]}"; do 
-    local date_with_cut_three_digits=$(echo ${s::-3})
+    date_with_cut_three_digits=$(echo ${s::-3})
 
-    #convert UCT timestamp to CEST we add +1h in secounds
-    local date_with_cut_three_digits=$(( $date_with_cut_three_digits+3600 ))
+    #convert UCT timestamp to CEST  we add +1h in secounds
+    date_with_cut_three_digits=$(( $date_with_cut_three_digits+3600 ))
 
     hour_of_the_day_array[$count]=$date_with_cut_three_digits
     (( count++ ))
 done
 
 # Conversion of long variable string with hourly inverter production to array
-eval "stationCode_array=(${stationCode})"
-eval "radiation_intensity_array=(${radiation_intensity})"
-eval "theory_power_array=(${theory_power})"
-eval "power_inverted_array=(${power_inverted})"
-eval "ongrid_power_array=(${ongrid_power})"
-eval "power_profit_array=(${power_profit})"
+eval "power_iverted_array=(${power_iverted})"
+
+
 
 #Tested variable to text file for checking what is on output
 #truncate=$(truncate -s0 wyjscie.txt)
 #echo $hour_of_the_day >> wyjscie.txt
 
 #printf '%s\n' "${hour_of_the_day_array[@]}"
-#echo "Number of positions in array ""${#hour_of_the_day_array[@]}"
-#printf '%s\n' "${stationCode_array[@]}"
-#echo "Number of positions in array ""${#stationCode_array[@]}"
-#printf '%s\n' "${radiation_intensity_array[@]}"
-#echo "Number of positions in array ""${#radiation_intensity_array[@]}"
-#printf '%s\n' "${theory_power_array[@]}"
-#echo "Number of positions in array ""${#theory_power_array[@]}"
-#printf '%s\n' "${power_inverted_array[@]}"
-#echo "Number of positions in array ""${#power_inverted_array[@]}"
-#printf '%s\n' "${ongrid_power_array=[@]}"
-#echo "Number of positions in array ""${#ongrid_power_array[@]}"
-#printf '%s\n' "${power_profit_array[@]}"
-#echo "Number of positions in array ""${#power_profit_array[@]}"
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetKpiStationHour\e[0m connection \e[42mOK\e[0m"
-		getKpiStationHour_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetKpiStationHour\e[0m connection \e[41mError\e[0m"
-		getKpiStationHour_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
+# echo "Number of positions in array ""${#hour_of_the_day_array[@]}"
+#printf '%s\n' "${power_iverted[@]}"
+# echo "Number of positions in array ""${#power_iverted_array[@]}"
+# printf '%s\n' "${power_profit[@]}"
 
 
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(echo ${collectTime::-3})
-local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
-
-local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request
-
-echo "Response time: "$difference_in_secounds" s"
-#local curent_time_actually=$(date -d @$curent_time_actually)
-#echo "Actuall time: "$curent_time_actually
-		
-
-
-if [[ $success == "true"  ]];
-	then
-	
-	echo ""
-	echo "Numbers of plants to check: "${#stationCodes_array[@]}
-	echo ""
-	echo -e "\e[93m"$(date "+%d %B %Y" -d @${hour_of_the_day_array[$c]})"\e[0m"
-	echo ""
-	
-	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
-			echo -e "\e[1m	"$(date "+%X %Z" -d @${hour_of_the_day_array[$c]})" \e[0m"${number_plant_array[$c]}" "${stationCode_array[$c]}
-			if [[ ! ${radiation_intensity_array[$c]} == null  ]];
-			then	
-				echo -e "	Total irradiation: "${radiation_intensity_array[$c]}" kWh/m2"
-			fi
-			if [[ ! ${theory_power_array[$c]} == null  ]];
-			then	
-				echo -e "	Theoretical energy: "${theory_power_array[$c]}" kWh"
-			fi
-			if [[ ! ${power_inverted_array[$c]} == null  ]];
-			then	
-				echo -e "	Inverter energy: "${power_inverted_array[$c]}" kWh"
-			fi
-			if [[ ! ${ongrid_power_array[$c]} == null  ]];
-			then	
-				echo -e "	Feed-in energy: "${ongrid_power_array[$c]}" kWh"
-			fi
-			if [[ ! ${power_profit_array[$c]} == null  ]];
-			then	
-				echo -e "	Energy revenue: "${power_profit_array[$c]}" ¥"
-			fi
-			echo ""
-	done
-
-fi
-
-# in case of error
-if [[ $success == "false"  ]];
-	then
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $getKpiStationHour
-		
-fi
-
-echo ""
-
-
-}
-
-
-function getKpiStationDay {
 
 # Request to API getKpiStationDay
-local getKpiStationDay=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationDay  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+getKpiStationDay=$(printf '{"stationCodes": '$station_Code', "collectTime": '$curent_time'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationDay  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
 
-#echo $getKpiStationDay | jq
+# echo $getKpiStationDay | jq
 
+day=( $(echo ''$getKpiStationDay''  | jq '.data[].collectTime' ) )
+power_iverted_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.inverter_power' ) )
+power_profit_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.power_profit' ) )
+perpower_ratio_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.perpower_ratio' ) )
+reduction_total_co2_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.reduction_total_co2' ) )
+reduction_total_coal_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.reduction_total_coal' ) )
 
-local success=$(echo ''$getKpiStationDay''  | jq '.success' )
-local buildCode=$(echo ''$getKpiStationDay''  | jq '.buildCode' )
-local failCode=$(echo ''$getKpiStationDay''  | jq '.failCode' )
-local message=$(echo ''$getKpiStationDay''  | jq '.message' )
-
-	local day_of_the_month=( $(echo ''$getKpiStationDay''  | jq '.data[].collectTime' ) )
-	local stationCode=( $(echo ''$getKpiStationDay''  | jq '.data[].stationCode' ) )
-		local installed_capacity=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.installed_capacity' ) )
-		local radiation_intensity=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.radiation_intensity' ) )	
-		local theory_power=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.theory_power' ) )
-		local performance_ratio=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.performance_ratio' ) )	
-		local power_inverted_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.inverter_power' ) )
-		local ongrid_power=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.ongrid_power' ) )
-		local use_power=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.use_power' ) )		
-		local power_profit_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.power_profit' ) )		
-		local perpower_ratio_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.perpower_ratio' ) )
-		local reduction_total_co2_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.reduction_total_co2' ) )
-		local reduction_total_coal_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.reduction_total_coal' ) )
-		local reduction_total_tree_whole_day=( $(echo ''$getKpiStationDay''  | jq '.data[].dataItemMap.reduction_total_tree' ) )
-
-
-local data_getKpiStationDay=$(echo ''$getKpiStationDay''  | jq '.params' )
-	local currentTime=$(echo ''$data_getKpiStationDay''  | jq '.currentTime' )
-	local collectTime=$(echo ''$data_getKpiStationDay''  | jq '.collectTime' )
-	local stationCodes=$(echo ''$data_getKpiStationDay''  | jq '.stationCodes' )
-
-
-#removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-
-
-# Here comma is our delimiter value to array of stations codes given by user as a parameter in question
-IFS="," read -a stationCodes_array <<< $stationCodes
 
 
 # Conversion of long variable string with days in unix format to bash array 
-eval "day_array=(${day_of_the_month})"
+eval "day_array=(${day})"
 
 #we cut last three digits for corect time and date  in loop
 count_day=0
@@ -1170,21 +440,17 @@ for s in "${day_array[@]}"; do
     (( count_day++ ))
 done
 
-
 # Conversion of long variable string with daily inverter production to array
-eval "stationCode_array=(${stationCode})"
-eval "installed_capacity_array=(${installed_capacity})"
-eval "radiation_intensity_array=(${radiation_intensity})"
-eval "theory_power_array=(${theory_power})"
-eval "performance_ratio_array=(${performance_ratio})"
-eval "power_inverted_whole_day_array=(${power_inverted_whole_day})"
-eval "ongrid_power_array=(${ongrid_power})"
-eval "use_power_array=(${use_power})"
-eval "power_profit_whole_day_array=(${power_profit_whole_day})"
+eval "power_iverted_whole_day_array=(${power_iverted_whole_day})"
+
+# Conversion of long variable string with daily perPower to array
 eval "perpower_ratio_whole_day_array=(${perpower_ratio_whole_day})"
+
+# Conversion of long variable string with daily co2 reduction to array
 eval "reduction_total_co2_whole_day_array=(${reduction_total_co2_whole_day})"
+
+# Conversion of long variable string with daily coal reduction to array
 eval "reduction_total_coal_whole_day_array=(${reduction_total_coal_whole_day})"
-eval "reduction_total_tree_whole_day_array=(${reduction_total_tree_whole_day})"
 
 #printf '%s\n' "${day[@]}"
 #printf '%s\n' "${day_array[@]}"
@@ -1201,174 +467,17 @@ eval "reduction_total_tree_whole_day_array=(${reduction_total_tree_whole_day})"
 #printf '%s\n' "${reduction_total_coal_whole_day[@]}"
 #echo '\n'
 
-
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[42mOK\e[0m"
-		getKpiStationDay_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[41mError\e[0m"
-		getKpiStationDay_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(echo ${collectTime::-3})
-local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
-
-local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request
-
-echo "Response time: "$difference_in_secounds" s"
-#local curent_time_actually=$(date -d @$curent_time_actually)
-#echo "Actuall time: "$curent_time_actually
-		
-if [[ $success == "true"  ]];
-	then
-	
-	echo ""
-	echo "Numbers of plants to check: "${#stationCodes_array[@]}
-	echo ""
-	echo -e "\e[93m"$(date "+%B %Y" -d @${day_array[$c]})"\e[0m"
-	echo ""
-	
-	
-	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
-		echo -e "\e[1m	"$(date "+%A %d %B %Y" -d @${day_array[$c]})" \e[0m"${number_plant_array[$c]}" "${stationCode_array[$c]}
-		if [[ ! ${installed_capacity_array[$c]} == null  ]];
-			then	
-				echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
-		fi
-		if [[ ! ${radiation_intensity_array[$c]} == null  ]];
-			then	
-				echo -e "	Total irradiation: "${radiation_intensity_array[$c]}" kWh/m2" 				
-		fi
-		if [[ ! ${theory_power_array[$c]} == null  ]];
-			then	
-				echo -e "	Theoretical energy: "${theory_power_array[$c]}" kWh"				
-		fi
-		if [[ ! ${performance_ratio_array[$c]} == null  ]];
-			then	
-				echo -e "	Electricity generation efficiency: "${performance_ratio_array[$c]}" kWh" 				
-		fi
-		if [[ ! ${power_inverted_whole_day_array[$c]} == null  ]];
-			then	
-				echo -e "	Inverter energy: "${power_inverted_whole_day_array[$c]}" kWh"				
-		fi
-		if [[ ! ${ongrid_power_array[$c]} == null  ]];
-			then	
-				echo -e "	Feed-in energy: "${ongrid_power_array[$c]}" kWh"				
-		fi
-		if [[ ! ${use_power_array[$c]} == null  ]];
-			then	
-				echo -e "	Power consumption: "${use_power_array[$c]}" kWh"				
-		fi
-		if [[ ! ${power_profit_whole_day_array[$c]} == null  ]];
-			then	
-				echo -e "	Energy revenue: "${power_profit_whole_day_array[$c]}" ¥" 				
-		fi
-		if [[ ! ${perpower_ratio_whole_day_array[$c]} == null  ]];
-			then	
-				echo -e "	Equivalent utilization hours: "${perpower_ratio_whole_day_array[$c]}" h" 				
-		fi
-		if [[ ! ${reduction_total_co2_whole_day_array[$c]} == null  ]];
-			then	
-				echo -e "	CO2 reduction: "${reduction_total_co2_whole_day_array[$c]}" t" 				
-		fi
-		if [[ ! ${reduction_total_coal_whole_day_array[$c]} == null  ]];
-			then	
-				echo -e "	Standard coal savings: "${reduction_total_coal_whole_day_array[$c]}" t" 				
-		fi
-		if [[ ! ${reduction_total_tree_whole_day_array[$c]} == null  ]];
-			then	
-				echo -e "	Equivalent tree planting: "${reduction_total_tree_whole_day_array[$c]}" tree" 				
-		fi
-		echo ""
-	done
-	
-fi
-
-# in case of error
-if [[ $success == "false"  ]];
-	then
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $getKpiStationDay
-		
-fi
-
-echo ""
-
-
-}
-
-
-
-
-function getKpiStationMonth {
-
 # Request to API getKpiStationMonth
-local getKpiStationMonth=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationMonth  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+getKpiStationMonth=$(printf '{"stationCodes": '$station_Code', "collectTime": '$curent_time'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationMonth  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-#echo $getKpiStationMonth | jq
+# echo $getKpiStationMonth | jq
 
-local success=$(echo ''$getKpiStationMonth''  | jq '.success' )
-local buildCode=$(echo ''$getKpiStationMonth''  | jq '.buildCode' )
-local failCode=$(echo ''$getKpiStationMonth''  | jq '.failCode' )
-local message=$(echo ''$getKpiStationMonth''  | jq '.message' )
-
-	local stationCode=( $(echo ''$getKpiStationMonth''  | jq '.data[].stationCode' ) )
-	local month=( $(echo ''$getKpiStationMonth''  | jq '.data[].collectTime' ) )
-		local installed_capacity=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.installed_capacity' ) )
-		local radiation_intensity=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.radiation_intensity' ) )	
-		local theory_power=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.theory_power' ) )
-		local performance_ratio=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.performance_ratio' ) )	
-		local power_inverted_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.inverter_power' ) )
-		local ongrid_power=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.ongrid_power' ) )
-		local use_power=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.use_power' ) )
-		local power_profit_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.power_profit' ) )
-		local perpower_ratio_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.perpower_ratio' ) )
-		local reduction_total_co2_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.reduction_total_co2' ) )
-		local reduction_total_coal_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.reduction_total_coal' ) )
-		local reduction_total_tree_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.reduction_total_tree' ) )
-	
-local data_getKpiStationMonth=$(echo ''$getKpiStationMonth''  | jq '.params' )
-	local currentTime=$(echo ''$data_getKpiStationMonth''  | jq '.currentTime' )
-	local collectTime=$(echo ''$data_getKpiStationMonth''  | jq '.collectTime' )
-	local stationCodes=$(echo ''$data_getKpiStationMonth''  | jq '.stationCodes' )
-
-#removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-
-
-# Here comma is our delimiter value to array of stations codes given by user as a parameter in question
-IFS="," read -a stationCodes_array <<< $stationCodes
-
+month=( $(echo ''$getKpiStationMonth''  | jq '.data[].collectTime' ) )
+power_iverted_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.inverter_power' ) )
+power_profit_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.power_profit' ) )
+perpower_ratio_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.perpower_ratio' ) )
+reduction_total_co2_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.reduction_total_co2' ) )
+reduction_total_coal_whole_month=( $(echo ''$getKpiStationMonth''  | jq '.data[].dataItemMap.reduction_total_coal' ) )
 
 # Conversion of long variable string with months in unix format to bash array 
 eval "month_array=(${month})"
@@ -1381,20 +490,17 @@ for s in "${month_array[@]}"; do
     (( count_month++ ))
 done
 
-# Conversion of long variable string to array
-eval "stationCode_array=(${stationCode})"
-eval "installed_capacity_whole_month_array=(${installed_capacity})"
-eval "radiation_intensity_whole_month_array=(${radiation_intensity})"
-eval "theory_power_whole_month_array=(${theory_power})"
-eval "performance_ratio_whole_month_array=(${performance_ratio})"
-eval "power_inverted_whole_month_array=(${power_inverted_whole_month})"
-eval "ongrid_power_whole_month_array=(${ongrid_power})"
-eval "use_power_whole_month_array=(${use_power})"
-eval "power_profit_whole_month_array=(${power_profit_whole_month})"
+# Conversion of long variable string with monthly inverter production to array
+eval "power_iverted_whole_month_array=(${power_iverted_whole_month})"
+
+# Conversion of long variable string with monthly inverter DC/AC conversion losses to array
 eval "perpower_ratio_whole_month_array=(${perpower_ratio_whole_month})"
+
+# Conversion of long variable string with monthly co2 reduction to array
 eval "reduction_total_co2_whole_month_array=(${reduction_total_co2_whole_month})"
+
+# Conversion of long variable string with monthly coal reduction to array
 eval "reduction_total_coal_whole_month_array=(${reduction_total_coal_whole_month})"
-eval "reduction_total_tree_whole_month_array=(${reduction_total_tree_whole_month})"
 
 
 # printf '%s\n' "${month[@]}"
@@ -1411,171 +517,20 @@ eval "reduction_total_tree_whole_month_array=(${reduction_total_tree_whole_month
 # echo '\n'
 # printf '%s\n' "${reduction_total_coal_whole_month[@]}"
 
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetKpiStationMonth\e[0m connection \e[42mOK\e[0m"
-		getKpiStationMonth_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetKpiStationMonth\e[0m connection \e[41mError\e[0m"
-		getKpiStationMonth_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(echo ${collectTime::-3})
-local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
-
-local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request
-
-echo "Response time: "$difference_in_secounds" s"
-#local curent_time_actually=$(date -d @$curent_time_actually)
-#echo "Actuall time: "$curent_time_actually
-
-if [[ $success == "true"  ]];
-	then
-	
-	echo ""
-	echo "Numbers of plants to check: "${#stationCodes_array[@]}
-	echo ""
-	echo -e "\e[93m"$(date "+%Y" -d @${month_array[0]})"\e[0m"
-	echo ""
-	
-	
-	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
-		echo -e "\e[1m	"$(date "+%B %Y" -d @${month_array[$c]})" \e[0m"${number_plant_array[$c]}" "${stationCode_array[$c]}
-		if [[ ! ${installed_capacity_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Installed capacity: "${installed_capacity_whole_month_array[$c]}" kWp"				
-		fi
-		if [[ ! ${radiation_intensity_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Total irradiation: "${radiation_intensity_whole_month_array[$c]}" kWh/m2" 				
-		fi
-		if [[ ! ${theory_power_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Theoretical energy: "${theory_power_whole_month_array[$c]}" kWh"				
-		fi
-		if [[ ! ${performance_ratio_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Electricity generation efficiency: "${performance_ratio_whole_month_array[$c]}" kWh" 				
-		fi
-		if [[ ! ${power_inverted_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Inverter energy: "${power_inverted_whole_month_array[$c]}" kWh"				
-		fi
-		if [[ ! ${ongrid_power_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Feed-in energy: "${ongrid_power_whole_month_array[$c]}" kWh"				
-		fi
-		if [[ ! ${use_power_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Power consumption: "${use_power_whole_month_array[$c]}" kWh"				
-		fi
-		if [[ ! ${power_profit_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Energy revenue: "${power_profit_whole_month_array[$c]}" ¥" 				
-		fi
-		if [[ ! ${perpower_ratio_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Equivalent utilization hours: "${perpower_ratio_whole_month_array[$c]}" h" 				
-		fi
-		if [[ ! ${reduction_total_co2_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	CO2 reduction: "${reduction_total_co2_whole_month_array[$c]}" t" 				
-		fi
-		if [[ ! ${reduction_total_coal_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Standard coal savings: "${reduction_total_coal_whole_month_array[$c]}" t" 				
-		fi
-		if [[ ! ${reduction_total_tree_whole_month_array[$c]} == null  ]];
-			then	
-				echo -e "	Equivalent tree planting: "${reduction_total_tree_whole_month_array[$c]}" tree" 				
-		fi
-		echo ""
-	done
-	
-fi
-
-# in case of error
-if [[ $success == "false"  ]];
-	then
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $getKpiStationMonth
-		
-fi
-
-echo ""
-}
-
-
-
-function getKpiStationYear {
-
-
 # Request to API getKpiStationYear
-local getKpiStationYear=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+getKpiStationYear=$(printf '{"stationCodes": '$station_Code', "collectTime": '$curent_time'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
 
-#echo $getKpiStationYear | jq
+# echo $getKpiStationYear | jq
 
-local success=$(echo ''$getKpiStationYear''  | jq '.success' )
-local buildCode=$(echo ''$getKpiStationYear''  | jq '.buildCode' )
-local failCode=$(echo ''$getKpiStationYear''  | jq '.failCode' )
-local message=$(echo ''$getKpiStationYear''  | jq '.message' )
-
-	local stationCode=( $(echo ''$getKpiStationYear''  | jq '.data[].stationCode' ) )
-	local year=( $(echo ''$getKpiStationYear''  | jq '.data[].collectTime' ) )
-		local installed_capacity_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.installed_capacity' ) )
-		local radiation_intensity=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.radiation_intensity' ) )
-		local theory_power=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.theory_power' ) )
-		local performance_ratio=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.performance_ratio' ) )	
-		local power_iverted_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.inverter_power' ) )
-		local ongrid_power=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.ongrid_power' ) )
-		local use_power=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.use_power' ) )
-		local power_profit_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.power_profit' ) )
-		local perpower_ratio_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.perpower_ratio' ) )
-		local reduction_total_co2_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.reduction_total_co2' ) )
-		local reduction_total_coal_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.reduction_total_coal' ) )
-		local reduction_total_tree_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.reduction_total_tree' ) )
-
-local data_getKpiStationYear=$(echo ''$getKpiStationYear''  | jq '.params' )
-	local currentTime=$(echo ''$data_getKpiStationYear''  | jq '.currentTime' )
-	local collectTime=$(echo ''$data_getKpiStationYear''  | jq '.collectTime' )
-	local stationCodes=$(echo ''$data_getKpiStationYear''  | jq '.stationCodes' )
-
-#removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-
-# Here comma is our delimiter value to array of stations codes given by user as a parameter in question
-IFS="," read -a stationCodes_array <<< $stationCodes
-
+year=( $(echo ''$getKpiStationYear''  | jq '.data[].collectTime' ) )
+installed_capacity_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.installed_capacity' ) )
+power_iverted_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.inverter_power' ) )
+power_profit_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.power_profit' ) )
+perpower_ratio_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.perpower_ratio' ) )
+reduction_total_co2_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.reduction_total_co2' ) )
+reduction_total_coal_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.reduction_total_coal' ) )
+reduction_total_tree_year=( $(echo ''$getKpiStationYear''  | jq '.data[].dataItemMap.reduction_total_tree' ) )
 
 # Conversion of long variable string with year in unix format to bash array 
 eval "year_array=(${year})"
@@ -1589,18 +544,18 @@ for s in "${year_array[@]}"; do
 done
 
 # Conversion of long variable string with yearly inverter production to array
-eval "stationCode_array=(${stationCode})"
-eval "installed_capacity_whole_year_array=(${installed_capacity_year})"
-eval "radiation_intensity_whole_year_array=(${radiation_intensity})"
-eval "theory_power_whole_year_array=(${theory_power})"
-eval "performance_ratio_whole_year_array=(${performance_ratio})"
 eval "power_iverted_year_array=(${power_iverted_year})"
-eval "ongrid_power_year_array=(${ongrid_power})"
-eval "use_power_year_array=(${use_power})"
-eval "power_profit_year_array=(${power_profit_year})"
+
+# Conversion of long variable string with yearly inverter DC/AC conversion losses to array
 eval "perpower_ratio_year_array=(${perpower_ratio_year})"
+
+# Conversion of long variable string with yearly co2 reduction to array
 eval "reduction_total_co2_year_array=(${reduction_total_co2_year})"
+
+# Conversion of long variable string with yearly coal reduction to array
 eval "reduction_total_coal_year_array=(${reduction_total_coal_year})"
+
+# Conversion of long variable string with yearly trees to array
 eval "reduction_total_tree_year_array=(${reduction_total_tree_year})"
 
 
@@ -1614,122 +569,17 @@ eval "reduction_total_tree_year_array=(${reduction_total_tree_year})"
 # printf '%s\n' "${reduction_total_coal_year[@]}"
 # printf '%s\n' "${reduction_total_tree_year[@]}"
 
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetKpiStationYear\e[0m connection \e[42mOK\e[0m"
-		getKpiStationYear_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetKpiStationYear\e[0m connection \e[41mError\e[0m"
-		getKpiStationYear_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(echo ${collectTime::-3})
-local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
-
-local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request
-
-echo "Response time: "$difference_in_secounds" s"
-#local curent_time_actually=$(date -d @$curent_time_actually)
-#echo "Actuall time: "$curent_time_actually
-
-if [[ $success == "true"  ]];
-	then
-	
-	echo ""
-	echo "Numbers of plants to check: "${#stationCodes_array[@]}
-	echo ""
-	echo ""
-	
-	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
-		echo -e "\e[1m	"$(date "+%Y" -d @${year_array[$c]})" \e[0m"${stationCode_array[$c]}
-		if [[ ! ${installed_capacity_whole_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Installed capacity: "${installed_capacity_whole_year_array[$c]}" kWp"				
-		fi
-		if [[ ! ${radiation_intensity_whole_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Total irradiation: "${radiation_intensity_whole_year_array[$c]}" kWh/m2" 				
-		fi
-		if [[ ! ${theory_power_whole_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Theoretical energy: "${theory_power_whole_year_array[$c]}" kWh"				
-		fi
-		if [[ ! ${performance_ratio_whole_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Electricity generation efficiency: "${performance_ratio_whole_year_array[$c]}" kWh" 				
-		fi
-		if [[ ! ${power_iverted_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Inverter energy: "${power_iverted_year_array[$c]}" kWh"				
-		fi
-		if [[ ! ${ongrid_power_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Feed-in energy: "${ongrid_power_year_array[$c]}" kWh"				
-		fi
-		if [[ ! ${use_power_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Power consumption: "${use_power_year_array[$c]}" kWh"				
-		fi
-		if [[ ! ${power_profit_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Energy revenue: "${power_profit_year_array[$c]}" ¥" 				
-		fi
-		if [[ ! ${perpower_ratio_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Equivalent utilization hours: "${perpower_ratio_year_array[$c]}" h" 				
-		fi
-		if [[ ! ${reduction_total_co2_year_array[$c]} == null  ]];
-			then	
-				echo -e "	CO2 reduction: "${reduction_total_co2_year_array[$c]}" t" 				
-		fi
-		if [[ ! ${reduction_total_coal_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Standard coal savings: "${reduction_total_coal_year_array[$c]}" t" 				
-		fi
-		if [[ ! ${reduction_total_tree_year_array[$c]} == null  ]];
-			then	
-				echo -e "	Equivalent tree planting: "${reduction_total_tree_year_array[$c]}" tree" 				
-		fi
-		echo ""
-	done
-	
-fi
-
-}
 
 
 
 
 
-: <<'END_COMMENT'
+
+
+
+
+
+
 
 
 # Sending data to influxDB
@@ -1765,7 +615,7 @@ count_hours=0
 for s in "${hour_of_the_day_array[@]}"; do 
 
 	#Hourly power production today
-	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=hourly value='${power_inverted_array[$count_hours]}' '${hour_of_the_day_array[$count_hours]}''
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=hourly value='${power_iverted_array[$count_hours]}' '${hour_of_the_day_array[$count_hours]}''
 	(( count_hours++ ))
 done
 
@@ -1856,43 +706,3 @@ for s in "${year_array[@]}"; do
 
 	(( count_years++ ))
 done
-
-END_COMMENT
-
-# Function to login to API
-login_to_API
-
-if [[ $login_status == true  ]];
-then	
-		# We start function to get list of plants
-		getStationList
-		
-		if [[ $getStationList_connection == true  ]];
-		then	
-			# We start function to get list of devices inside one particular plant
-			getDevList ${stations_Code_array[0]} $number_of_plants
-			getStationRealKpi ${stations_Code_array[0]}	
-			getKpiStationHour ${stations_Code_array[0]} $curent_time
-			getKpiStationDay ${stations_Code_array[0]} $curent_time
-			getKpiStationMonth ${stations_Code_array[0]} $curent_time
-			getKpiStationYear ${stations_Code_array[0]} $curent_time
-			
-			# time Sat Jan 30 2021 11:39:40 in unix time ms format for tests
-			#1612006780447
-			
-				
-		elif [[ $getStationList_connection == false ]];
-		then
-			exit
-		else
-			exit
-		fi
-		
-elif [[ $login_status == false ]];
-then	
-		exit
-else
-	exit
-fi
-
-
