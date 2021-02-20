@@ -2,14 +2,14 @@
 
 # Tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
 # This tool use oficial FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer 
-# You must have installed on your linux tools like curl, jq, httpie
-# sudo apt-get install curl
+# You must have installed on your linux tools like jq, httpie, curl
+#
 # sudo apt-get install jq
 # sudo apt-get install httpie
-
+# sudo apt install curl
+#
 # To use this script you need account on Huawei FusionSolar https://eu5.fusionsolar.huawei.com and developer privilege.
 # Contact service team at eu_inverter_support@huawei.com to create an openAPI account for your plant.
-
 # in email like this
 #Hi, I hereby request an openAPI user account to access the data from my inverter(s) through the new #FusionSolar API:
 #
@@ -21,31 +21,123 @@
 #
 #SN Inverter: <--here data-->
 
-userName="<--here data-->"
-systemCode="<--here data-->"
+# Configuration section
+#----------------------
+userName="<--here data-->" #your login name to openAPI user account
+systemCode="<--here data-->" #Password of the third-party system openAPI user account
+#----------------------
 
+Error_Codes_List () {
+
+#Errors which are possible during login and connection to Huawei SolarFussion API based on documentation SmartPVMS.V300R006C10_API_Northbound.Interface.Reference.1.pdf pages 109-110. and own experiments.
+  
+if [ $1 == "0"  ];
+then
+	echo "Normal Status"
+elif [ $1 == "20001"  ];
+then	
+	echo "The third-party system ID does not exist."
+elif [ $1 == "305"  ] || [ $1 = "306" ];
+then	
+	echo "You are not in the login state. You need to log in again."
+elif [ $1 == "401"  ];
+then	
+	echo "You do not have the related data interface permission."
+elif [ $1 == "407"  ];
+then	
+	echo "The interface access frequency is too high."
+elif [ $1 == "413"  ];
+then	
+	echo "Your IP is locked."
+elif [ $1 == "20002"  ];
+then	
+	echo "The third-party system is forbidden."
+elif [ $1 == "20003"  ];
+then	
+	echo "The third-party system has expired."
+elif [ $1 == "20004"  ];
+then	
+	echo "The server is abnormal."
+elif [ $1 == "20005"  ];
+then	
+	echo "The device ID cannot be empty."
+elif [ $1 == "20006"  ];
+then	
+	echo "Some devices do not match the device type."
+elif [ $1 == "20007"  ];
+then	
+	echo "The system does not have the desired power plant resources."
+elif [ $1 == "20008"  ];
+then	
+	echo "The system does not have the desired device resources."
+elif [ $1 == "20009"  ];
+then	
+	echo "Queried KPIs are not configured in the system."
+elif [ $1 == "20010"  ];
+then	
+	echo "The plant list cannot be empty."
+elif [ $1 == "20011"  ];
+then	
+	echo "The device list cannot be empty."
+elif [ $1 == "20012"  ];
+then	
+	echo "The query time cannot be empty."
+elif [ $1 == "20013"  ];
+then	
+	echo "The device type is incorrect. The interface does not support operations on some devices."
+elif [ $1 == "20014" ] || [ $1 = "20015" ];
+then	
+	echo "A maximum of 100 plants can be queried at a time."
+elif [ $1 == "20016" ] || [ $1 = "20017" ];
+then	
+	echo "A maximum of 100 devices can be queried at a time."
+elif [ $1 == "20018"  ];
+then	
+	echo "A maximum of 10 devices can be manipulated at a time."
+elif [ $1 == "20019"  ];
+then	
+	echo "The switch type is incorrect. 1 and 2 indicate switch-on and switch-off respectively."
+elif [ $1 == "20020"  ];
+then	
+	echo "The upgrade package specific to the device version cannot be found"
+elif [ $1 == "20021"  ];
+then	
+	echo "The upgrade file does not exist."
+elif [ $1 == "20022"  ];
+then	
+	echo "The upgrade records of the devices in the system are not found."
+elif [ $1 == "20023"  ];
+then	
+	echo "The query start time cannot be later than the query end time."
+elif [ $1 == "20024"  ];
+then	
+	echo "The language cannot be empty."
+elif [ $1 == "20025"  ];
+then	
+	echo "The language parameter value is incorrect."
+elif [ $1 == "20026"  ];
+then	
+	echo "Only data of the latest 365 days can be queried."
+elif [ $1 == "20027"  ];
+then	
+	echo "The query time period cannot span more than 31 days."
+else
+	echo "Unknown error."
+fi
+
+}
 
 # Login to FusionSolarAPI with Username and Password
-logowanie=$(curl -X POST -H "Content-Type: application/json" -d '{userName:"'$userName'",systemCode:"'$systemCode'"}' -i https://eu5.fusionsolar.huawei.com/thirdData/login )
+logowanie=$(echo '{userName: "'$userName'", systemCode: "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
 
 
-#Operations on string for 
-IFS='{'
-array=( $logowanie )
+#show as answer of of API for question
 #echo $logowanie
-#echo "value = ${array[1]}"
-question=${array[1]}
+
+#coping a long string with answer to new variable from which we extract JOSN answer
+logowanie_for_josn_extraction=$(echo $logowanie)
 
 
-IFS=','
-array=( $question )
-#echo "value = ${array[5]}"
-question=${array[5]}
-
-#echo "${question::-1}"
-
-
-#Operations on string for extract xsrl token necessary for next questions
 IFS=';'
 array=( $logowanie )
 #echo "value = ${array[4]}"
@@ -60,26 +152,130 @@ logowanie=${array[4]}
 
 IFS='='
 array=( $logowanie )
-header="XSRF-TOKEN"
 xsrf_token=${array[1]}
 
 
 IFS=':'
 array=( $jsesionid )
-#echo "value = ${array[1]}"
 jsesionid=${array[1]}
 
 IFS='='
 array=( $jsesionid )
-header_jsesion="JSESSIONID"
 jsesionid=${array[1]}
 
+#echo ""
+#echo "XSRF-TOKEN: "$xsrf_token
+#echo "JSESSIONID: "$jsesionid
+#echo ""
+
+#extracting from rubish string JOSN answer part
+array2=( $logowanie_for_josn_extraction )
+
+
+usucesfully_login=$(echo ${array2[7]})
+sucesfully_login=$(echo ${array2[11]})
+
+if [[ $usucesfully_login =~ "false"  ]];
+	then		
+			echo ""
+			echo -e "Login to server \e[41mError :(\e[0m"
+			josn=$(echo ${array2[7]})
+elif [[ $sucesfully_login =~ "true"  ]];
+	then			
+			echo ""
+			echo -e "Login to server \e[42mOK :)\e[0m"
+			josn=$(echo ${array2[11]})
+else
+	echo ""
+	echo -e "Problems with conection to Huawei Server" 
+fi
+#echo $josn
+
+
+josn_final=`echo "$josn" | grep -o '{.*'`
+
+#show response from API in JOSN
+#echo $josn_final | jq
+
+
+success=$(echo ''$josn_final''  | jq '.success' )
+buildCode=$(echo ''$josn_final''  | jq '.buildCode' )
+failCode=$(echo ''$josn_final''  | jq '.failCode' )
+message=$(echo ''$josn_final''  | jq '.message' )
+data=$(echo ''$josn_final''  | jq '.data' )
+
+if [[ $usucesfully_login =~ "false"  ]];
+	then		
+		params=$(echo ''$josn_final''  | jq '.params' )	
+			currentTime=$(echo ''$josn_final''  | jq '.params.currentTime' )
+			systemCode=$(echo ''$josn_final''  | jq '.params.systemCode' )
+			userName=$(echo ''$josn_final''  | jq '.params.userName' )
+elif [[ $sucesfully_login =~ "true"  ]];
+	then
+		params=$(echo ''$josn_final''  | jq '.params' )	
+fi
+
+
+#removing " on begining and end
+buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
+
+#echo "Request success or failure flag: " $success
+if [[ $success == "true"  ]];
+	then	
+		echo "Username & Password accepted by Huawei Server"
+		login_status=true
+elif [[ $success == "false" ]];
+	then
+		echo "Username & Password not accepted by Huawei Server"
+		login_status=false
+else
+	echo ""
+	echo -e "\e[41mNetwork Error :(\e[0m" 
+	echo "Returned data: "$data
+	#program stops
+	exit
+fi
+
+#echo "Error code: " $failCode " (0: Normal)"
+# we call to function with errors list
+Error_Codes_List $failCode
+
+#echo "Optional message: " $message
+if [[ ! $message == "\"\""  ]];
+then	
+	echo "Optional message: " $message
+fi
+
+echo "Build Code: "$buildCode
+
+if [[ $usucesfully_login =~ "false"  ]];
+then	
+	#shorter time for read in unix
+	local curent_time_actually=$(echo ${currentTime::-3})
+	local curent_time_actually=$(date -d @$curent_time_actually)
+	echo "Time of your Request to API: "$curent_time_actually
+	
+	echo "Your data:"
+	echo "	Username: "$userName
+	echo "	Password: "$systemCode
+
+fi
+		
+if [[ $sucesfully_login =~ "true"  ]];
+then	
+	if [[ ! $params == "null"  ]];
+	then	
+		echo "Request parameter: "$params
+	fi
+fi
+
+
+if [[ ! $data == "null"  ]];
+then	
+	echo "Returned data: "$data
+fi
+
 echo ""
-#echo $header
-echo ""
-#echo $xsrf_token
-echo ""
-#echo $jsesionid
 
 
 # Request to API getStationList
@@ -706,3 +902,10 @@ for s in "${year_array[@]}"; do
 
 	(( count_years++ ))
 done
+
+
+
+
+
+
+
