@@ -6276,7 +6276,6 @@ local devTypeId="$(echo "$devTypeId" | tr -d '"')"
 fi
 	
 
-
 # Here comma is our delimiter value to array of stations codes given by user as a parameter in question
 IFS="," read -a devIds_array <<< $devIds
 IFS="," read -a devTypeId_array <<< $devTypeId
@@ -6345,7 +6344,7 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 		Device_type_ID ${devTypeId_array[$a]}
 		echo -e "\e[0m ID: "${devId_array[$a]}
 		echo ""
-		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y %Z" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
 		echo ""
 		
 		#loop for every day
@@ -6419,7 +6418,7 @@ if [[ $success == "true"  ]] && [[  $2 == 39  ]];
 		Device_type_ID ${devTypeId_array[$a]}
 		echo -e "\e[0m ID: "${devId_array[$a]}
 		echo ""
-		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y %Z" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
 		echo ""
 		
 		#loop for every day
@@ -6433,12 +6432,7 @@ if [[ $success == "true"  ]] && [[  $2 == 39  ]];
 		
 		#special loop  for checking if inverter is disconnected
 		#if [[ ! $hex == "0"  ]];
-		#then
-		
-		eval "charge_cap_array=(${charge_cap})"
-		eval "discharge_cap_array=(${discharge_cap})"
-		eval "charge_time_array=(${charge_time})"
-		eval "discharge_time_array=(${discharge_time})"	
+		#then	
 			
 				
 		if [[ ! ${charge_cap_array[$c]} == null  ]];
@@ -6489,7 +6483,7 @@ if [[ $success == "true"  ]] && [[  $2 == 14  ]];
 		Device_type_ID ${devTypeId_array[$a]}
 		echo -e "\e[0m ID: "${devId_array[$a]}
 		echo ""
-		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y %Z" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
 		echo ""
 		
 		#loop for every day
@@ -6563,7 +6557,7 @@ if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 		Device_type_ID ${devTypeId_array[$a]}
 		echo -e "\e[0m ID: "${devId_array[$a]}
 		echo ""
-		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y %Z" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
 		echo ""
 		
 		#loop for every day
@@ -6639,13 +6633,51 @@ function getDevKpiMonth {
 # Request to API getKpiStationYear
 local getDevKpiMonth=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiMonth  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-echo $getDevKpiMonth | jq
+#echo $getDevKpiMonth | jq
 
 local success=$(echo ''$getDevKpiMonth''  | jq '.success' )
 local buildCode=$(echo ''$getDevKpiMonth''  | jq '.buildCode' )
 local failCode=$(echo ''$getDevKpiMonth''  | jq '.failCode' )
 local message=$(echo ''$getDevKpiMonth''  | jq '.message' )
 
+#we have inverter
+if [[ $2 == 1  ]];
+then	
+
+local devId=$(echo ''$getDevKpiMonth''  | jq '.data[].devId' )
+	local collectTime_every_Month=$(echo ''$getDevKpiMonth''  | jq '.data[].collectTime' )	
+		local installed_capacity=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.installed_capacity' )		 
+		local product_power=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.product_power' )		 
+		local perpower_ratio=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.perpower_ratio' )
+			 
+
+local data_getDevKpiMonth=$(echo ''$getDevKpiMonth''  | jq '.params' )
+	local currentTime=$(echo ''$data_getDevKpiMonth''  | jq '.currentTime' )
+	local collectTime=$(echo ''$data_getDevKpiMonth''  | jq '.collectTime' )
+	local devIds=$(echo ''$data_getDevKpiMonth''  | jq '.devIds' )
+	local devTypeId=$(echo ''$data_getDevKpiMonth''  | jq '.devTypeId' )
+
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "collectTime_array=(${collectTime_every_Month})"
+		eval "installed_capacity_array=(${installed_capacity})"
+		eval "product_power_array=(${product_power})"
+		eval "perpower_ratio_array=(${perpower_ratio})"
+
+#we have Battery
+elif [[ $2 == 39  ]];
+then
+local devId=$(echo ''$getDevKpiMonth''  | jq '.data[].devId' )
+	local collectTime_every_Month=$(echo ''$getDevKpiMonth''  | jq '.data[].collectTime' )
+		local charge_cap=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.charge_cap' )
+		local discharge_cap=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.discharge_cap' )
+		local charge_time=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.charge_time' )
+		local discharge_time=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.discharge_time' )
 
 local data_getDevKpiMonth=$(echo ''$getDevKpiMonth''  | jq '.params' )
 	local currentTime=$(echo ''$data_getDevKpiMonth''  | jq '.currentTime' )
@@ -6653,12 +6685,85 @@ local data_getDevKpiMonth=$(echo ''$getDevKpiMonth''  | jq '.params' )
 	local devIds=$(echo ''$data_getDevKpiMonth''  | jq '.devIds' )
 	local devTypeId=$(echo ''$data_getDevKpiMonth''  | jq '.devTypeId' )
 	
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "collectTime_array=(${collectTime_every_Month})"
+		eval "charge_cap_array=(${charge_cap})"
+		eval "discharge_cap_array=(${discharge_cap})"
+		eval "charge_time_array=(${charge_time})"
+		eval "discharge_time_array=(${discharge_time})"
+
+#we have Central inverter
+elif [[ $2 == 15  ]];	
+then	
+
+local devId=$(echo ''$getDevKpiMonth''  | jq '.data[].devId' )
+	local collectTime_every_Month=$(echo ''$getDevKpiMonth''  | jq '.data[].collectTime' )	
+		local installed_capacity=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.installed_capacity' )		 
+		local product_power=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.product_power' )		 
+		local perpower_ratio=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.perpower_ratio' )
+			 
+
+local data_getDevKpiMonth=$(echo ''$getDevKpiMonth''  | jq '.params' )
+	local currentTime=$(echo ''$data_getDevKpiMonth''  | jq '.currentTime' )
+	local collectTime=$(echo ''$data_getDevKpiMonth''  | jq '.collectTime' )
+	local devIds=$(echo ''$data_getDevKpiMonth''  | jq '.devIds' )
+	local devTypeId=$(echo ''$data_getDevKpiMonth''  | jq '.devTypeId' )
+
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "collectTime_array=(${collectTime_every_Month})"
+		eval "installed_capacity_array=(${installed_capacity})"
+		eval "product_power_array=(${product_power})"
+		eval "perpower_ratio_array=(${perpower_ratio})"
+		
+#we have Smart Energy Center
+elif [[ $2 == 38  ]];			
+then	
+
+local devId=$(echo ''$getDevKpiMonth''  | jq '.data[].devId' )
+	local collectTime_every_Month=$(echo ''$getDevKpiMonth''  | jq '.data[].collectTime' )	
+		local installed_capacity=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.installed_capacity' )		 
+		local product_power=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.product_power' )		 
+		local perpower_ratio=$(echo ''$getDevKpiMonth''  | jq '.data[].dataItemMap.perpower_ratio' )
+			 
+
+local data_getDevKpiMonth=$(echo ''$getDevKpiMonth''  | jq '.params' )
+	local currentTime=$(echo ''$data_getDevKpiMonth''  | jq '.currentTime' )
+	local collectTime=$(echo ''$data_getDevKpiMonth''  | jq '.collectTime' )
+	local devIds=$(echo ''$data_getDevKpiMonth''  | jq '.devIds' )
+	local devTypeId=$(echo ''$data_getDevKpiMonth''  | jq '.devTypeId' )
+
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "collectTime_array=(${collectTime_every_Month})"
+		eval "installed_capacity_array=(${installed_capacity})"
+		eval "product_power_array=(${product_power})"
+		eval "perpower_ratio_array=(${perpower_ratio})"
+
+fi
 
 #removing " on begining and end
 local buildCode="$(echo "$buildCode" | tr -d '"')"
 
 # Here comma is our delimiter value to array of stations codes given by user as a parameter in question
 IFS="," read -a devIds_array <<< $devIds
+IFS="," read -a devTypeId_array <<< $devTypeId
 
 
 
@@ -6708,7 +6813,256 @@ echo "Response time: "$difference_in_secounds" s"
 #local curent_time_actually=$(date -d @$curent_time_actually)
 #echo "Actuall time: "$curent_time_actually
 
+# if we have inverter
+if [[ $success == "true"  ]] && [[  $2 == 1  ]];
+	then
+	
+	echo ""
+	echo "Numbers of Devices to check: "${#devIds_array[@]}
+	echo ""
 
+	
+	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
+	do
+	
+		echo -e "\e[93m \c" 
+		Device_type_ID ${devTypeId_array[$a]}
+		echo -e "\e[0m ID: "${devId_array[$a]}
+		echo ""
+		echo -e "	Every month from year: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+		echo ""
+		
+		#loop for every day
+		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
+		do
+		
+
+		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
+		echo -e "	\e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+		
+		
+		#special loop  for checking if inverter is disconnected
+		#if [[ ! $hex == "0"  ]];
+		#then
+		
+				
+		if [[ ! ${installed_capacity_array[$c]} == null  ]];
+		then	
+			echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
+		fi
+	 	if [[ ! ${product_power_array[$c]} == null  ]];
+		then	
+			echo -e "	Energy: "${product_power_array[$c]}" kWh"				
+		fi	
+		if [[ ! ${perpower_ratio_array[$c]} == null  ]];
+		then	
+			echo -e "	Equivalent utilization hours: "${perpower_ratio_array[$c]}" h"				
+		fi
+
+		echo ""
+		
+		#special for checking if inverter is diconected 
+		#else
+		#	echo -e "	No any Real-time data when device is disconected!"
+		
+		#special loop finish for checking if inverter is diconected 
+		#fi
+		
+		#end of for loop for presentation data every 5minutes
+		done
+
+	done
+	
+fi
+
+# if we have Battery
+if [[ $success == "true"  ]] && [[  $2 == 39  ]];
+	then
+	
+	echo ""
+	echo "Numbers of Devices to check: "${#devIds_array[@]}
+	echo ""
+
+	
+	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
+	do
+	
+		echo -e "\e[93m \c" 
+		Device_type_ID ${devTypeId_array[$a]}
+		echo -e "\e[0m ID: "${devId_array[$a]}
+		echo ""
+		echo -e "	Every month from year: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+		echo ""
+		
+		#loop for every day
+		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
+		do
+		
+
+		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
+		echo -e "	\e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+		
+		
+		#special loop  for checking if inverter is disconnected
+		#if [[ ! $hex == "0"  ]];
+		#then
+					
+				
+		if [[ ! ${charge_cap_array[$c]} == null  ]];
+		then	
+			echo -e "	Charging capacity: "${charge_cap_array[$c]}" kWh"				
+		fi
+	 	if [[ ! ${discharge_cap_array[$c]} == null  ]];
+		then	
+			echo -e "	Discharging capacity: "${discharge_cap_array[$c]}" kWh"				
+		fi	
+		if [[ ! ${charge_time_array[$c]} == null  ]];
+		then	
+			echo -e "	Charging duration: "${charge_time_array[$c]}" h"				
+		fi
+		if [[ ! ${discharge_time_array[$c]} == null  ]];
+		then	
+			echo -e "	Discharge duration: "${discharge_time_array[$c]}" h"				
+		fi
+		echo ""
+		
+		#special for checking if inverter is diconected 
+		#else
+		#	echo -e "	No any Real-time data when device is disconected!"
+		
+		#special loop finish for checking if inverter is diconected 
+		#fi
+		
+		#end of for loop for presentation data every 5minutes
+		done
+
+	done
+
+fi
+
+#if we have Central inverter
+if [[ $success == "true"  ]] && [[  $2 == 14  ]];
+	then
+	
+	echo ""
+	echo "Numbers of Devices to check: "${#devIds_array[@]}
+	echo ""
+
+	
+	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
+	do
+	
+		echo -e "\e[93m \c" 
+		Device_type_ID ${devTypeId_array[$a]}
+		echo -e "\e[0m ID: "${devId_array[$a]}
+		echo ""
+		echo -e "	Every month from year: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+		echo ""
+		
+		#loop for every day
+		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
+		do
+		
+
+		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
+		echo -e "	\e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+		
+		
+		#special loop  for checking if inverter is disconnected
+		#if [[ ! $hex == "0"  ]];
+		#then
+		
+				
+		if [[ ! ${installed_capacity_array[$c]} == null  ]];
+		then	
+			echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
+		fi
+	 	if [[ ! ${product_power_array[$c]} == null  ]];
+		then	
+			echo -e "	Energy: "${product_power_array[$c]}" kWh"				
+		fi	
+		if [[ ! ${perpower_ratio_array[$c]} == null  ]];
+		then	
+			echo -e "	Equivalent utilization hours: "${perpower_ratio_array[$c]}" h"				
+		fi
+
+		echo ""
+		
+		#special for checking if inverter is diconected 
+		#else
+		#	echo -e "	No any Real-time data when device is disconected!"
+		
+		#special loop finish for checking if inverter is diconected 
+		#fi
+		
+		#end of for loop for presentation data every 5minutes
+		done
+
+	done
+
+fi
+
+#if we have Smart Energy Center
+if [[ $success == "true"  ]] && [[  $2 == 38  ]];
+	then
+	
+	echo ""
+	echo "Numbers of Devices to check: "${#devIds_array[@]}
+	echo ""
+
+	
+	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
+	do
+	
+		echo -e "\e[93m \c" 
+		Device_type_ID ${devTypeId_array[$a]}
+		echo -e "\e[0m ID: "${devId_array[$a]}
+		echo ""
+		echo -e "	Every month from year: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+		echo ""
+		
+		#loop for every day
+		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
+		do
+		
+
+		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
+		echo -e "	\e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+		
+		
+		#special loop  for checking if inverter is disconnected
+		#if [[ ! $hex == "0"  ]];
+		#then
+		
+				
+		if [[ ! ${installed_capacity_array[$c]} == null  ]];
+		then	
+			echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
+		fi
+	 	if [[ ! ${product_power_array[$c]} == null  ]];
+		then	
+			echo -e "	Energy: "${product_power_array[$c]}" kWh"				
+		fi	
+		if [[ ! ${perpower_ratio_array[$c]} == null  ]];
+		then	
+			echo -e "	Equivalent utilization hours: "${perpower_ratio_array[$c]}" h"				
+		fi
+		
+		echo ""
+		
+		#special for checking if inverter is diconected 
+		#else
+		#	echo -e "	No any Real-time data when device is disconected!"
+		
+		#special loop finish for checking if inverter is diconected 
+		#fi
+		
+		#end of for loop for presentation data every 5minutes
+		done
+
+	done
+
+fi
 
 # in case of error
 if [[ $success == "false"  ]];
@@ -6727,9 +7081,9 @@ function getDevKpiYear {
 
 
 # Request to API getKpiStationYear
-local getDevKpiYear=$(printf '{"devIds": "-164425067615730", "devTypeId": "1", "collectTime": '$1'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local getDevKpiYear=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-echo $getDevKpiYear| jq
+#echo $getDevKpiYear| jq
 
 local success=$(echo ''$getDevKpiYear''  | jq '.success' )
 local buildCode=$(echo ''$getDevKpiYear''  | jq '.buildCode' )
@@ -6743,12 +7097,132 @@ local data_getDevKpiYear=$(echo ''$getDevKpiYear''  | jq '.params' )
 	local devIds=$(echo ''$data_getDevKpiYear''  | jq '.devIds' )
 	local devTypeId=$(echo ''$data_getDevKpiYear''  | jq '.devTypeId' )
 	
+	
+#we have inverter
+if [[ $2 == 1  ]];
+then	
+
+local devId=$(echo ''$getDevKpiYear''  | jq '.data[].devId' )
+	local collectTime_every_Year=$(echo ''$getDevKpiYear''  | jq '.data[].collectTime' )	
+		local installed_capacity=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.installed_capacity' )		 
+		local product_power=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.product_power' )		 
+		local perpower_ratio=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.perpower_ratio' )
+			 
+
+local data_getDevKpiYear=$(echo ''$getDevKpiYear''  | jq '.params' )
+	local currentTime=$(echo ''$data_getDevKpiYear''  | jq '.currentTime' )
+	local collectTime=$(echo ''$data_getDevKpiYear''  | jq '.collectTime' )
+	local devIds=$(echo ''$data_getDevKpiYear''  | jq '.devIds' )
+	local devTypeId=$(echo ''$data_getDevKpiYear''  | jq '.devTypeId' )
+
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "collectTime_array=(${collectTime_every_Year})"
+		eval "installed_capacity_array=(${installed_capacity})"
+		eval "product_power_array=(${product_power})"
+		eval "perpower_ratio_array=(${perpower_ratio})"
+
+#we have Battery
+elif [[ $2 == 39  ]];
+then
+local devId=$(echo ''$getDevKpiYear''  | jq '.data[].devId' )
+	local collectTime_every_Year=$(echo ''$getDevKpiYear''  | jq '.data[].collectTime' )
+		local charge_cap=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.charge_cap' )
+		local discharge_cap=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.discharge_cap' )
+		local charge_time=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.charge_time' )
+		local discharge_time=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.discharge_time' )
+
+local data_getDevKpiYear=$(echo ''$getDevKpiYear''  | jq '.params' )
+	local currentTime=$(echo ''$data_getDevKpiYear''  | jq '.currentTime' )
+	local collectTime=$(echo ''$data_getDevKpiYear''  | jq '.collectTime' )
+	local devIds=$(echo ''$data_getDevKpiYear''  | jq '.devIds' )
+	local devTypeId=$(echo ''$data_getDevKpiYear''  | jq '.devTypeId' )
+	
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "collectTime_array=(${collectTime_every_Year})"
+		eval "charge_cap_array=(${charge_cap})"
+		eval "discharge_cap_array=(${discharge_cap})"
+		eval "charge_time_array=(${charge_time})"
+		eval "discharge_time_array=(${discharge_time})"
+
+#we have Central inverter
+elif [[ $2 == 15  ]];	
+then	
+
+local devId=$(echo ''$getDevKpiYear''  | jq '.data[].devId' )
+	local collectTime_every_Year=$(echo ''$getDevKpiYear''  | jq '.data[].collectTime' )	
+		local installed_capacity=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.installed_capacity' )		 
+		local product_power=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.product_power' )		 
+		local perpower_ratio=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.perpower_ratio' )
+			 
+
+local data_getDevKpiYear=$(echo ''$getDevKpiYear''  | jq '.params' )
+	local currentTime=$(echo ''$data_getDevKpiYear''  | jq '.currentTime' )
+	local collectTime=$(echo ''$data_getDevKpiYear''  | jq '.collectTime' )
+	local devIds=$(echo ''$data_getDevKpiYear''  | jq '.devIds' )
+	local devTypeId=$(echo ''$data_getDevKpiYear''  | jq '.devTypeId' )
+
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "collectTime_array=(${collectTime_every_Year})"
+		eval "installed_capacity_array=(${installed_capacity})"
+		eval "product_power_array=(${product_power})"
+		eval "perpower_ratio_array=(${perpower_ratio})"
+		
+#we have Smart Energy Center
+elif [[ $2 == 38  ]];			
+then	
+
+local devId=$(echo ''$getDevKpiYear''  | jq '.data[].devId' )
+	local collectTime_every_Year=$(echo ''$getDevKpiYear''  | jq '.data[].collectTime' )	
+		local installed_capacity=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.installed_capacity' )		 
+		local product_power=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.product_power' )		 
+		local perpower_ratio=$(echo ''$getDevKpiYear''  | jq '.data[].dataItemMap.perpower_ratio' )
+			 
+
+local data_getDevKpiYear=$(echo ''$getDevKpiYear''  | jq '.params' )
+	local currentTime=$(echo ''$data_getDevKpiYear''  | jq '.currentTime' )
+	local collectTime=$(echo ''$data_getDevKpiYear''  | jq '.collectTime' )
+	local devIds=$(echo ''$data_getDevKpiYear''  | jq '.devIds' )
+	local devTypeId=$(echo ''$data_getDevKpiYear''  | jq '.devTypeId' )
+
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "collectTime_array=(${collectTime_every_Year})"
+		eval "installed_capacity_array=(${installed_capacity})"
+		eval "product_power_array=(${product_power})"
+		eval "perpower_ratio_array=(${perpower_ratio})"
+
+fi
 
 #removing " on begining and end
 local buildCode="$(echo "$buildCode" | tr -d '"')"
 
 # Here comma is our delimiter value to array of stations codes given by user as a parameter in question
 IFS="," read -a devIds_array <<< $devIds
+IFS="," read -a devTypeId_array <<< $devTypeId
+
 
 
 
@@ -6798,6 +7272,66 @@ echo "Response time: "$difference_in_secounds" s"
 #local curent_time_actually=$(date -d @$curent_time_actually)
 #echo "Actuall time: "$curent_time_actually
 
+# if we have inverter
+if [[ $success == "true"  ]] && [[  $2 == 1  ]];
+	then
+	
+	echo ""
+	echo "Numbers of Devices to check: "${#devIds_array[@]}
+	echo ""
+
+	
+	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
+	do
+	
+		echo -e "\e[93m \c" 
+		Device_type_ID ${devTypeId_array[$a]}
+		echo -e "\e[0m ID: "${devId_array[$a]}
+		echo ""
+		
+		#loop for every day
+		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
+		do
+		
+
+		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
+		echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+		
+		
+		#special loop  for checking if inverter is disconnected
+		#if [[ ! $hex == "0"  ]];
+		#then
+		
+				
+		if [[ ! ${installed_capacity_array[$c]} == null  ]];
+		then	
+			echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
+		fi
+	 	if [[ ! ${product_power_array[$c]} == null  ]];
+		then	
+			echo -e "	Energy: "${product_power_array[$c]}" kWh"				
+		fi	
+		if [[ ! ${perpower_ratio_array[$c]} == null  ]];
+		then	
+			echo -e "	Equivalent utilization hours: "${perpower_ratio_array[$c]}" h"				
+		fi
+
+		echo ""
+		
+		#special for checking if inverter is diconected 
+		#else
+		#	echo -e "	No any Real-time data when device is disconected!"
+		
+		#special loop finish for checking if inverter is diconected 
+		#fi
+		
+		#end of for loop for presentation data every 5minutes
+		done
+
+	done
+	
+fi
+
 
 
 # in case of error
@@ -6817,15 +7351,18 @@ function devUpgrade {
 
 
 # Request to API getKpiStationYear
-local devUpgrade=$(printf '{"devIds": "-164425067615730", "devTypeId": "1"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/devUpgrade  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local devUpgrade=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/devUpgrade  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-echo $devUpgrade | jq
+#echo $devUpgrade | jq
 
 local success=$(echo ''$devUpgrade''  | jq '.success' )
 local buildCode=$(echo ''$devUpgrade''  | jq '.buildCode' )
 local failCode=$(echo ''$devUpgrade''  | jq '.failCode' )
 local message=$(echo ''$devUpgrade''  | jq '.message' )
 
+	local devId=$(echo ''$devUpgrade''  | jq '.data[].devId' )
+	local failCode_upgrade=$(echo ''$devUpgrade''  | jq '.data[].failCode' )
+	local result=$(echo ''$devUpgrade''  | jq '.data[].result' )
 
 local data_devUpgrade=$(echo ''$devUpgrade''  | jq '.params' )
 	local currentTime=$(echo ''$data_devUpgrade''  | jq '.currentTime' )
@@ -6835,9 +7372,18 @@ local data_devUpgrade=$(echo ''$devUpgrade''  | jq '.params' )
 
 #removing " on begining and end
 local buildCode="$(echo "$buildCode" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+
+
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "failCode_upgrade_array=(${failCode_upgrade})"
+		eval "result_array=(${result})"
 
 # Here comma is our delimiter value to array of stations codes given by user as a parameter in question
 IFS="," read -a devIds_array <<< $devIds
+IFS="," read -a devTypeId_array <<< $devTypeId
 
 
 
@@ -6881,6 +7427,40 @@ local curent_time_of_request=$(date -d @$curent_time_actually)
 echo "Time of your Request to API: "$curent_time_of_request
 
 
+	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )) 
+	do
+		echo ""
+		echo -e "\e[93m \c" 
+		Device_type_ID ${devTypeId_array[$c]}
+		echo -e "\e[0m ID: "${devId_array[$c]}
+		
+				
+		if [[ ! ${failCode_upgrade_array[$c]} == null  ]];
+		then	
+		echo -e "	Failure error code: \c" 
+		Error_Codes_List ${failCode_upgrade_array[$c]}				
+		fi
+	 	if [[ ! ${result_array[$c]} == null  ]];
+		then	
+			if [ ${result_array[$c]} == true ]
+			then
+			status_of_upgrade="The device upgrade command is successfully delivered"
+			elif [ ${result_array[$c]} == false ]
+			then
+			status_of_upgrade="The device upgrade command is not successfully delivered"
+			else
+			status_of_upgrade="Unknow"
+			fi			
+		echo -e "	"$status_of_upgrade				
+		fi
+		
+		echo ""
+		
+
+
+	done
+
+
 # in case of error
 if [[ $success == "false"  ]];
 	then
@@ -6899,14 +7479,21 @@ function getDevUpgradeInfo {
 
 
 # Request to API getKpiStationYear
-local getDevUpgradeInfo=$(printf '{"devIds": "-164425067615730", "devTypeId": "1"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevUpgradeInfo  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local getDevUpgradeInfo=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevUpgradeInfo  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-echo $getDevUpgradeInfo | jq
+#echo $getDevUpgradeInfo | jq
 
 local success=$(echo ''$getDevUpgradeInfo''  | jq '.success' )
-#local buildCode=$(echo ''$getDevUpgradeInfo''  | jq '.buildCode' )
+local buildCode=$(echo ''$getDevUpgradeInfo''  | jq '.buildCode' )
 local failCode=$(echo ''$getDevUpgradeInfo''  | jq '.failCode' )
-#local message=$(echo ''$getDevUpgradeInfo''  | jq '.message' )
+local message=$(echo ''$getDevUpgradeInfo''  | jq '.message' )
+
+	local devId=$(echo ''$getDevUpgradeInfo''  | jq '.data[].devId' )
+	local lastUpgradeTime=$(echo ''$getDevUpgradeInfo''  | jq '.data[].lastUpgradeTime' )	
+	local process=$(echo ''$getDevUpgradeInfo''  | jq '.data[].process' )		 
+	local sourceVersion=$(echo ''$getDevUpgradeInfo''  | jq '.data[].sourceVersion' )		 
+	local targetVersion=$(echo ''$getDevUpgradeInfo''  | jq '.data[].targetVersion' )
+	local upgradeResult=$(echo ''$getDevUpgradeInfo''  | jq '.data[].upgradeResult' )	 
 
 
 local data_getDevUpgradeInfo=$(echo ''$getDevUpgradeInfo''  | jq '.params' )
@@ -6914,13 +7501,27 @@ local data_getDevUpgradeInfo=$(echo ''$getDevUpgradeInfo''  | jq '.params' )
 	local devIds=$(echo ''$data_getDevUpgradeInfo''  | jq '.devIds' )
 	local devTypeId=$(echo ''$data_getDevUpgradeInfo''  | jq '.devTypeId' )
 	
-
 #removing " on begining and end
 local buildCode="$(echo "$buildCode" | tr -d '"')"
+local sourceVersion="$(echo "$sourceVersion" | tr -d '"')"
+local targetVersion="$(echo "$targetVersion" | tr -d '"')"
+local devIds="$(echo "$devIds" | tr -d '"')"
+local devTypeId="$(echo "$devTypeId" | tr -d '"')"
+	
+		# Conversion of long variable string to array
+		eval "devId_array=(${devId})"
+		eval "lastUpgradeTime_array=(${lastUpgradeTime})"
+		eval "process_array=(${process})"
+		eval "sourceVersion_array=(${sourceVersion})"
+		eval "targetVersion_array=(${targetVersion})"
+		eval "upgradeResult_array=(${upgradeResult})"
+		eval "devTypeId_array=(${devTypeId})"
+
+
 
 # Here comma is our delimiter value to array of stations codes given by user as a parameter in question
 IFS="," read -a devIds_array <<< $devIds
-
+IFS="," read -a devTypeId_array <<< $devTypeId
 
 
 #echo "Request success or failure flag: " $success
@@ -6964,6 +7565,68 @@ local curent_time_of_request=$(date -d @$curent_time_actually)
 echo "Time of your Request to API: "$curent_time_of_request
 
 
+	echo ""
+	echo "Numbers of Devices to check: "${#devIds_array[@]}
+	echo ""
+
+	
+	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )) 
+	do
+	
+		echo -e "\e[93m \c" 
+		Device_type_ID ${devTypeId_array[$c]}
+		echo -e "\e[0m ID: "${devId_array[$c]}
+		echo ""
+		
+				
+		if [[ ! ${lastUpgradeTime_array[$c]} == null  ]];
+		then	
+			echo -e "	Last upgrade time: "$(date -d @${lastUpgradeTime_array[$c]::-3})				
+		fi
+	 	if [[ ! ${process_array[$c]} == null  ]];
+		then	
+			echo -e "	Upgrade progress: "${process_array[$c]}" %"				
+		fi	
+		if [[ ! ${sourceVersion_array[$c]} == null  ]];
+		then	
+			echo -e "	Version before upgrade: "${sourceVersion_array[$c]}				
+		fi
+		if [[ ! ${targetVersion_array[$c]} == null  ]];
+		then	
+			echo -e "	Target version: "${targetVersion_array[$c]}				
+		fi
+		if [[ ! ${upgradeResult_array[$c]} == null  ]];
+		then	
+			if [ ${upgradeResult_array[$c]} == 0 ]
+			then
+			status_of_upgrade="Not started"
+			elif [ ${upgradeResult_array[$c]} == 1 ]
+			then
+			status_of_upgrade="Success"			
+			elif [ ${upgradeResult_array[$c]} == 2 ]
+			then
+			status_of_upgrade="Failure"				
+			elif [ ${upgradeResult_array[$c]} == 3 ]
+			then
+			status_of_upgrade="Canceled"
+			elif [ ${upgradeResult_array[$c]} == 4 ]
+			then
+			status_of_upgrade="Upgrading"
+			elif [ ${upgradeResult_array[$c]} == 5 ]
+			then
+			status_of_upgrade="Time-out"
+			else
+			status_of_upgrade="Unknow"
+			fi
+			echo -e "	Upgrade result: "$status_of_upgrade				
+		fi
+
+		echo ""
+		
+
+
+	done
+
 
 # in case of error
 if [[ $success == "false"  ]];
@@ -6978,97 +7641,15 @@ echo ""
 
 }
 
-function getAlarmList {
-
-
-# Request to API getKpiStationYear
-local getAlarmList=$(printf '{"stationCodes": "'$1'", "beginTime":1610292233000, "endTime":1612883122757, "language":"en_UK", "types":"1,2,3,4,5", "devTypes":"1,62", "levels":"1,2,3,4", "status":"1,2,3,4,5,6"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getAlarmList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
-
-
-
-
-echo $getAlarmList | jq
-
-local success=$(echo ''$getAlarmList''  | jq '.success' )
-local buildCode=$(echo ''$getAlarmList''  | jq '.buildCode' )
-local failCode=$(echo ''$getAlarmList''  | jq '.failCode' )
-local message=$(echo ''$getAlarmList''  | jq '.message' )
-local parameters=$(echo ''$getAlarmList''  | jq '.parms' )
-	
-
-#removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-
-# Here comma is our delimiter value to array of stations codes given by user as a parameter in question
-IFS="," read -a devIds_array <<< $devIds
-
-
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetAlarmList\e[0m connection \e[42mOK\e[0m"
-		getAlarmList_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetAlarmList\e[0m connection \e[41mError\e[0m"
-		getAlarmList_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-local curent_time_actually=$(echo ${curent_time::-3})
-
-local curent_time_of_request=$(date -d @$curent_time_actually)
-echo "Time of your Request to API: "$curent_time_of_request
-
-
-
-# in case of error
-if [[ $success == "false"  ]];
-	then
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $getAlarmList
-		
-fi
-
-echo ""
-
-
-}
-
-
 
 function snIsRegister {
 
 
 # Request to API getKpiStationYear
-local snIsRegister=$(printf '{"SN": "-164425067615730", "userName": "blazejos", "key": "1293849606739215"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/snIsRegister XSRF-TOKEN:''$xsrf_token'' Content-Type:'application/json' Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local snIsRegister=$(printf '{"SN": "'$1'", "userName": "'$2'", "key": "'$3'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/snIsRegister XSRF-TOKEN:''$xsrf_token'' Content-Type:'application/json' Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-
-echo $snIsRegister | jq
+echo $snIsRegister
+#echo $snIsRegister | jq
 
 
 local success=$(echo ''$snIsRegister''  | jq '.success' )
@@ -7138,6 +7719,248 @@ echo ""
 
 }
 
+function getAlarmList {
+
+
+# Request to API getKpiStationYear
+local getAlarmList=$(printf '{"stationCodes": "'$1'", "beginTime":'$2', "endTime":'$3', "language":"'$4'", "types":"'$7'", "devTypes":"'$8'", "levels":"'$6'", "status":"'$5'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getAlarmList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+
+
+#echo $getAlarmList | jq
+
+local success=$(echo ''$getAlarmList''  | jq '.success' )
+local buildCode=$(echo ''$getAlarmList''  | jq '.buildCode' )
+local failCode=$(echo ''$getAlarmList''  | jq '.failCode' )
+local message=$(echo ''$getAlarmList''  | jq '.message' )
+local parameters=$(echo ''$getAlarmList''  | jq '.parms' )
+	
+	local stationCode=$(echo ''$getAlarmList''  | jq '.data[].stationCode' )
+	local alarmName=$(echo ''$getAlarmList''  | jq '.data[].alarmName' )
+	local devName=$(echo ''$getAlarmList''  | jq '.data[].devName' )
+	local repairSuggestion=$(echo ''$getAlarmList''  | jq '.data[].repairSuggestion' )
+	local esnCode=$(echo ''$getAlarmList''  | jq '.data[].esnCode' )
+	local devTypeId=$(echo ''$getAlarmList''  | jq '.data[].devTypeId' )
+	local causeId=$(echo ''$getAlarmList''  | jq '.data[].causeId' )
+	local alarmCause=$(echo ''$getAlarmList''  | jq '.data[].alarmCause' )
+	local alarmType=$(echo ''$getAlarmList''  | jq '.data[].alarmType' )
+	local raiseTime=$(echo ''$getAlarmList''  | jq '.data[].raiseTime' )
+	local alarmId=$(echo ''$getAlarmList''  | jq '.data[].alarmId' )
+	local recoverDate=$(echo ''$getAlarmList''  | jq '.data[].recoverDate' )
+	local stationName=$(echo ''$getAlarmList''  | jq '.data[].stationName' )
+	local level=$(echo ''$getAlarmList''  | jq '.data[].lev' )
+	local status=$(echo ''$getAlarmList''  | jq '.data[].status' )
+
+#removing " on begining and end
+local buildCode="$(echo "$buildCode" | tr -d '"')"
+
+		# Conversion of long variable string to array
+		eval "stationCode_array=(${stationCode})"
+		eval "alarmName_array=(${alarmName})"
+		eval "devName_array=(${devName})"
+		eval "repairSuggestion_array=(${repairSuggestion})"
+		eval "esnCode_array=(${esnCode})"
+		eval "devTypeId_array=(${devTypeId})"
+		eval "causeId_array=(${causeId})"
+		eval "alarmCause_array=(${alarmCause})"
+		eval "alarmType_array=(${alarmType})"
+		eval "raiseTime_array=(${raiseTime})"
+		eval "alarmId_array=(${alarmId})"
+		eval "recoverDate_array=(${recoverDate})"
+		eval "stationName_array=(${stationName})"
+		eval "level_array=(${level})"
+		eval "status_array=(${status})"
+
+#echo "Request success or failure flag: " $success
+if [[ $success == "true"  ]];
+	then	
+		echo ""
+		echo -e "API \e[4mgetAlarmList\e[0m connection \e[42mOK\e[0m"
+		getAlarmList_connection=true
+elif [[ $success == "false" ]];
+	then
+		echo ""
+		echo -e "API \e[4mgetAlarmList\e[0m connection \e[41mError\e[0m"
+		getAlarmList_connection=false
+else
+	echo ""
+	echo -e "\e[41mNetwork Error :(\e[0m" 
+	#program stops
+	exit
+fi
+
+#echo "Error code: " $failCode " (0: Normal)"
+# we call to function with errors list
+Error_Codes_List $failCode
+
+#echo "Optional message: " $message
+if [[ ! $message == "\"\""  ]];
+then	
+	echo "Optional message: " $message
+fi
+
+
+if [[ $success == "true"  ]];
+then	
+	echo "Build Code: "$buildCode
+fi
+
+
+local curent_time_actually=$(echo ${curent_time::-3})
+
+local curent_time_of_request=$(date -d @$curent_time_actually)
+echo "Time of your Request to API: "$curent_time_of_request
+
+	echo ""
+	echo "Numbers of Alarms: "${#stationCode_array[@]}
+	echo ""
+
+	
+	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )) 
+	do
+	
+
+		echo -e "	\e[93m\c"
+		echo -e ${alarmName_array[$c]}"\e[0m"
+
+				
+		if [[ ! ${stationCode_array[$c]} == null  ]];
+		then	
+			echo -e "	Plant ID: "${stationCode_array[$c]}
+		fi
+		if [[ ! ${stationName_array[$c]} == null  ]];
+		then	
+			echo -e "	Plant name: "${stationName_array[$c]}
+		fi
+		
+		if [[ ! ${devName_array[$c]} == null  ]];
+		then	
+			echo -e "	Device name: "${devName_array[$c]}
+		fi
+		if [[ ! ${esnCode_array[$c]} == null  ]];
+		then	
+			echo -e "	Device SN: "${esnCode_array[$c]}
+		fi
+		if [[ ! ${devTypeId_array[$c]} == null  ]];
+		then	
+			echo -e "	Device type ID: \c" 
+			Device_type_ID ${devTypeId_array[$c]}
+			echo -e ""
+			
+		fi
+		if [[ ! ${level_array[$c]} == null  ]];
+		then	
+			if [ ${alarmType_array[$c]} == 1 ]
+			then
+			local severity="critical"
+			elif [ ${alarmType_array[$c]} == 2 ]
+			then
+			local severity="major"
+			elif [ ${alarmType_array[$c]} == 3 ]
+			then
+			local severity="minor"
+			elif [ ${alarmType_array[$c]} == 4 ]
+			then
+			local severity="warning"
+			else
+			local severity="unknow"
+			fi
+			echo -e "	Severity: "$severity
+		fi
+		if [[ ! ${alarmId_array[$c]} == null  ]];
+		then	
+			echo -e "	Alarm ID: "${alarmId_array[$c]}
+		fi
+		if [[ ! ${alarmName_array[$c]} == null  ]];
+		then	
+			echo -e "	Alarm name: "${alarmName_array[$c]}
+		fi
+		if [[ ! ${alarmType_array[$c]} == null  ]];
+		then	
+			if [ ${alarmType_array[$c]} == 1 ]
+			then
+			local alarm_type="transposition signal"
+			elif [ ${alarmType_array[$c]} == 2 ]
+			then
+			local alarm_type="exception alarm"			
+			elif [ ${alarmType_array[$c]} == 3 ]
+			then
+			local alarm_type="protection event"				
+			elif [ ${alarmType_array[$c]} == 4 ]
+			then
+			local alarm_type="notification status"
+			elif [ ${alarmType_array[$c]} == 5 ]
+			then
+			local alarm_type="alarm information"
+			else
+			local alarm_type="Unknow"
+			fi		
+			echo -e "	Alarm type: "$alarm_type
+		fi
+		if [[ ! ${status_array[$c]} == null  ]];
+		then	
+			if [ ${status_array[$c]} == 1 ]
+			then
+			local alarm_status="not handled (active)"
+			elif [ ${status_array[$c]} == 2 ]
+			then
+			local alarm_status="acknowledged (by a user)"			
+			elif [ ${status_array[$c]} == 3 ]
+			then
+			local alarm_status="being handled (transferred to a defect ticket)"				
+			elif [ ${status_array[$c]} == 4 ]
+			then
+			local alarm_status="handled (defect handling has ended)"
+			elif [ ${status_array[$c]} == 5 ]
+			then
+			local alarm_status="cleared (by a user)"
+			elif [ ${status_array[$c]} == 6 ]
+			then
+			local alarm_status="cleared (automatically by the device)"
+			else
+			local alarm_status="Unknow"
+			fi
+			echo -e "	Alarm status: "$alarm_status
+		fi
+
+		if [[ ! ${causeId_array[$c]} == null  ]];
+		then	
+			echo -e "	Cause ID: "${causeId_array[$c]}
+		fi
+		if [[ ! ${alarmCause_array[$c]} == null  ]];
+		then	
+			echo -e "	Alarm cause: \n\n"${alarmCause_array[$c]}"\n"
+		fi
+
+		if [[ ! ${raiseTime_array[$c]} == null  ]];
+		then	
+			echo -e "	Occurrence time: "$(date -d @${raiseTime_array[$c]::-3})
+		fi
+		if [[ ! ${recoverDate_array[$c]} == null  ]];
+		then	
+			echo -e "	Recovery time: "$(date -d @${recoverDate_array[$c]::-3})
+		fi
+		if [[ ! ${repairSuggestion_array[$c]} == null  ]];
+		then	
+			echo -e "	Handling suggestion: \n\n"${repairSuggestion_array[$c]}"\n"
+		fi
+		echo ""
+		
+
+
+	done
+
+# in case of error
+if [[ $success == "false"  ]];
+	then
+	#fuction which works with connection error	
+	in_case_of_error_with_connection_to_API $getAlarmList
+		
+fi
+
+echo ""
+
+
+}
 
 : <<'END_COMMENT'
 
@@ -7280,49 +8103,76 @@ if [[ $login_status == true  ]];
 then	
 		# We start function to get list of plants
 		getStationList
-		#getStationRealKpi ${stations_Code_array[0]}
 		
 		if [[ $getStationList_connection == true  ]];
 		then	
 			# We start function to get list of devices inside one particular plant
 			getDevList ${stations_Code_array[0]} $number_of_plants
 			
+						
+			# Statistical data about whole Power Plant
 			
-			#echo ${device_Id_array[1]}
-			#echo ${device_TypeId_array[1]}
-			
-
-			
-			# Plant data
 			getStationRealKpi ${stations_Code_array[0]}	
 			getKpiStationHour ${stations_Code_array[0]} $curent_time
 			getKpiStationDay ${stations_Code_array[0]} $curent_time
 			getKpiStationMonth ${stations_Code_array[0]} $curent_time
 			getKpiStationYear ${stations_Code_array[0]} $curent_time
 			
-			# Devices data precisious all voltages etc real-time
-			getDevRealKpi  ${device_Id_array[1]} ${device_TypeId_array[1]}
 			
+			# Statistical data about particular device/devices inside Power Plant
+			
+			# Devices data precisious all voltages etc real-time
+			getDevRealKpi  ${device_Id_array[1]} ${device_TypeId_array[1]}			
 			getDevFiveMinutes ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
 			getDevKpiDay ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
-			#getDevKpiMonth ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
-			#getDevKpiYear $curent_time
-			#devUpgrade
-			#getDevUpgradeInfo
-			#getAlarmList ${stations_Code_array[0]}
-			#snIsRegister
+			getDevKpiMonth ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
+			getDevKpiYear ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
+			
+			
+			#Error comunicates
+			
+			# we cover one month before chosen date that is as far as API allows
+			Begining_time=$(expr $curent_time - 2629743000)			
+			#Languages. The value must be zh_CN, en_UK, ja_JP, it_IT, nl_NL, pt_BR, de_DE, fr_FR, es_ES, or po_PO.
+			language="en_UK"
+			#status Alarm status. Multiple alarm statuses are separated by commas (,), for example, 1,2. 1: not handled (active); 2: acknowledged (by a user); 3: being handled (transferred to a defect ticket); 4: handled (defect handling has ended); 5: cleared (by a user); 6: cleared (automatically by the device)
+			status="1,2,3,4,5,6"
+			# Alarm severity. Multiple alarm severities are separated by commas (,), for example, 1,2. 1: critical; 2: major; 3: minor; 4: warning
+			alarm_severity="1,2,3,4"
+			#Alarm type. Multiple alarm types are separated by commas (,), for example, 1,2. types 1: transposition signal; 2: exception alarm; 3: protection event; 4: notification status; 5: alarm information
+			alarm_type="1,2,3,4,5"
+			#Device type. Multiple device types are separated by commas (,), for example, 1,38. 1: Smart String Inverter; 2: SmartLogger; 8: transformer; 10: EMI; 13: protocol converter; 14: Central Inverter; 15: DC combiner box; 16: general device; 17: grid meter; 37: Pinnet data logger; 38: Smart Energy Center; 39: battery; 40: Smart Backup Box; 45: MBUS; 47: Power Sensor; 52: SAJ data logger; 53: high voltage bay of the main transformer; 54: main transformer; 55: low voltage bay of the main transformer; 56: bus bay; 57: line bay; 58: plant transformer bay; 59: SVC/SVG bay; 60: bus tie/section bay; 61: plant power supply device; 62: Dongle; 63: distributed SmartLogger; 70: safety box; 71: collector			
+			device_type="1,2,8,10,13,14,15,16,17,37,38,39,40,45,47,52,53,54,55,56,57,58,59,60,61,62,63,70,71"
+			
+			
+			getAlarmList ${stations_Code_array[0]} $Begining_time $curent_time $language $status $alarm_severity $alarm_type $device_type
+			
+			
+			#Upgrade
+			
+			# Upgrade of firmware inside inverter or smart Energy Center 
+			#devUpgrade ${device_Id_array[1]} ${device_TypeId_array[1]}
+			
+			# info about upgrades and which were aplied when and what is their status
+			#getDevUpgradeInfo ${device_Id_array[1]} ${device_TypeId_array[1]}
+			
+			# this function is used to enter the email address or phone number 
+			# and the device SN to check whethever the SN has been registered 
+			# by the user unfortunetly can't made this working as for March 2021
+			# meaby still not implemented by Huwei or done something wrong
+			#
+			#snIsRegister ${device_esnCode_array[1]} $userName
+			
+
+			# Different dates for tests
 			
 			#end of 2000 unix time ms format
-			#getKpiStationYear ${stations_Code_array[0]} "978303599000"
-			
+			#getKpiStationYear ${stations_Code_array[0]} "978303599000"			
 			# End of 2020 unix time ms format
-			#getKpiStationYear ${stations_Code_array[0]} "1609455599000"
-			
+			#getKpiStationYear ${stations_Code_array[0]} "1609455599000"			
 			# End of 2020 unix time ms format
-			#getKpiStationMonth ${stations_Code_array[0]} "1609455599000"
-			
-			#getKpiStationDay ${stations_Code_array[0]} "1609455599000"
-			
+			#getKpiStationMonth ${stations_Code_array[0]} "1609455599000"			
+			#getKpiStationDay ${stations_Code_array[0]} "1609455599000"			
 			# time Sat Jan 30 2021 11:39:40 in unix time ms format for tests
 			#1612006780447
 			
