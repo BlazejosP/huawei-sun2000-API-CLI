@@ -7,9 +7,10 @@
 ![GitHub forks](https://img.shields.io/github/forks/BlazejosP/huawei-sun2000-API-CLI)
 ![GitHub Repo stars](https://img.shields.io/github/stars/BlazejosP/huawei-sun2000-API-CLI?style=social)
 
-If you found this software usefully 
+If you found this software usefully and d'like to say thank you!
 -
-and d'like to say thank you. You can donate for charity and support small Maria in her fight against SMA 1 her parents try collect $2.1 million for gene therapy
+You can donate for charity and support small <B>Maria</B> in her fight against SMA 1 her parents try collect $2.1 million for gene therapy
+there is a link and full desciption
 <a href="https://www.siepomaga.pl/en/maria#wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Small%20Maria%20versus%20SMA%20type%201&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaria%23wplaty"></a>
 
 Linux Command line tool to acess Huawei FusionSolarApp API
