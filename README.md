@@ -96,7 +96,7 @@ After that you can configure inserting data to InfluxDB
 send_data_to_influxDB=true
 ```
 but you need working server with this database. The same is with sending data stright to Domoticz or with use of MQTT.
-There is necesary to have working Domoticz home automation system and in secound case also MQTT server. For all of them are configuration sections like this for influxDB. BTW in case of sending data to Domoticz I myself prefer using MQTT more flexible in my opinion but you can chose whatever you prefer just remember to made option with you do not need as false. 
+There is necesary to have working Domoticz home automation system and in secound case also MQTT server. For all of them are configuration sections like this for influxDB. BTW in case of sending data to Domoticz I myself prefer using MQTT more flexible in my opinion but you can chose whatever you prefer just remember to made options which you do not need as false. 
 ```
 if [[ $send_data_to_influxDB == true ]];
 	then
