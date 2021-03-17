@@ -14,7 +14,7 @@ there is a link and full desciption
 <a href="https://www.siepomaga.pl/en/maria#wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Small%20Maria%20versus%20SMA%20type%201&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaria%23wplaty"></a>
 they collecting until 20 May 2021
 
-Linux Command line tool to acess Huawei FusionSolarApp API
+Linux Command line tool for acess Huawei FusionSolarApp API
 -
 Huawei sun2000-(3KTL-10KTL)-M0 all models comand line bash API for download data from their FusionSolarApp web service. To use this tool you need an acount in their service and then request developer account. That all mean that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
 
