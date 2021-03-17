@@ -54,7 +54,7 @@ This is tool for login and get data from Huawei FusionSolar https://eu5.fusionso
 This tool use official FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer. Data from official API are instantous or every 5 mintes, hour, day, monthly, yearly. We also use unofficial API called "Kiosk Mode" to grab especially power production and basic data. 
 
 You must have installed on your linux tools like curl, jq, httpie, grep, mosquitto_pub on debian and similar systems. They are necessary for working of this bash scripts. On Debian like system you can download them with:
-
+```
 sudo apt-get install curl
 
 sudo apt-get install jq
@@ -64,7 +64,7 @@ sudo apt-get install grep
 sudo apt-get install httpie
 
 sudo apt-get install mosquitto-clients (if you use MQTT sending option)
-
+```
 On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problems if are not installed already. 
 
 Configuration&Usage
