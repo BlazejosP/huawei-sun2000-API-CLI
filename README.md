@@ -16,7 +16,7 @@ they collecting until 20 May 2021
 
 Linux Command line tool for acess Huawei FusionSolarApp API
 -
-Huawei sun2000-(3KTL-10KTL)-M0 all models comand line bash API for download data from their FusionSolarApp web service. To use this tool you need an acount in their service and then request developer account. That all mean that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
+Huawei sun2000-(3KTL-10KTL)-M0 all models comand line bash API for download data from their FusionSolarApp web service. To use this tool you need an acount in their service and then request developer account. That all means that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
 
 To use this script you need account on Huawei FusionSolar https://eu5.fusionsolar.huawei.com and developer privilege.
 
@@ -38,7 +38,7 @@ SN Inverter: <--here data-->
 
 Device Sun2000-(from 3KTL to 10KTL meaby also others)-M0
 -
-Device itself must be equipped with Smart Dongle there are two types: 
+Device itself must be equipped with Smart Dongle existing two types: 
 
 Smart Dongle-4G (sends data through cellular network -> to internet -> and then stright to cloud service)
 
@@ -51,9 +51,9 @@ Whatever dongle is in use there must be an connection to internet if not cloud s
 Installation
 -
 This is tool for login and get data from Huawei FusionSolar https://eu5.fusionsolar.huawei.com
-This tool use official FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer. Data from official API are refreshed every 1h that is why we also use unofficial API called "Kiosk Mode" to grab especially power production every 5 minutes. 
+This tool use official FusionSolar API described here https://forum.huawei.com/enterprise/en/communicate-with-fusionsolar-through-an-openapi-account/thread/591478-100027 by manufacturer. Data from official API are instantous or every 5 mintes, hour, day, monthly, yearly. We also use unofficial API called "Kiosk Mode" to grab especially power production and basic data. 
 
-You must have installed on your linux tools like curl, jq, httpie, grep, mosquitto_pub on debian and similar systems that is necessary done this with
+You must have installed on your linux tools like curl, jq, httpie, grep, mosquitto_pub on debian and similar systems. They are necessary for working of this bash scripts. On Debian like system you can download them with:
 
 sudo apt-get install curl
 
@@ -65,14 +65,16 @@ sudo apt-get install httpie
 
 sudo apt-get install mosquitto-clients (if you use MQTT sending option)
 
-On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problem if are not installed already. 
+On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problems if are not installed already. 
 
 Configuration&Usage
 -
 There are two files
 
 
-<b>fusionsolarapp.sh</b> - which using official Huawei API data are refreshed every 1 hour on server when inverter works so in cron just configure starting of this script around two-three minutes after full hour. Crontab example:
+<b>fusionsolarapp.sh</b> - which is using official Huawei API. Now this script can pull and show on the screen data Real-time(actually), every 5min , daily, monthly, yearly for Plants (which may include many inverters+any other devices data together) and Individual Devices (like every one inverter, battery etc.) This script is now under development and for now can only grab all the data from your devices and show them on screen. In not so long time will be able also send this data to InfluxDB(grafana), Domoticz, MQTT. As for now if you need export you can use kioskmode which has this functionality implemented or download version older version 1.2
+
+in cron just configure starting of this script around two-three minutes after full hour. Crontab example:
 ```
 4 5-22 * * *            /home/WhateverFolder/huawei-sun2000-API-CLI/fusionsolarapp.sh
 ```
