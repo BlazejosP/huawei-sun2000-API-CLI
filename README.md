@@ -10,7 +10,7 @@
 If you found this software usefully 
 -
 and d'like to say thank you. You can donate for charity and support small Maria in her fight against SMA 1 her parents try collect $2.1 million for gene therapy
-<a href="https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaria%23wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Small%20Maria%20versus%20SMA%20type%201&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaria%23wplaty"></a>
+<a href="https://www.siepomaga.pl/en/maria#wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Small%20Maria%20versus%20SMA%20type%201&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaria%23wplaty"></a>
 
 Linux Command line tool to acess Huawei FusionSolarApp API
 -
