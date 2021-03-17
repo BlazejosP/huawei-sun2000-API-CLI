@@ -7,7 +7,7 @@
 ![GitHub forks](https://img.shields.io/github/forks/BlazejosP/huawei-sun2000-API-CLI)
 ![GitHub Repo stars](https://img.shields.io/github/stars/BlazejosP/huawei-sun2000-API-CLI?style=social)
 
-If you found this software usefully and d'like to say thank you!
+If you found this software usefully and do like to say thank you!
 -
 You can donate for charity and support small <B>Maria</B> in her fight against SMA 1 her parents try collect $2.1 million for gene therapy
 there is a link and full desciption
