@@ -75,6 +75,8 @@ There are two files
 <b>fusionsolarapp.sh</b> - which is using official Huawei API. Now this script can pull and show on the screen data Real-time(actually), every 5min , daily, monthly, yearly for Plants (which may include many inverters+any other devices data together) and Individual Devices (like every one inverter, battery etc.) This script is now under development and for now can only grab all the data from your devices and show them on screen. In not so long time will be able also send this data to InfluxDB(grafana), Domoticz, MQTT. As for now if you need export you can use kioskmode which has this functionality implemented or download older version https://github.com/BlazejosP/huawei-sun2000-API-CLI/releases/tag/1.2 were export to influxDB is working.
 
 
+![FusionSolarApp](pictures/fusionsolarapp.png)
+
 <b>kioskmode.sh</b> - use unoficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight. Crontab example:
 ```
 */5 5-22 * * *          /home/WhateverFolder/huawei-sun2000-API-CLI/kioskmode.sh
