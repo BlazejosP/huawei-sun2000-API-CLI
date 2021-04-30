@@ -1,4 +1,7 @@
-# Huawei sun2000 API CLI
+# Huawei sun2000 API CLI (not working science 26 April 2021 due to upgrades on Fusion Solar Server)
+
+After upgrade of Server to  version SmartPVMS V500R007C00CP1301 by Huawei official API may start work after first of May acording to Huawei sources but that may also happens some days letter. If everything on their side will goes well fusionsolarapp.sh starts to work after 1-st of May. Unofficial api from kioskmode.sh is based on older version now  so this file need total rewriting.
+
 [![GitHub license](https://img.shields.io/github/license/BlazejosP/huawei-sun2000-API-CLI)](https://github.com/BlazejosP/huawei-sun2000-API-CLI/blob/master/LICENSE)
  [![GitHub issues](https://img.shields.io/github/issues/BlazejosP/huawei-sun2000-API-CLI)](https://github.com/BlazejosP/huawei-sun2000-API-CLI/issues)
  ![Language](https://img.shields.io/badge/made%20with-bash-green)
