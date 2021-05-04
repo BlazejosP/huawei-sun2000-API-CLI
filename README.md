@@ -72,10 +72,10 @@ On other linux distributions check used package system but that are standard lin
 
 Configuration&Usage
 -
-There are two files
+Only one file relatet to OpenAPI is now usefully.
 
 
-<b>fusionsolarapp.sh</b> - which is using official Huawei API. Now this script can pull and show on the screen data Real-time(actually), every 5min , daily, monthly, yearly for Plants (which may include many inverters+any other devices data together) and Individual Devices (like every one inverter, battery etc.) This script is now under development and for now can only grab all the data from your devices and show them on screen. In not so long time will be able also send this data to InfluxDB(grafana), Domoticz, MQTT. As for now if you need export you can use kioskmode which has this functionality implemented or download older version https://github.com/BlazejosP/huawei-sun2000-API-CLI/releases/tag/1.2 were export to influxDB is working.
+<b>fusionsolarapp.sh</b> - which is using official Huawei API. Now this script can pull and show on the screen data Real-time(actually), every 5min , daily, monthly, yearly for Plants (which may include many inverters+any other devices data together) and Individual Devices (like every one inverter, battery etc.) This script is now under development and for now can only grab all the data from your devices and show them on screen. In not so long time will be able also send this data to InfluxDB(grafana), Domoticz, MQTT. ~~As for now if you need export you can use kioskmode which has this functionality implemented or download older version https://github.com/BlazejosP/huawei-sun2000-API-CLI/releases/tag/1.2 were export to influxDB is working.
 
 
 ![FusionSolarApp](pictures/fusionsolarapp.png)
@@ -92,11 +92,11 @@ Check if in Configuration section
 ```
 show_data_in_terminal=true
 ```
-to see important data on screen from your inverter. But then after initial tests if you use kioskmode.sh only by cron in automatic way to pull data you can simply swith this mode to <B>false</B> you do not need data on screen if main task of this script will be pull data from webservice and insert to influxdb or Domoticz.  
+to see important data on screen from your inverter. But then after initial tests if you use kioskmode.sh only by cron in automatic way to pull data you can simply swith this mode to <B>false</B> you do not need data on screen if main task of this script will be pull data from webservice and insert to influxdb or Domoticz.~~  
 
 ![Kioskmode](pictures/kioskmode.png)
 
-After that you can configure inserting data to InfluxDB
+~~After that you can configure inserting data to InfluxDB
 ```
 send_data_to_influxDB=true
 ```
