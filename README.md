@@ -80,7 +80,7 @@ There are two files
 
 ![FusionSolarApp](pictures/fusionsolarapp.png)
 
-<b>kioskmode.sh</b> - use unoficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight. Crontab example:
+~~<b>kioskmode.sh</b> - use unoficial API related to "Kiosk Mode" here data are refreshed every 5 minutes on server so in cron configure this script to pull data every 5 minutes during sunlight. Crontab example:
 ```
 */5 5-22 * * *          /home/WhateverFolder/huawei-sun2000-API-CLI/kioskmode.sh
 ```
@@ -112,5 +112,6 @@ if [[ $send_data_to_influxDB == true ]];
 	influxdb_db_insert_password="<--here data-->" #for example "secret_password" 
 fi
 ```
+~~
 
 
