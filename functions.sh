@@ -555,8 +555,6 @@ if [ ! -z "$DIALOG" ];
 # Login to FusionSolarAPI with Username and Password
 #logowanie=$(echo '{"userName": "'$userName'", "systemCode": "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
 
-#logowanie=$(echo '{"userName": "blazejosAPI", "systemCode": "Huawei@2020"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
-
 logowanie=$(echo '{"userName": "'$userName'", "systemCode": "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST 'https://eu5.fusionsolar.huawei.com/thirdData/login' Content-Type:'application/json' Cookie:'Cookie_1=value; web-auth=true;')
  
 echo "" 
