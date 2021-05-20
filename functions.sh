@@ -546,22 +546,29 @@ if [ ! -z "$DIALOG" ];
 	then
 			$DIALOG --title " Please wait connecting!" \
 			 --backtitle "Huawei FusionSolarApp API" \
-        		 --infobox "\nConnection and login to API with given Username&Password" 10 30
+       		 --infobox "\nConnection and login to API with given Username&Password" 10 30
 	else
 		echo "Please wait connecting!"
 		echo "Connection and login to API with given Username&Password"		
 	fi
 
 # Login to FusionSolarAPI with Username and Password
-logowanie=$(echo '{userName: "'$userName'", systemCode: "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
+#logowanie=$(echo '{"userName": "'$userName'", "systemCode": "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
 
+#logowanie=$(echo '{"userName": "blazejosAPI", "systemCode": "Huawei@2020"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
 
+logowanie=$(echo '{"userName": "'$userName'", "systemCode": "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST 'https://eu5.fusionsolar.huawei.com/thirdData/login' Content-Type:'application/json' Cookie:'Cookie_1=value; web-auth=true;')
+ 
+echo "" 
 #show as answer of of API for question
-echo $logowanie
+#echo $logowanie  | jq
+
+
 
 #coping a long string with answer to new variable from which we extract JOSN answer
 logowanie_for_josn_extraction=$(echo $logowanie)
 
+echo $logowanie_for_josn_extraction
 
 IFS=';'
 array=( $logowanie )
@@ -773,7 +780,6 @@ then
 		fi		
 	fi		
 fi
-
 
 
 }
