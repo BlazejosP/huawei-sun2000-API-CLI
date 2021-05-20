@@ -579,12 +579,12 @@ jsesionid=${array[6]}
 IFS=':'
 array=( $logowanie )
 #echo "value = ${array[4]}"
-logowanie=${array[4]}
+#logowanie=${array[4]}
 
 
-IFS='='
-array=( $logowanie )
-xsrf_token=${array[1]}
+#IFS='='
+#array=( $logowanie )
+xsrf_token=${array[2]}
 
 
 IFS=':'
