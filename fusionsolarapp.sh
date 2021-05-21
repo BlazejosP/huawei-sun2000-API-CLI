@@ -26,6 +26,136 @@ source config.conf
 source functions.sh
 
 
+: <<'END_COMMENT'
+
+
+# Sending data to influxDB
+
+# alarms
+curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=alarms value='$AlarmID' '$curent_time_actually''
+
+curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=severity value='$Alarm_severity' '$curent_time_actually''
+
+
+# Static data to influxDB Solar instalation capacity and adress
+curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'capacity=Nominalna_Wydajnosc value='$capacity''
+
+# Static data to influxDB Solar instalation capacity and adress
+# curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne' --data-binary "capacity=adres value=\"$station_Addres\""
+
+#Daily power production
+curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=day value='$Day_power''
+
+#Mothly power production
+curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=month value='$month_power''
+
+#Total power production
+curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=total value='$total_power''
+
+#Device model
+# curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne' --data-binary "Power=name value=$inverter_Type"
+
+
+
+# Add in loop series of data to influxDB for each hour of the actual day
+count_hours=0
+for s in "${hour_of_the_day_array[@]}"; do 
+
+	#Hourly power production today
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=hourly value='${power_inverted_array[$count_hours]}' '${hour_of_the_day_array[$count_hours]}''
+	(( count_hours++ ))
+done
+
+Number_of_hours=$(echo ${#hour_of_the_day_array[@]})
+Number_of_hours=$(( $Number_of_hours-1 ))
+
+#Hourly power production today last hour
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=hourly value='${power_iverted_array[$Number_of_hours]}' '${hour_of_the_day_array[$Number_of_hours]}''
+
+
+#echo $Number_of_hours
+#echo ${power_iverted_array[$Number_of_hours]}
+#echo ${hour_of_the_day_array[$Number_of_hours]}
+
+
+# Add in loop series of data to influxDB for each day of the actual month
+count_days=0
+for s in "${day_array[@]}"; do 
+
+	#daily power production in actual month
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=daily value='${power_iverted_whole_day_array[$count_days]}' '${day_array[$count_days]}''
+
+	#daily DC/AC conversion losses in inverter during production in actual month
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=perpower_ratio value='${perpower_ratio_whole_day_array[$count_days]}' '${day_array[$count_days]}''
+	
+	#daily Co2 reduction in actual month
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=daily_co2 value='${reduction_total_co2_whole_day_array[$count_days]}' '${day_array[$count_days]}''
+
+	#daily coal reduction in actual month
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=daily_coal value='${reduction_total_coal_whole_day_array[$count_days]}' '${day_array[$count_days]}''
+
+	(( count_days++ ))
+done
+
+
+# Add in loop series of data to influxDB for each month of the actual year
+count_months=0
+for s in "${month_array[@]}"; do 
+
+	#mothly power production in actual year
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=monthly value='${power_iverted_whole_month_array[$count_months]}' '${month_array[$count_months]}''
+
+	#mothly DC/AC conversion losses in inverter during production in actual year
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=monthly_perpower_ratio value='${perpower_ratio_whole_month_array[$count_months]}' '${month_array[$count_months]}''
+
+	#mothly Co2 reduction in actual year
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=monthly_co2 value='${reduction_total_co2_whole_month_array[$count_months]}' '${month_array[$count_months]}''
+
+	#mothly coal reduction in actual year
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=monthly_coal value='${reduction_total_coal_whole_month_array[$count_months]}' '${month_array[$count_months]}''
+
+	(( count_months++ ))
+done
+
+# Add in loop series of data to influxDB for each year 
+count_years=0
+for s in "${year_array[@]}"; do 
+
+	#yearly power production
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly value='${power_iverted_year_array[$count_years]}''
+
+	#yearly power production
+	#curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly value='${power_iverted_year_array[$count_years]}' '${year_array[$count_years]}''
+
+	#yearly DC/AC conversion losses in inverter during production
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly_perpower_ratio value='${perpower_ratio_year_array[$count_years]}''
+
+	#yearly DC/AC conversion losses in inverter during production
+	#curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly_perpower_ratio value='${perpower_ratio_year_array[$count_years]}' '${year_array[$count_years]}''
+
+	#yearly Co2 reduction
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly_co2 value='${reduction_total_co2_year_array[$count_years]}''
+
+	#yearly Co2 reduction
+	#curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly_co2 value='${reduction_total_co2_year_array[$count_years]}' '${year_array[$count_years]}''
+
+	#yearly coal reduction
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly_coal value='${reduction_total_coal_year_array[$count_years]}''
+
+	#yearly coal reduction
+	#curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly_coal value='${reduction_total_coal_year_array[$count_years]}' '${year_array[$count_years]}''
+
+	#yearly trees
+	curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly_trees value='${reduction_total_tree_year_array[$count_years]}''
+
+	#yearly trees
+	#curl -i -XPOST 'http://localhost:8086/write?db=panele_sloneczne&u=insert_user&p=476fdF$6&precision=s' --data-binary 'Power=yearly_trees value='${reduction_total_tree_year_array[$count_years]}' '${year_array[$count_years]}''
+
+	(( count_years++ ))
+done
+
+
+END_COMMENT
 
 
 # All the functions 
@@ -40,12 +170,12 @@ then
 		if [[ $getStationList_connection == true  ]];
 		then	
 			# We start function to get list of devices inside one particular plant
-			#getDevList ${stations_Code_array[0]} $number_of_plants
+			getDevList ${stations_Code_array[0]} $number_of_plants
 			
 						
 			# Statistical data about whole Power Plant
 			
-			#getStationRealKpi ${stations_Code_array[0]}	
+			getStationRealKpi ${stations_Code_array[0]}	
 			#getKpiStationHour ${stations_Code_array[0]} $curent_time
 			#getKpiStationDay ${stations_Code_array[0]} $curent_time
 			#getKpiStationMonth ${stations_Code_array[0]} $curent_time
@@ -55,7 +185,7 @@ then
 			# Statistical data about particular device/devices inside Power Plant
 			
 			# Devices data precisious all voltages etc real-time
-			#getDevRealKpi  ${device_Id_array[1]} ${device_TypeId_array[1]}			
+			getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
 			#getDevFiveMinutes ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
 			#getDevKpiDay ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
 			#getDevKpiMonth ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
@@ -78,7 +208,7 @@ then
 			device_type="1,2,8,10,13,14,15,16,17,37,38,39,40,45,47,52,53,54,55,56,57,58,59,60,61,62,63,70,71"
 			
 			
-			# getAlarmList ${stations_Code_array[0]} $Begining_time $curent_time $language $status $alarm_severity $alarm_type $device_type
+			#getAlarmList ${stations_Code_array[0]} $Begining_time $curent_time $language $status $alarm_severity $alarm_type $device_type
 			
 			
 			#Upgrade
