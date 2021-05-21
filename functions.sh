@@ -537,6 +537,7 @@ function in_case_of_error_with_connection_to_API {
 
 function login_to_API {
 
+
 #check if data about dialog is active are delivered into function
 #echo $1
 #echo $DIALOG
@@ -553,60 +554,103 @@ if [ ! -z "$DIALOG" ];
 	fi
 
 # Login to FusionSolarAPI with Username and Password
-#logowanie=$(echo '{"userName": "'$userName'", "systemCode": "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/login  Content-Type:'application/json'  Cookie:'Cookie_1=value; web-auth=true;')
-
-logowanie=$(echo '{"userName": "'$userName'", "systemCode": "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST 'https://eu5.fusionsolar.huawei.com/thirdData/login' Content-Type:'application/json' Cookie:'Cookie_1=value; web-auth=true;')
+local logowanie=$(echo '{"userName": "'$userName'", "systemCode": "'$systemCode'"}'| http --print=hb --follow --timeout 3600 POST 'https://eu5.fusionsolar.huawei.com/thirdData/login' Content-Type:'application/json' Cookie:'Cookie_1=value; web-auth=true;')
  
-echo "" 
 #show as answer of of API for question
-#echo $logowanie  | jq
-
+#echo $logowanie
 
 
 #coping a long string with answer to new variable from which we extract JOSN answer
-logowanie_for_josn_extraction=$(echo $logowanie)
+local logowanie_for_josn_extraction=$(echo $logowanie)
+local josn=$logowanie
+#show for tests header in request
+#echo $logowanie_for_josn_extraction
+#echo $josn
 
-echo $logowanie_for_josn_extraction
 
 IFS=';'
-array=( $logowanie )
-#echo "value = ${array[4]}"
-logowanie=${array[4]}
-jsesionid=${array[6]}
+local array=( $logowanie )
+
+# showing diffrent values experimenting with postion in array
+#echo ""
+#echo ""
+#echo "value = ${array[1]}"
+
+local logowanie=${array[1]}
+#jsesionid=${array[6]}
 
 IFS=':'
-array=( $logowanie )
-#echo "value = ${array[4]}"
-#logowanie=${array[4]}
+local array=( $logowanie )
 
+# showing diffrent values experimenting with postion in array
+#echo ""
+#echo ""
+#echo "value = ${array[3]}"
 
-#IFS='='
-#array=( $logowanie )
-xsrf_token=${array[2]}
+local logowanie=${array[3]}
 
-
-IFS=':'
-array=( $jsesionid )
-jsesionid=${array[1]}
 
 IFS='='
-array=( $jsesionid )
-jsesionid=${array[1]}
+local array=( $logowanie )
+
+# showing diffrent values experimenting with postion in array
+#echo ""
+#echo ""
+#echo "value = ${array[1]}"
+
+local logowanie=${array[1]}
+
+# finally XSRF-TOKEN extracted
+xsrf_token=$logowanie
 
 #echo ""
 #echo "XSRF-TOKEN: "$xsrf_token
-#echo "JSESSIONID: "$jsesionid
 #echo ""
 
 #extracting from rubish string JOSN answer part
-array2=( $logowanie_for_josn_extraction )
+#echo $logowanie_for_josn_extraction
+
+IFS=':'
+local array2=( $logowanie_for_josn_extraction )
+# showing diffrent values experimenting with postion in array
+#echo ""
+#echo ""
+#echo "value = ${array2[18]}"
+
+local logowanie_for_josn_extraction=${array2[18]}
+
+IFS=','
+local array2=( $logowanie_for_josn_extraction )
+#echo ""
+#echo ""
+#echo "value = ${array2[0]}"
+
+# finally true or false login data extracted
+local sucesfully_login_true_or_false=$(echo ${array2[0]})
 
 
-usucesfully_login=$(echo ${array2[7]})
-sucesfully_login=$(echo ${array2[11]})
+#echo $sucesfully_login_true_or_false
+
+#echo $josn
+
+# extracting JOSN from full response with headers
+IFS=$' \r\n\r\n'
+local array3=( $josn )
+#show response from API in JOSN
+#echo ""
+#echo ""
+#echo "value = ${array3[40]}"
+
+if [[ $sucesfully_login_true_or_false =~ "true"  ]];
+then
+	local sucesfully_login_true_or_false=$(echo ''${array3[39]}''  | jq '.success' )
+else
+	local sucesfully_login_true_or_false=$(echo ''${array3[40]}''  | jq '.success' )
+	
+fi
 
 
-if [[ $usucesfully_login =~ "false"  ]];
+if [[ $sucesfully_login_true_or_false =~ "false"  ]];
 	then		
 			if [ ! -z "$DIALOG" ];
 			then
@@ -617,9 +661,11 @@ if [[ $usucesfully_login =~ "false"  ]];
 				echo -e "Login to server \e[41mError :(\e[0m"			
 			fi
 			
-			josn=$(echo ${array2[7]})
+			# our JOSN response from server postion in array we extract that from headers and add to variable
+			local josn_final=${array3[40]}
+			#echo $josn_final  | jq
 			
-elif [[ $sucesfully_login =~ "true"  ]];
+elif [[ $sucesfully_login_true_or_false =~ "true"  ]];
 	then		
 			if [ ! -z "$DIALOG" ];
 			then
@@ -630,7 +676,9 @@ elif [[ $sucesfully_login =~ "true"  ]];
 				echo -e "Login to server \e[42mOK :)\e[0m"
 			fi
 			
-			josn=$(echo ${array2[11]})
+			# our JOSN response from server postion in array we extract that from headers and add to variable
+			local josn_final=${array3[39]}
+			#echo $josn_final  | jq
 else
 
 	if [ ! -z "$DIALOG" ];
@@ -642,34 +690,36 @@ else
 		echo -e "Problems with conection to Huawei Server" 
 	fi
 fi
-#echo $josn
-
-josn_final=`echo "$josn" | grep -o '{.*'`
-
-#show response from API in JOSN
-#echo $josn_final | jq
 
 
-success=$(echo ''$josn_final''  | jq '.success' )
-buildCode=$(echo ''$josn_final''  | jq '.buildCode' )
-failCode=$(echo ''$josn_final''  | jq '.failCode' )
-message=$(echo ''$josn_final''  | jq '.message' )
-data=$(echo ''$josn_final''  | jq '.data' )
 
-if [[ $usucesfully_login =~ "false"  ]];
+
+
+
+
+
+
+# showing response JOSN from login API
+#echo $josn_final  | jq
+
+local success=$(echo ''$josn_final''  | jq '.success' )
+local failCode=$(echo ''$josn_final''  | jq '.failCode' )
+local message=$(echo ''$josn_final''  | jq '.message' )
+local data=$(echo ''$josn_final''  | jq '.data' )
+
+
+if [[ $success =~ "false"  ]];
 	then		
 		params=$(echo ''$josn_final''  | jq '.params' )	
 			currentTime=$(echo ''$josn_final''  | jq '.params.currentTime' )
-			systemCode=$(echo ''$josn_final''  | jq '.params.systemCode' )
-			userName=$(echo ''$josn_final''  | jq '.params.userName' )
-elif [[ $sucesfully_login =~ "true"  ]];
+elif [[ $success =~ "true"  ]];
 	then
 		params=$(echo ''$josn_final''  | jq '.params' )	
 fi
 
 
 #removing " on begining and end
-buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
+#buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
 
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
@@ -712,24 +762,20 @@ Error_Codes_List $failCode
 #echo "Optional message: " $message
 if [[ ! $message == "\"\""  ]];
 then	
+	if [[ ! $message =~ "null"  ]];
+	then
 		if [ ! -z "$DIALOG" ];
 			then
 				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
 			else		
 				echo "Optional message: " $message
 		fi
+	fi
 	
 fi
 		
-if [ ! -z "$DIALOG" ];
-	then
-		info_for_dialog_screen=$info_for_dialog_screen"\nBuild Code: "$buildCode
-	else		
-		echo "Build Code: "$buildCode
-fi
 
-
-if [[ $usucesfully_login =~ "false"  ]];
+if [[ $success =~ "false"  ]];
 then	
 	#shorter time for read in unix
 	local curent_time_actually=$(echo ${currentTime::-3})
@@ -752,15 +798,18 @@ then
 
 fi
 		
-if [[ $sucesfully_login =~ "true"  ]];
+if [[ $success =~ "true"  ]];
 then	
 	if [[ ! $params == "null"  ]];
 	then	
-		if [ ! -z "$DIALOG" ];
+		if [[ ! $params == "{}"  ]];
 		then
-		info_for_dialog_screen=$info_for_dialog_screen"\nRequest parameter: "$params
-		else		
-		echo "Request parameter: "$params
+			if [ ! -z "$DIALOG" ];
+			then
+			info_for_dialog_screen=$info_for_dialog_screen"\nRequest parameter: "$params
+			else		
+			echo "Request parameter: "$params
+			fi
 		fi		
 	fi
 fi
