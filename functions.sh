@@ -778,7 +778,7 @@ fi
 if [[ $success =~ "false"  ]];
 then	
 	#shorter time for read in unix
-	local curent_time_actually=$(echo ${currentTime::-3})
+	local curent_time_actually=$(echo ${currentTime::-9})
 	local curent_time_actually=$(date -d @$curent_time_actually)
 	
 	if [ ! -z "$DIALOG" ];
