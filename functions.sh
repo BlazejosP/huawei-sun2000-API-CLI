@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #inside this file are all fuctions necessary to connect to Huawei FusionSolarApp API
 
 
@@ -95,7 +96,7 @@ Device_type_ID () {
 # List of possible smart devices in Power Plant by Huawei. Based on documentation SmartPVMS.V300R006C10_API_Northbound.Interface.Reference.1.pdf pages 28-30 
 if [ $1 == "1"  ];
 then
-	printf "	Smart String Inverter"
+	printf "	String Inverter"
 elif [ $1 == "2"  ];
 then	
 	echo "		SmartLogger"
@@ -122,7 +123,7 @@ then
 	echo "		AC combiner box"
 elif [ $1 == "13"  ];
 then	
-	echo "		DPU"
+	echo "		Protocol converter"
 elif [ $1 == "14"  ];
 then	
 	echo "		Central Inverter"
@@ -167,19 +168,19 @@ then
 	echo "		Photovoltaic grid-connection panel"
 elif [ $1 == "37"  ];
 then	
-	echo "		Pinnet SmartLogger"
+	echo "		Pinnet data logger"
 elif [ $1 == "38"  ];
 then	
-	echo "		Smart Energy Center"
+	echo "		Residential inverter"
 elif [ $1 == "39"  ];
 then	
 	echo "		Battery"
 elif [ $1 == "40"  ];
 then	
-	echo "		Smart Backup Box"
+	echo "		Backup Box"
 elif [ $1 == "45"  ];
 then	
-	echo "		MBUS"
+	echo "		PLC"
 elif [ $1 == "46"  ];
 then	
 	echo "		Optimizer"
@@ -837,13 +838,12 @@ function getStationList {
 
 # Testing that data are correct
 #echo $xsrf_token
-#echo $jsesionid
 
 # Request to API getStationList
-local getStationList=$(printf '{ }'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local getStationList=$(printf '{ }'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
 #show result of qustion in JOSN
-echo $getStationList  | jq
+#echo $getStationList  | jq
 
 
 local success=$(echo ''$getStationList''  | jq '.success' )
@@ -865,14 +865,15 @@ curent_time_actually=$(echo ${curent_time::-3})
 #curent_time=${curent_time::-3}
 
 #echo $curent_time
-#data=$(date -d @'$curent_time')
-#echo $data
+#date=$(date -d @''$(echo ${curent_time::-3})'')
+#echo $date
+date=$curent_time
 
 local data=$(echo ''$getStationList''  | jq '.data[]' )
 	local aidType=$(echo ''$data''  | jq '.aidType' )
 	local buildState=$(echo ''$data''  | jq '.buildState' )
 	local combineType=$(echo ''$data''  | jq '.combineType' )
-	local capacity=$(echo ''$data''  | jq '.capacity' ) # in kWp Kilo-Watt-pik
+	local capacity=$(echo ''$data''  | jq '.capacity' ) # in MWp Mega-Watt-pik
 	local owner_phone=$(echo ''$data''  | jq '.linkmanPho' )
 	local station_Addres=$(echo ''$data''  | jq '.stationAddr' )
 	local station_Code=$(echo ''$data''  | jq '.stationCode' )
@@ -939,14 +940,18 @@ Error_Codes_List $failCode
 #echo "Optional message: " $message
 if [[ ! $message == "\"\""  ]];
 then	
-	echo "Optional message: " $message
+	if [[ ! $message =~ "null"  ]];
+	then
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
+			else		
+				echo "Optional message: " $message
+		fi
+	fi
 fi
 
 
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
 #echo "Current Time: "$curent_time
 #shorter time for read in unix
 if [[ $success == "true"  ]];
@@ -971,7 +976,7 @@ for s in "${#stations_Name_array[@]}"; do
 	fi
 	if [[ ! ${stations_capacity_array[$count]} == null  ]];
 		then
-		echo "	Installed capacity: "${stations_capacity_array[$count]}" kWp"
+		echo "	Installed capacity: "${stations_capacity_array[$count]}" MWp"
 	fi
 	if [[ ! ${stations_Linkman_array[$count]} == null  ]];
 		then
@@ -1040,7 +1045,7 @@ done
 # in case of error
 if [[ $success == "false"  ]];
 	then	
-	#fuction which works with connection error	
+	#fuction which works when connection error apears	
 	in_case_of_error_with_connection_to_API $getStationList
 fi
 
@@ -1052,13 +1057,12 @@ fi
 function getDevList {
 
 # Request to API getDevList
-local getDevList=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local getDevList=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
 #show result of qustion in JOSN
 #echo $getDevList | jq
 
 local success=$(echo ''$getDevList''  | jq '.success' )
-local buildCode=$(echo ''$getDevList''  | jq '.buildCode' )
 local failCode=$(echo ''$getDevList''  | jq '.failCode' )
 local message=$(echo ''$getDevList''  | jq '.message' )
 
@@ -1106,7 +1110,6 @@ eval "device_stationCode_array=(${stationCode})"
 local number_of_devices=${#device_Name_array[@]}
 
 #Removing both " from string
-local buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
 local inverter_Type="$(echo "$inverter_Type" | tr -d '[:punct:]')"
 
 
@@ -1135,14 +1138,17 @@ Error_Codes_List $failCode
 #echo "Optional message: " $message
 if [[ ! $message == "\"\""  ]];
 then	
-	echo "Optional message: " $message
+	if [[ ! $message =~ "null"  ]];
+	then
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
+			else		
+				echo "Optional message: " $message
+		fi
+	fi
 fi
 
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
 
 
 #echo "Current Time: "$currentTime
@@ -1170,7 +1176,7 @@ for s in "${device_Name_array[@]}"; do
 
 	if [ ! -z "${device_inverter_Type_array[$count]}" ]
 	then
-		echo "	Inverter Type: "${device_inverter_Type_array[$count]}
+		echo "	Model: "${device_inverter_Type_array[$count]}
 	fi
 	
 	echo "	Device Name: "${device_Name_array[$count]}
@@ -1214,14 +1220,13 @@ function getStationRealKpi {
 
 
 # Request to API getStationRealKpi
-local getStationRealKpi=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local getStationRealKpi=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
 
 #show result of qustion in JOSN
 #echo $getStationRealKpi | jq
 
 local success=$(echo ''$getStationRealKpi''  | jq '.success' )
-local buildCode=$(echo ''$getStationRealKpi''  | jq '.buildCode' )
 local failCode=$(echo ''$getStationRealKpi''  | jq '.failCode' )
 local  message=$(echo ''$getStationRealKpi''  | jq '.message' )
 
@@ -1292,14 +1297,17 @@ Error_Codes_List $failCode
 #echo "Optional message: " $message
 if [[ ! $message == "\"\""  ]];
 then	
-	echo "Optional message: " $message
+	if [[ ! $message =~ "null"  ]];
+	then
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
+			else		
+				echo "Optional message: " $message
+		fi
+	fi
 fi
 
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
 
 #echo "Current Time: "$currentTime
 #shorter time for read in unix
@@ -1361,9 +1369,10 @@ echo ""
 function getKpiStationHour {
 
 # Request to API getKpiStationHour
-local getKpiStationHour=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local getKpiStationHour=$(printf '{"stationCodes": "'$1'", "collectTime": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
-#echo $getKpiStationHour | jq
+echo $2
+echo $getKpiStationHour | jq
 #echo $getKpiStationHour | jq '.data[]'
 #echo $getKpiStationHour | jq '.data[].collectTime, .data[].dataItemMap.inverter_power'
 
@@ -2164,12 +2173,11 @@ function getDevRealKpi {
 
 
 # Request to API getKpiStationYear
-local getDevRealKpi=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local getDevRealKpi=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
 #echo $getDevRealKpi | jq
 
 local success=$(echo ''$getDevRealKpi''  | jq '.success' )
-local buildCode=$(echo ''$getDevRealKpi''  | jq '.buildCode' )
 local failCode=$(echo ''$getDevRealKpi''  | jq '.failCode' )
 local message=$(echo ''$getDevRealKpi''  | jq '.message' )
 
@@ -2857,7 +2865,6 @@ local data_getDevRealKpi=$(echo ''$getDevRealKpi''  | jq '.params' )
 	local devTypeId=$(echo ''$data_getDevRealKpi''  | jq '.devTypeId' )
 
 #removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
 local devIds="$(echo "$devIds" | tr -d '"')"
 local devTypeId="$(echo "$devTypeId" | tr -d '"')"
 
@@ -2909,13 +2916,15 @@ Error_Codes_List $failCode
 #echo "Optional message: " $message
 if [[ ! $message == "\"\""  ]];
 then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
+	if [[ ! $message =~ "null"  ]];
+	then
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
+			else		
+				echo "Optional message: " $message
+		fi
+	fi
 fi
 
 
@@ -2923,7 +2932,7 @@ local curent_time_actually=$(echo ${currentTime::-3})
 local curent_time_of_request=$(date -d @$curent_time_actually)
 echo "Time of your Request to API: "$curent_time_of_request
 
-# if we have inverter
+# if we have String inverter
 if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 	then
 	
@@ -2996,7 +3005,7 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 		fi
 		if [[ ! ${temperature_array[$c]} == null  ]];
 		then	
-			echo -e "	Device internal temperature: "${temperature_array[$c]}" °C"				
+			echo -e "	Inverter internal temperature: "${temperature_array[$c]}" °C"				
 		fi
 		if [[ ! ${power_factor_array[$c]} == null  ]];
 		then	
@@ -3012,11 +3021,11 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 		fi
 		if [[ ! ${reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Output reactive power: "${reactive_power_array[$c]}" Kvar"			
+			echo -e "	Reactive output power: "${reactive_power_array[$c]}" KVar"			
 		fi
 		if [[ ! ${day_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Daily energy: "${day_cap_array[$c]}" Kwh"			
+			echo -e "	Yield today: "${day_cap_array[$c]}" Kwh"			
 		fi
 				if [[ ! ${mppt_power_array[$c]} == null  ]];
 		then	
@@ -3216,16 +3225,18 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 		fi
 		if [[ ! ${total_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Cumulative energy: "${total_cap_array[$c]}" Kwh"			
+			echo -e "	Total yield: "${total_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${open_time_array[$c]} == null  ]];
-		then	
-			local startup_time=$(date -d @${open_time_array[$c]})	
+		then				
+			local startup_time=$(echo ${open_time_array[$c]::-3})
+			local startup_time=$(date -d @$startup_time)	
 			echo -e "	Inverter last startup time: "$startup_time					
 		fi
 		if [[ ! ${close_time_array[$c]} == null  ]];
 		then	
-			local shutdown_time=$(date -d @${close_time_array[$c]})
+			local shutdown_time=$(echo ${close_time_array[$c]::-3})
+			local shutdown_time=$(date -d @$shutdown_time)
 			echo -e "	Inverter last shutdown time: "$shutdown_time		
 		fi
 		if [[ ! ${mppt_total_cap_array[$c]} == null  ]];
@@ -3234,43 +3245,43 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 		fi
 		if [[ ! ${mppt_1_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 1 DC cumulative energy: "${mppt_1_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 1 DC total energy: "${mppt_1_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_2_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 2 DC cumulative energy: "${mppt_2_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 2 DC total energy: "${mppt_2_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_3_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 3 DC cumulative energy: "${mppt_3_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 3 DC total energy: "${mppt_3_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_4_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 4 DC cumulative energy: "${mppt_4_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 4 DC total energy: "${mppt_4_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_5_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 5 DC cumulative energy: "${mppt_5_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 5 DC total energy: "${mppt_5_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_6_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 6 DC cumulative energy: "${mppt_6_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 6 DC total energy: "${mppt_6_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_7_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 7 DC cumulative energy: "${mppt_7_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 7 DC total energy: "${mppt_7_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_8_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 8 DC cumulative energy: "${mppt_8_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 8 DC total energy: "${mppt_8_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_9_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 9 DC cumulative energy: "${mppt_9_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 9 DC total energy: "${mppt_9_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_10_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 10 DC cumulative energy: "${mppt_10_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 10 DC total energy: "${mppt_10_cap_array[$c]}" Kwh"			
 		fi
 		
 		#special for checking if inverter is diconected 
@@ -3287,10 +3298,10 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 			device_status="Disconnected"
 			elif [[ ${run_state_array[$c]} == 1  ]];
 			then
-			device_status="Connected but Standby"
-			elif [[ ${run_state_array[$c]} == 2  ]];
-			then
-			device_status="Connected"
+			device_status="Connected "
+			#elif [[ ${run_state_array[$c]} == 2  ]];
+			#then
+			#device_status="Connected but Standby"
 			else
 			device_status="Unknow"
 			fi
@@ -3299,166 +3310,9 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 	done
 fi
 
-# if we have central inverter
-if [[ $success == "true"  ]] && [[  $2 == 14  ]];
-	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
-	
-	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )); do
-		echo -e "\e[93m \c" 
-		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
-		
-		if [[ ! ${inverter_state_array[$c]} == null  ]];
-		then	
-			printf "	Inverter status: "
-			#decimal number to hexdecimal
-			local hex=$( printf "%x" ${inverter_state_array[$c]} );
-			#echo $hex
-			#function to check inverter status
-			inverter_state $hex
-			echo ""			
-		fi
-		if [[ ! ${day_cap_array[$c]} == null  ]];
-		then	
-			echo -e "	Daily energy: "${day_cap_array[$c]}" KWh"				
-		fi
-		if [[ ! ${total_cap_array[$c]} == null  ]];
-		then	
-			echo -e "	Cumulative energy: "${total_cap_array[$c]}" kWh"				
-		fi
-		if [[ ! ${temperature_array[$c]} == null  ]];
-		then	
-			echo -e "	Device internal temperature: "${temperature_array[$c]}" °C"				
-		fi
-		if [[ ! ${center_u_array[$c]} == null  ]];
-		then	
-			echo -e "	DC voltage: "${center_u_array[$c]}" V"				
-		fi
-		if [[ ! ${center_i_array[$c]} == null  ]];
-		then	
-			echo -e "	DC current: "${center_i_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_1_array[$c]} == null  ]];
-		then	
-			echo -e "	#1 current value: "${center_i_1_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_2_array[$c]} == null  ]];
-		then	
-			echo -e "	#2 current value: "${center_i_2_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_3_array[$c]} == null  ]];
-		then	
-			echo -e "	#3 current value: "${center_i_3_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_4_array[$c]} == null  ]];
-		then	
-			echo -e "	#4 current value: "${center_i_4_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_5_array[$c]} == null  ]];
-		then	
-			echo -e "	#5 current value: "${center_i_5_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_6_array[$c]} == null  ]];
-		then	
-			echo -e "	#6 current value: "${center_i_6_array[$c]}" A"				
-		fi			
-		if [[ ! ${center_i_7_array[$c]} == null  ]];
-		then	
-			echo -e "	#7 current value: "${center_i_7_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_8_array[$c]} == null  ]];
-		then	
-			echo -e "	#8 current value: "${center_i_8_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_9_array[$c]} == null  ]];
-		then	
-			echo -e "	#9 current value: "${center_i_9_array[$c]}" A"				
-		fi
-		if [[ ! ${center_i_10_array[$c]} == null  ]];
-		then	
-			echo -e "	#10 current value: "${center_i_10_array[$c]}" A"				
-		fi
-		if [[ ! ${mppt_power_array[$c]} == null  ]];
-		then	
-			echo -e "	MPPT (Maximum Power Point Tracking) total input power: "${mppt_power_array[$c]}" Kw"			
-		fi
-		if [[ ! ${a_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase A voltage: "${a_u_array[$c]}" V"				
-		fi
-		if [[ ! ${b_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase B voltage: "${b_u_array[$c]}" V"				
-		fi
-		if [[ ! ${c_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase C voltage: "${c_u_array[$c]}" V"				
-		fi
-		if [[ ! ${a_i_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid phase A current: "${a_i_array[$c]}" A"				
-		fi
-		if [[ ! ${b_i_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid phase B current: "${b_i_array[$c]}" A"				
-		fi
-		if [[ ! ${c_i_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid phase C current: "${c_i_array[$c]}" A"				
-		fi
-		if [[ ! ${power_factor_array[$c]} == null  ]];
-		then	
-			echo -e "	Power factor: "${power_factor_array[$c]}			
-		fi
-		if [[ ! ${elec_freq_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid frequency: "${elec_freq_array[$c]}" Hz"			
-		fi
-		if [[ ! ${active_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Active power: "${active_power_array[$c]}" Kw"			
-		fi
-		if [[ ! ${reactive_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Output reactive power: "${reactive_power_array[$c]}" Kvar"			
-		fi
-		if [[ ! ${open_time_array[$c]} == null  ]];
-		then	
-			local startup_time=$(date -d @${open_time_array[$c]})	
-			echo -e "	Inverter last startup time: "$startup_time
-					
-		fi
-		if [[ ! ${close_time_array[$c]} == null  ]];
-		then	
-			local shutdown_time=$(date -d @${close_time_array[$c]})
-			echo -e "	Inverter last shutdown time: "$shutdown_time		
-		fi
-		if [[ ! ${aop_array[$c]} == null  ]];
-		then	
-			echo -e "	Production reliability: "${aop_array[$c]}" %"			
-		fi
-		if [[ ! ${run_state_array[$c]} == null  ]];
-		then	
-			if [[ ${run_state_array[$c]} == 0  ]];
-			then
-			device_status="Disconnected"
-			elif [[ ${run_state_array[$c]} == 1  ]];
-			then
-			device_status="Connected"
-			else
-			device_status="Unknow"
-			fi
-			echo -e "	Status: "$device_status			
-	fi
-	done
-fi
 
-# device is Smart Energy Center
+
+# device is Residential inverter
 if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 	then
 	
@@ -3524,7 +3378,7 @@ if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 		fi
 		if [[ ! ${temperature_array[$c]} == null  ]];
 		then	
-			echo -e "	Device internal temperature: "${temperature_array[$c]}" °C"				
+			echo -e "	Inverter internal temperature: "${temperature_array[$c]}" °C"				
 		fi
 		if [[ ! ${power_factor_array[$c]} == null  ]];
 		then	
@@ -3540,11 +3394,11 @@ if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 		fi
 		if [[ ! ${reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Output reactive power: "${reactive_power_array[$c]}" Kvar"			
+			echo -e "	Reactive output power: "${reactive_power_array[$c]}" Kvar"			
 		fi
 		if [[ ! ${day_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Daily energy: "${day_cap_array[$c]}" Kwh"			
+			echo -e "	Yield today: "${day_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_power_array[$c]} == null  ]];
 		then	
@@ -3615,37 +3469,39 @@ if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 		fi
 		if [[ ! ${total_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Cumulative energy: "${total_cap_array[$c]}" Kwh"			
+			echo -e "	Total yield: "${total_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${open_time_array[$c]} == null  ]];
-		then	
-			local startup_time=$(date -d @${open_time_array[$c]})	
+		then				
+			local startup_time=$(echo ${open_time_array[$c]::-3})
+			local startup_time=$(date -d @$startup_time)	
 			echo -e "	Inverter last startup time: "$startup_time					
 		fi
 		if [[ ! ${close_time_array[$c]} == null  ]];
 		then	
-			local shutdown_time=$(date -d @${close_time_array[$c]})
+			local shutdown_time=$(echo ${close_time_array[$c]::-3})
+			local shutdown_time=$(date -d @$shutdown_time)
 			echo -e "	Inverter last shutdown time: "$shutdown_time		
 		fi
 		if [[ ! ${mppt_total_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Total DC input energy: "${mppt_total_cap_array[$c]}" Kwh"			
+			echo -e "	Total DC total yield: "${mppt_total_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_1_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 1 DC cumulative energy: "${mppt_1_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 1 DC total yield: "${mppt_1_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_2_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 2 DC cumulative energy: "${mppt_2_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 2 DC total yield: "${mppt_2_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_3_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 3 DC cumulative energy: "${mppt_3_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 3 DC total yield: "${mppt_3_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${mppt_4_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 4 DC cumulative energy: "${mppt_4_cap_array[$c]}" Kwh"			
+			echo -e "	MPPT 4 DC total yield: "${mppt_4_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${run_state_array[$c]} == null  ]];
 		then	
@@ -3664,133 +3520,7 @@ if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 	done
 fi
 
-# device is DC combiner box
-if [[ $success == "true"  ]] && [[ $2 == 15  ]];
-	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
-	
-	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )); do
-		echo -e "\e[93m \c" 
-		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
-					
-		
-		if [[ ! ${dc_i1_array[$c]} == null  ]];
-		then	
-			echo -e "	#1 current value: "${dc_i1_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i2_array[$c]} == null  ]];
-		then	
-			echo -e "	#2 current value: "${dc_i2_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i3_array[$c]} == null  ]];
-		then	
-			echo -e "	#3 current value: "${dc_i3_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i4_array[$c]} == null  ]];
-		then	
-			echo -e "	#4 current value: "${dc_i4_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i5_array[$c]} == null  ]];
-		then	
-			echo -e "	#5 current value: "${dc_i5_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i6_array[$c]} == null  ]];
-		then	
-			echo -e "	#6 current value: "${dc_i6_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i7_array[$c]} == null  ]];
-		then	
-			echo -e "	#7 current value: "${dc_i7_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i8_array[$c]} == null  ]];
-		then	
-			echo -e "	#8 current value: "${dc_i8_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i9_array[$c]} == null  ]];
-		then	
-			echo -e "	#9 current value: "${dc_i9_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i10_array[$c]} == null  ]];
-		then	
-			echo -e "	#10 current value: "${dc_i10_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i11_array[$c]} == null  ]];
-		then	
-			echo -e "	#11 current value: "${dc_i11_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i12_array[$c]} == null  ]];
-		then	
-			echo -e "	#12 current value: "${dc_i12_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i13_array[$c]} == null  ]];
-		then	
-			echo -e "	#13 current value: "${dc_i13_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i14_array[$c]} == null  ]];
-		then	
-			echo -e "	#14 current value: "${dc_i14_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i15_array[$c]} == null  ]];
-		then	
-			echo -e "	#15 current value: "${dc_i15_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i16_array[$c]} == null  ]];
-		then	
-			echo -e "	#16 current value: "${dc_i16_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i17_array[$c]} == null  ]];
-		then	
-			echo -e "	#17 current value: "${dc_i17_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i18_array[$c]} == null  ]];
-		then	
-			echo -e "	#18 current value: "${dc_i18_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i19_array[$c]} == null  ]];
-		then	
-			echo -e "	#19 current value: "${dc_i19_array[$c]}" A"				
-		fi
-		if [[ ! ${dc_i20_array[$c]} == null  ]];
-		then	
-			echo -e "	#20 current value: "${dc_i20_array[$c]}" A"				
-		fi
-		if [[ ! ${photc_i_array[$c]} == null  ]];
-		then	
-			echo -e "	PV current: "${photc_i_array[$c]}" A"				
-		fi
-		if [[ ! ${photc_u_array[$c]} == null  ]];
-		then	
-			echo -e "	PV voltage: "${photc_u_array[$c]}" V"				
-		fi
-		if [[ ! ${temperature_array[$c]} == null  ]];
-		then	
-			echo -e "	Device internal temperature: "${temperature_array[$c]}" °C"				
-		fi
-		if [[ ! ${thunder_count_array[$c]} == null  ]];
-		then	
-			echo -e "	Number of lightning strikes: "${thunder_count_array[$c]}" Times"				
-		if [[ ! ${run_state_array[$c]} == null  ]];
-		then	
-			if [[ ${run_state_array[$c]} == 0  ]];
-			then
-			device_status="Disconnected"
-			elif [[ ${run_state_array[$c]} == 1  ]];
-			then
-			device_status="Connected"
-			else
-			device_status="Unknow"
-			fi
-			echo -e "	Status: "$device_status			
-		fi
-		
-	fi
-	done
-fi
+
 
 # device is EMI
 if [[ $success == "true"  ]] && [[ $2 == 10  ]];
@@ -3821,19 +3551,19 @@ if [[ $success == "true"  ]] && [[ $2 == 10  ]];
 		fi	
 		if [[ ! ${wind_direction_array[$c]} == null  ]];
 		then	
-			echo -e "	Wind direction: "${wind_direction_array[$c]}" Degree"				
+			echo -e "	Wind direction: "${wind_direction_array[$c]}				
 		fi	
 		if [[ ! ${radiant_total_array[$c]} == null  ]];
 		then	
-			echo -e "	Total irradiation: "${radiant_total_array[$c]}" MJ/m 2"				
+			echo -e "	Daily irradiation: "${radiant_total_array[$c]}" MJ/m 2"				
 		fi	
 		if [[ ! ${radiant_line_array[$c]} == null  ]];
 		then	
-			echo -e "	Irradiation intensity: "${radiant_line_array[$c]}" W/m 2"				
+			echo -e "	Irradiance: "${radiant_line_array[$c]}" W/m 2"				
 		fi	
 		if [[ ! ${horiz_radiant_line_array[$c]} == null  ]];
 		then	
-			echo -e "	Horizontal irradiation intensity: "${horiz_radiant_line_array[$c]}" W/m 2"				
+			echo -e "	Horizontal irradiance: "${horiz_radiant_line_array[$c]}" W/m 2"				
 		fi	
 		if [[ ! ${horiz_radiant_total_array[$c]} == null  ]];
 		then	
@@ -3841,10 +3571,10 @@ if [[ $success == "true"  ]] && [[ $2 == 10  ]];
 		fi
 		if [[ ! ${run_state_array[$c]} == null  ]];
 		then	
-			if [[ ${run_state_array[$c]} == 1  ]];
+			if [[ ${run_state_array[$c]} == 0  ]];
 			then
 			device_status="Disconnected"
-			elif [[ ${run_state_array[$c]} == 2  ]];
+			elif [[ ${run_state_array[$c]} == 1  ]];
 			then
 			device_status="Connected"
 			else
@@ -3918,47 +3648,47 @@ if [[ $success == "true"  ]] && [[ $2 == 17  ]];
 		fi
 		if [[ ! ${active_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power (Kilowatt hour of positive active power): "${active_cap_array[$c]}" kWh"			
+			echo -e "	Active energy (forward active energy): "${active_cap_array[$c]}" kWh"			
 		fi
 		if [[ ! ${reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Output reactive power: "${reactive_power_array[$c]}" Kvar"			
+			echo -e "	Reactive power: "${reactive_power_array[$c]}" Kvar"			
 		fi
 		if [[ ! ${reverse_active_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative active power: "${reverse_active_cap_array[$c]}" Kwh"			
+			echo -e "	Reverse active energy: "${reverse_active_cap_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${forward_reactive_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of positive reactive power: "${forward_reactive_cap_array[$c]}" Kwh"			
+			echo -e "	Forward reactive energy: "${forward_reactive_cap_array[$c]}" Kwh"			
 		fi		
 		if [[ ! ${reverse_reactive_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative reactive power: "${reverse_reactive_cap_array[$c]}" Kwh"			
+			echo -e "	Reverse reactive energy: "${reverse_reactive_cap_array[$c]}" Kwh"			
 		fi			
 		if [[ ! ${active_power_a_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power Pa: "${active_power_a_array[$c]}" Kw"			
+			echo -e "	Active power PA: "${active_power_a_array[$c]}" Kw"			
 		fi		
 		if [[ ! ${active_power_b_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power Pb: "${active_power_b_array[$c]}" Kw"			
+			echo -e "	Active power PB: "${active_power_b_array[$c]}" Kw"			
 		fi		
 		if [[ ! ${active_power_c_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power Pb: "${active_power_c_array[$c]}" Kw"			
+			echo -e "	Active power PC: "${active_power_c_array[$c]}" Kw"			
 		fi		
 		if [[ ! ${reactive_power_a_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive power Qa: "${reactive_power_a_array[$c]}" kVar"			
+			echo -e "	Reactive power QA: "${reactive_power_a_array[$c]}" kVar"			
 		fi	
 		if [[ ! ${reactive_power_b_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive power Qb: "${reactive_power_ab_array[$c]}" kVar"			
+			echo -e "	Reactive power QB: "${reactive_power_ab_array[$c]}" kVar"			
 		fi
 		if [[ ! ${reactive_power_c_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive power Qc: "${reactive_power_c_array[$c]}" kVar"			
+			echo -e "	Reactive power QC: "${reactive_power_c_array[$c]}" kVar"			
 		fi
 		if [[ ! ${total_apparent_power_array[$c]} == null  ]];
 		then	
@@ -3970,67 +3700,67 @@ if [[ $success == "true"  ]] && [[ $2 == 17  ]];
 		fi
 		if [[ ! ${reverse_active_peak_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative active power (peak): "${reverse_active_peak_array[$c]}" Kwh"			
+			echo -e "	Reverse active energy (peak): "${reverse_active_peak_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${reverse_active_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative active power (off): "${reverse_active_power_array[$c]}" Kwh"			
+			echo -e "	Reverse active energy (shoulder): "${reverse_active_power_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${reverse_active_valley_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative active power (shoulder): "${reverse_active_valley_array[$c]}" Kwh"			
+			echo -e "	Reverse active energy (off-peak): "${reverse_active_valley_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${reverse_active_top_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative active power (sharp): "${reverse_active_top_array[$c]}" Kwh"			
+			echo -e "	Reverse active energy (sharp): "${reverse_active_top_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${positive_active_peak_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of positive active power (peak): "${positive_active_peak_array[$c]}" Kwh"			
+			echo -e "	Forward active energy (peak): "${positive_active_peak_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${positive_active_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of positive active power (off): "${positive_active_power_array[$c]}" Kwh"			
+			echo -e "	Forward active energy (shoulder): "${positive_active_power_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${positive_active_valley_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of positive active power (shoulder): "${positive_active_valley_array[$c]}" Kwh"			
+			echo -e "	Forward active energy (off-peak): "${positive_active_valley_array[$c]}" Kwh"			
 		fi
 		if [[ ! ${positive_active_top_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of positive active power (sharp): "${positive_active_top_array[$c]}" Kwh"			
+			echo -e "	Forward active energy (sharp): "${positive_active_top_array[$c]}" Kwh"			
 		fi	
 		if [[ ! ${reverse_reactive_peak_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of positive reactive power (peak): "${reverse_reactive_peak_array[$c]}" Kwh"			
+			echo -e "	Reverse reactive energy (peak): "${reverse_reactive_peak_array[$c]}" kVar"			
 		fi
 		if [[ ! ${reverse_reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of positive reactive power (off): "${reverse_reactive_power_array[$c]}" Kwh"			
+			echo -e "	Reverse reactive energy (shoulder): "${reverse_reactive_power_array[$c]}" kVar"			
 		fi
 		if [[ ! ${reverse_reactive_valley_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of positive reactive power (shoulder): "${reverse_reactive_valley_array[$c]}" Kwh"			
+			echo -e "	Reverse reactive energy (off-peak): "${reverse_reactive_valley_array[$c]}" kVar"			
 		fi
 		if [[ ! ${reverse_reactive_top_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative reactive power (sharp): "${reverse_reactive_top_array[$c]}" Kwh"			
+			echo -e "	Reverse reactive energy (sharp): "${reverse_reactive_top_array[$c]}" kVar"			
 		fi
 		if [[ ! ${positive_reactive_peak_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative reactive power (peak): "${positive_reactive_peak_array[$c]}" Kwh"			
+			echo -e "	Forward reactive energy (peak): "${positive_reactive_peak_array[$c]}" kVar"			
 		fi
 		if [[ ! ${positive_reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative reactive power (off): "${positive_reactive_power_array[$c]}" Kwh"			
+			echo -e "	Forward reactive energy (shoulder): "${positive_reactive_power_array[$c]}" kVar"			
 		fi
 		if [[ ! ${positive_reactive_valley_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative reactive power (shoulder): "${positive_reactive_valley_array[$c]}" Kwh"			
+			echo -e "	Forward reactive energy (off-peak): "${positive_reactive_valley_array[$c]}" kVar"			
 		fi
 		if [[ ! ${positive_reactive_top_array[$c]} == null  ]];
 		then	
-			echo -e "	Kilowatt hour of negative reactive power (sharp): "${positive_reactive_top_array[$c]}" Kwh"			
+			echo -e "	Forward reactive energy (sharp): "${positive_reactive_top_array[$c]}" kVar"			
 		fi
 
 	done
@@ -4089,11 +3819,11 @@ if [[ $success == "true"  ]] && [[ $2 == 47  ]];
 		fi
 		if [[ ! ${active_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power (Kilowatt hour of positive active power): "${active_cap_array[$c]}" kWh"				
+			echo -e "	Active energy (forward active energy): "${active_cap_array[$c]}" kWh"				
 		fi
 		if [[ ! ${reverse_active_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Rective power (Kilowatt hour of negative active power): "${reverse_active_cap_array[$c]}" kWh"				
+			echo -e "	Reverse active energy: "${reverse_active_cap_array[$c]}" kWh"				
 		fi
 		if [[ ! ${run_state_array[$c]} == null  ]];
 		then	
@@ -4114,7 +3844,7 @@ if [[ $success == "true"  ]] && [[ $2 == 47  ]];
 	done
 fi
 
-# device is Battery
+# device is Battery (only LG batteries are supported)
 if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 	then
 	
@@ -4130,7 +3860,25 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 		
 		if [[ ! ${battery_status_array[$c]} == null  ]];
 		then	
-			echo -e "	Battery operating status: "${battery_status_array[$c]}				
+			if [[ ${battery_status_array[$c]} == 0  ]];
+			then
+			Battery_status="offline"
+			elif [[ ${battery_status_array[$c]} == 1  ]];
+			then
+			Battery_status="standby"
+			elif [[ ${battery_status_array[$c]} == 2  ]];
+			then
+			Battery_status="running"
+			elif [[ ${battery_status_array[$c]} == 3  ]];
+			then
+			Battery_status="faulty"
+			elif [[ ${battery_status_array[$c]} == 4  ]];
+			then
+			Battery_status="hibernation"
+			else
+			Battery_status="unknow"
+			fi
+			echo -e "	Battery running status: "$Battery_status			
 		fi
 		if [[ ! ${max_charge_power_array[$c]} == null  ]];
 		then	
@@ -4150,11 +3898,11 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 		fi	
 		if [[ ! ${battery_soc_array[$c]} == null  ]];
 		then	
-			echo -e "	Battery SOC: "${battery_soc_array[$c]}" %"				
+			echo -e "	Battery state of charge (SOC): "${battery_soc_array[$c]}" %"				
 		fi		
 		if [[ ! ${battery_soh_array[$c]} == null  ]];
 		then	
-			echo -e "	Battery SOH: "${battery_soh_array[$c]}				
+			echo -e "	Battery state of health (SOH): "${battery_soh_array[$c]}				
 		fi		
 		if [[ ! ${ch_discharge_model_array[$c]} == null  ]];
 		then	
@@ -4172,7 +3920,7 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 			Charging_discharging_model="Fixed discharging/charging"
 			elif [[ ${ch_discharge_model_array[$c]} == 4  ]];
 			then
-			Charging_discharging_model="Maximum Self-consumption energy"
+			Charging_discharging_model="Automatic charge/discharge"
 			else
 			Charging_discharging_model="Unknow"
 			fi
@@ -4204,87 +3952,7 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 	done
 fi
 
-# device is Transformer
-if [[ $success == "true"  ]] && [[ $2 == 8  ]];
-	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
-	
-	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )); do
-		echo -e "\e[93m \c" 
-		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
-					
-		if [[ ! ${ab_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid AB line voltage: "${ab_u_array[$c]}" V"				
-		fi
-		if [[ ! ${bc_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid BC line voltage: "${bc_u_array[$c]}" V"				
-		fi
-		if [[ ! ${ca_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid CA line voltage: "${ca_u_array[$c]}" V"				
-		fi
-		if [[ ! ${a_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase A voltage (AC output): "${a_u_array[$c]}" V"				
-		fi
-		if [[ ! ${b_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase B voltage (AC output): "${b_u_array[$c]}" V"				
-		fi
-		if [[ ! ${c_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase C voltage (AC output): "${c_u_array[$c]}" V"				
-		fi
-		if [[ ! ${a_i_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid phase A current (IA): "${a_i_array[$c]}" A"				
-		fi
-		if [[ ! ${b_i_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid phase B current (IB): "${b_i_array[$c]}" A"				
-		fi
-		if [[ ! ${c_i_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid phase C current (IC): "${c_i_array[$c]}" A"				
-		fi		
-		if [[ ! ${active_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Active power: "${active_power_array[$c]}" Kw"			
-		fi
-		if [[ ! ${reactive_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Reactive power: "${reactive_power_array[$c]}" Kvar"			
-		fi
-		if [[ ! ${power_factor_array[$c]} == null  ]];
-		then	
-			echo -e "	Power factor: "${power_factor_array[$c]}			
-		fi
-		if [[ ! ${elec_freq_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid frequency: "${elec_freq_array[$c]}" Hz"			
-		fi		
-		if [[ ! ${run_state_array[$c]} == null  ]];
-		then	
-			if [[ ${run_state_array[$c]} == 0  ]];
-			then
-			device_status="Disconnected"
-			elif [[ ${run_state_array[$c]} == 1  ]];
-			then
-			device_status="Connected"
-			else
-			device_status="Unknow"
-			fi
-			echo -e "	Status: "$device_status			
-		fi
-	done
-fi
+
 
 # in case of error
 if [[ $success == "false"  ]];
@@ -7655,377 +7323,6 @@ echo ""
 
 }
 
-function devUpgrade {
-
-
-# Request to API getKpiStationYear
-local devUpgrade=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/devUpgrade  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
-
-#echo $devUpgrade | jq
-
-local success=$(echo ''$devUpgrade''  | jq '.success' )
-local buildCode=$(echo ''$devUpgrade''  | jq '.buildCode' )
-local failCode=$(echo ''$devUpgrade''  | jq '.failCode' )
-local message=$(echo ''$devUpgrade''  | jq '.message' )
-
-	local devId=$(echo ''$devUpgrade''  | jq '.data[].devId' )
-	local failCode_upgrade=$(echo ''$devUpgrade''  | jq '.data[].failCode' )
-	local result=$(echo ''$devUpgrade''  | jq '.data[].result' )
-
-local data_devUpgrade=$(echo ''$devUpgrade''  | jq '.params' )
-	local currentTime=$(echo ''$data_devUpgrade''  | jq '.currentTime' )
-	local devIds=$(echo ''$data_devUpgrade''  | jq '.devIds' )
-	local devTypeId=$(echo ''$data_devUpgrade''  | jq '.devTypeId' )
-	
-
-#removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-local devIds="$(echo "$devIds" | tr -d '"')"
-local devTypeId="$(echo "$devTypeId" | tr -d '"')"
-
-
-		# Conversion of long variable string to array
-		eval "devId_array=(${devId})"
-		eval "failCode_upgrade_array=(${failCode_upgrade})"
-		eval "result_array=(${result})"
-
-# Here comma is our delimiter value to array of stations codes given by user as a parameter in question
-IFS="," read -a devIds_array <<< $devIds
-IFS="," read -a devTypeId_array <<< $devTypeId
-
-
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mdevUpgrade\e[0m connection \e[42mOK\e[0m"
-		devUpgrade_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mdevUpgrade\e[0m connection \e[41mError\e[0m"
-		devUpgrade_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(date -d @$curent_time_actually)
-echo "Time of your Request to API: "$curent_time_of_request
-
-
-	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )) 
-	do
-		echo ""
-		echo -e "\e[93m \c" 
-		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
-		
-				
-		if [[ ! ${failCode_upgrade_array[$c]} == null  ]];
-		then	
-		echo -e "	Failure error code: \c" 
-		Error_Codes_List ${failCode_upgrade_array[$c]}				
-		fi
-	 	if [[ ! ${result_array[$c]} == null  ]];
-		then	
-			if [ ${result_array[$c]} == true ]
-			then
-			status_of_upgrade="The device upgrade command is successfully delivered"
-			elif [ ${result_array[$c]} == false ]
-			then
-			status_of_upgrade="The device upgrade command is not successfully delivered"
-			else
-			status_of_upgrade="Unknow"
-			fi			
-		echo -e "	"$status_of_upgrade				
-		fi
-		
-		echo ""
-		
-
-
-	done
-
-
-# in case of error
-if [[ $success == "false"  ]];
-	then
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $devUpgrade
-		
-fi
-
-echo ""
-
-
-}
-
-
-function getDevUpgradeInfo {
-
-
-# Request to API getKpiStationYear
-local getDevUpgradeInfo=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevUpgradeInfo  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
-
-#echo $getDevUpgradeInfo | jq
-
-local success=$(echo ''$getDevUpgradeInfo''  | jq '.success' )
-local buildCode=$(echo ''$getDevUpgradeInfo''  | jq '.buildCode' )
-local failCode=$(echo ''$getDevUpgradeInfo''  | jq '.failCode' )
-local message=$(echo ''$getDevUpgradeInfo''  | jq '.message' )
-
-	local devId=$(echo ''$getDevUpgradeInfo''  | jq '.data[].devId' )
-	local lastUpgradeTime=$(echo ''$getDevUpgradeInfo''  | jq '.data[].lastUpgradeTime' )	
-	local process=$(echo ''$getDevUpgradeInfo''  | jq '.data[].process' )		 
-	local sourceVersion=$(echo ''$getDevUpgradeInfo''  | jq '.data[].sourceVersion' )		 
-	local targetVersion=$(echo ''$getDevUpgradeInfo''  | jq '.data[].targetVersion' )
-	local upgradeResult=$(echo ''$getDevUpgradeInfo''  | jq '.data[].upgradeResult' )	 
-
-
-local data_getDevUpgradeInfo=$(echo ''$getDevUpgradeInfo''  | jq '.params' )
-	local currentTime=$(echo ''$data_getDevUpgradeInfo''  | jq '.currentTime' )
-	local devIds=$(echo ''$data_getDevUpgradeInfo''  | jq '.devIds' )
-	local devTypeId=$(echo ''$data_getDevUpgradeInfo''  | jq '.devTypeId' )
-	
-#removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-local sourceVersion="$(echo "$sourceVersion" | tr -d '"')"
-local targetVersion="$(echo "$targetVersion" | tr -d '"')"
-local devIds="$(echo "$devIds" | tr -d '"')"
-local devTypeId="$(echo "$devTypeId" | tr -d '"')"
-	
-		# Conversion of long variable string to array
-		eval "devId_array=(${devId})"
-		eval "lastUpgradeTime_array=(${lastUpgradeTime})"
-		eval "process_array=(${process})"
-		eval "sourceVersion_array=(${sourceVersion})"
-		eval "targetVersion_array=(${targetVersion})"
-		eval "upgradeResult_array=(${upgradeResult})"
-		eval "devTypeId_array=(${devTypeId})"
-
-
-
-# Here comma is our delimiter value to array of stations codes given by user as a parameter in question
-IFS="," read -a devIds_array <<< $devIds
-IFS="," read -a devTypeId_array <<< $devTypeId
-
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetDevUpgradeInfo\e[0m connection \e[42mOK\e[0m"
-		getDevUpgradeInfo_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetDevUpgradeInfo\e[0m connection \e[41mError\e[0m"
-		getDevUpgradeInfo_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-local curent_time_actually=$(echo ${currentTime::-3})
-
-local curent_time_of_request=$(date -d @$curent_time_actually)
-echo "Time of your Request to API: "$curent_time_of_request
-
-
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-
-	
-	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )) 
-	do
-	
-		echo -e "\e[93m \c" 
-		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
-		echo ""
-		
-				
-		if [[ ! ${lastUpgradeTime_array[$c]} == null  ]];
-		then	
-			echo -e "	Last upgrade time: "$(date -d @${lastUpgradeTime_array[$c]::-3})				
-		fi
-	 	if [[ ! ${process_array[$c]} == null  ]];
-		then	
-			echo -e "	Upgrade progress: "${process_array[$c]}" %"				
-		fi	
-		if [[ ! ${sourceVersion_array[$c]} == null  ]];
-		then	
-			echo -e "	Version before upgrade: "${sourceVersion_array[$c]}				
-		fi
-		if [[ ! ${targetVersion_array[$c]} == null  ]];
-		then	
-			echo -e "	Target version: "${targetVersion_array[$c]}				
-		fi
-		if [[ ! ${upgradeResult_array[$c]} == null  ]];
-		then	
-			if [ ${upgradeResult_array[$c]} == 0 ]
-			then
-			status_of_upgrade="Not started"
-			elif [ ${upgradeResult_array[$c]} == 1 ]
-			then
-			status_of_upgrade="Success"			
-			elif [ ${upgradeResult_array[$c]} == 2 ]
-			then
-			status_of_upgrade="Failure"				
-			elif [ ${upgradeResult_array[$c]} == 3 ]
-			then
-			status_of_upgrade="Canceled"
-			elif [ ${upgradeResult_array[$c]} == 4 ]
-			then
-			status_of_upgrade="Upgrading"
-			elif [ ${upgradeResult_array[$c]} == 5 ]
-			then
-			status_of_upgrade="Time-out"
-			else
-			status_of_upgrade="Unknow"
-			fi
-			echo -e "	Upgrade result: "$status_of_upgrade				
-		fi
-
-		echo ""
-		
-
-
-	done
-
-
-# in case of error
-if [[ $success == "false"  ]];
-	then
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $getDevUpgradeInfo
-		
-fi
-
-echo ""
-
-
-}
-
-
-function snIsRegister {
-
-
-# Request to API getKpiStationYear
-local snIsRegister=$(printf '{"SN": "'$1'", "userName": "'$2'", "key": "'$3'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/snIsRegister XSRF-TOKEN:''$xsrf_token'' Content-Type:'application/json' Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
-
-echo $snIsRegister
-#echo $snIsRegister | jq
-
-
-local success=$(echo ''$snIsRegister''  | jq '.success' )
-local buildCode=$(echo ''$snIsRegister''  | jq '.buildCode' )
-local failCode=$(echo ''$snIsRegister''  | jq '.failCode' )
-local message=$(echo ''$snIsRegister''  | jq '.message' )
-local parameters=$(echo ''$snIsRegister''  | jq '.parms' )
-	
-
-#removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
-
-
-#echo "Request success or failure flag: " $success
-if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4msnIsRegister\e[0m connection \e[42mOK\e[0m"
-		snIsRegister_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4msnIsRegister\e[0m connection \e[41mError\e[0m"
-		snIsRegister_connection=false
-else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
-	#program stops
-	exit
-fi
-
-#echo "Error code: " $failCode " (0: Normal)"
-# we call to function with errors list
-Error_Codes_List $failCode
-
-#echo "Optional message: " $message
-if [[ ! $message == "\"\""  ]];
-then	
-	echo "Optional message: " $message
-fi
-
-
-if [[ $success == "true"  ]];
-then	
-	echo "Build Code: "$buildCode
-fi
-
-
-local curent_time_actually=$(echo ${curent_time::-3})
-
-local curent_time_of_request=$(date -d @$curent_time_actually)
-echo "Time of your Request to API: "$curent_time_of_request
-
-
-
-# in case of error
-if [[ $success == "false"  ]];
-	then
-	#fuction which works with connection error	
-	in_case_of_error_with_connection_to_API $snIsRegister
-		
-fi
-
-echo ""
-
-
-
-}
 
 function getAlarmList {
 
