@@ -77,7 +77,7 @@ Configuration&Usage
 
 ![FusionSolarApp](pictures/fusionsolarapp.png)
 
-Changes in files structure and disaperance of unofficial API
+~~Changes in files structure and disaperance of unofficial API~~
 -
-After upgrade of Server to version SmartPVMS V500R007C00CP1301 by Huawei official API should work now. Unofficial api from kioskmode.sh is based on older version now this unofficial API is not avaiable anymore.
+After upgrade of Server to version SmartPVMS V500R007C00CP1301 by Huawei official API should work now. ~~Unofficial api from kioskmode.sh is based on older version now this unofficial API is not avaiable anymore.~~ Is possible to made this kioskmode working again planed for June.
 
