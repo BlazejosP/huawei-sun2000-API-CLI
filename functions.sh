@@ -546,9 +546,18 @@ function login_to_API {
 # window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
 if [ ! -z "$DIALOG" ];
 	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title " Please wait connecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nConnection and login to API with given Username&Password" 10 30    		
+			else
 			$DIALOG --title " Please wait connecting!" \
-			 --backtitle "Huawei FusionSolarApp API" \
-       		 --infobox "\nConnection and login to API with given Username&Password" 10 30
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nConnection and login to API with given Username&Password" 10 30
+       		fi
+       		
+
 	else
 		echo "Please wait connecting!"
 		echo "Connection and login to API with given Username&Password"		
@@ -562,7 +571,7 @@ local logowanie=$(echo '{"userName": "'$userName'", "systemCode": "'$systemCode'
 
 
 #coping a long string with answer to new variable from which we extract JOSN answer
-local logowanie_for_josn_extraction=$(echo $logowanie)
+local logowanie_for_josn_extraction=$logowanie
 local josn=$logowanie
 #show for tests header in request
 #echo $logowanie_for_josn_extraction
@@ -611,6 +620,7 @@ xsrf_token=$logowanie
 #extracting from rubish string JOSN answer part
 #echo $logowanie_for_josn_extraction
 
+# Now we extract true or false word
 IFS=':'
 local array2=( $logowanie_for_josn_extraction )
 # showing diffrent values experimenting with postion in array
@@ -618,16 +628,40 @@ local array2=( $logowanie_for_josn_extraction )
 #echo ""
 #echo "value = ${array2[18]}"
 
-local logowanie_for_josn_extraction=${array2[18]}
+for i in ${array2[*]}; do
+
+	if [[ ${array2[*]} == *"true"*  ]];
+  	then
+  		local logowanie_for_josn_extraction=$(echo ${array2[18]})
+  	elif [[ ${array2[*]} == *"false"*  ]];
+  	then 
+  		local logowanie_for_josn_extraction=$(echo ${array2[17]})
+  	fi
+done
+
 
 IFS=','
 local array2=( $logowanie_for_josn_extraction )
 #echo ""
 #echo ""
-#echo "value = ${array2[0]}"
+#echo "whole array = ${array2[@]}"
+#echo "value true or false = ${array2[0]}"
+#echo ""
+#echo ""
+
+#checking whole array2 for word true or false existing inside
+for i in ${array2[*]}; do
+	if [[ ${array2[*]} =~ "true"  ]];
+  	then
+  		local sucesfully_login_true_or_false=$(echo ${array2[*]})
+  	elif [[ ${array2[*]} =~ "false"  ]];
+  	then 
+  		local sucesfully_login_true_or_false=$(echo ${array2[*]})
+  	fi
+done
 
 # finally true or false login data extracted
-local sucesfully_login_true_or_false=$(echo ${array2[0]})
+#local sucesfully_login_true_or_false=$(echo ${array2[0]})
 
 
 #echo $sucesfully_login_true_or_false
@@ -641,14 +675,24 @@ local array3=( $josn )
 #echo ""
 #echo ""
 #echo "value = ${array3[40]}"
+#echo "value = ${array3[@]}"
 
-if [[ $sucesfully_login_true_or_false =~ "true"  ]];
-then
-	local sucesfully_login_true_or_false=$(echo ''${array3[39]}''  | jq '.success' )
-else
-	local sucesfully_login_true_or_false=$(echo ''${array3[40]}''  | jq '.success' )
-	
-fi
+#checking whole array3 for word true or false existing inside
+for i in ${array3[*]}; do
+	if [[ ${array3[*]} == "true"  ]];
+  	then
+  		local sucesfully_login_true_or_false=$(echo ${array3[*]})
+  		local sucesfully_login_true_or_false=$(echo $sucesfully_login_true_or_false | jq '.success')
+  				
+  	elif [[ ${array3[*]} == "false"  ]];
+  	then 
+  		local sucesfully_login_true_or_false=$(echo ${array3[*]})
+  		local sucesfully_login_true_or_false=$(echo $sucesfully_login_true_or_false | jq '.success')
+
+	fi
+  	
+done
+
 
 
 if [[ $sucesfully_login_true_or_false =~ "false"  ]];
@@ -661,11 +705,11 @@ if [[ $sucesfully_login_true_or_false =~ "false"  ]];
 				echo ""
 				echo -e "Login to server \e[41mError :(\e[0m"			
 			fi
-			
-			# our JOSN response from server postion in array we extract that from headers and add to variable
-			local josn_final=${array3[40]}
-			#echo $josn_final  | jq
-			
+
+		# our JOSN response from server postion in array we extract that from headers and add to variable we chose last postion in our array
+		local josn_final=$(echo ${array3[-1]})
+		#echo $josn_final  | jq
+						
 elif [[ $sucesfully_login_true_or_false =~ "true"  ]];
 	then		
 			if [ ! -z "$DIALOG" ];
@@ -677,9 +721,9 @@ elif [[ $sucesfully_login_true_or_false =~ "true"  ]];
 				echo -e "Login to server \e[42mOK :)\e[0m"
 			fi
 			
-			# our JOSN response from server postion in array we extract that from headers and add to variable
-			local josn_final=${array3[39]}
-			#echo $josn_final  | jq
+		# our JOSN response from server postion in array we extract that from headers and add to variable we chose last postion in our array
+		local josn_final=$(echo ${array3[-1]})
+		#echo $josn_final  | jq
 else
 
 	if [ ! -z "$DIALOG" ];
@@ -691,14 +735,6 @@ else
 		echo -e "Problems with conection to Huawei Server" 
 	fi
 fi
-
-
-
-
-
-
-
-
 
 # showing response JOSN from login API
 #echo $josn_final  | jq
@@ -727,7 +763,7 @@ if [[ $success == "true"  ]];
 	then	
 		if [ ! -z "$DIALOG" ];
 			then
-				info_for_dialog_screen=$info_for_dialog_screen"\nUsername & Password accepted by Huawei Server"
+				info_for_dialog_screen="$info_for_dialog_screen\nUsername & Password accepted by Huawei Server"
 			else		
 				echo "Username & Password accepted by Huawei Server"
 		fi
@@ -736,7 +772,7 @@ elif [[ $success == "false" ]];
 	then
 		if [ ! -z "$DIALOG" ];
 			then
-				info_for_dialog_screen=$info_for_dialog_screen"\nUsername & Password not accepted by Huawei Server"
+				info_for_dialog_screen="$info_for_dialog_screen\nUsername & Password not accepted by Huawei Server"
 			else		
 				echo "Username & Password not accepted by Huawei Server"
 		fi
@@ -745,7 +781,7 @@ else
 
 	if [ ! -z "$DIALOG" ];
 		then
-				info_for_dialog_screen=$info_for_dialog_screen"\nNetwork Error Returned data: $data"
+				info_for_dialog_screen="$info_for_dialog_screen\nNetwork Error Returned data: $data"
 		else		
 			echo ""
 			echo -e "\e[41mNetwork Error :(\e[0m" 
@@ -767,7 +803,7 @@ then
 	then
 		if [ ! -z "$DIALOG" ];
 			then
-				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
+				info_for_dialog_screen="$info_for_dialog_screen\nOptional message:  $message"
 			else		
 				echo "Optional message: " $message
 		fi
@@ -784,10 +820,10 @@ then
 	
 	if [ ! -z "$DIALOG" ];
 	then
-		info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_actually
-		info_for_dialog_screen=$info_for_dialog_screen"\n\nYour data:"
-		info_for_dialog_screen=$info_for_dialog_screen"\nUsername: "$userName
-		info_for_dialog_screen=$info_for_dialog_screen"\nPassword: "$systemCode
+		info_for_dialog_screen="$info_for_dialog_screen\nTime of your Request to API: $curent_time_actually"
+		info_for_dialog_screen="$info_for_dialog_screen\n\nYour data:"
+		info_for_dialog_screen="$info_for_dialog_screen\nUsername: $userName"
+		info_for_dialog_screen="$info_for_dialog_screen\nPassword: $systemCode"
 	else		
 		echo "Time of your Request to API: "$curent_time_actually
 	
@@ -807,7 +843,7 @@ then
 		then
 			if [ ! -z "$DIALOG" ];
 			then
-			info_for_dialog_screen=$info_for_dialog_screen"\nRequest parameter: "$params
+			info_for_dialog_screen="$info_for_dialog_screen\nRequest parameter: $params"
 			else		
 			echo "Request parameter: "$params
 			fi
@@ -822,7 +858,7 @@ then
 	then	
 		if [ ! -z "$DIALOG" ];
 		then
-		info_for_dialog_screen=$info_for_dialog_screen"\nReturned data: "$data
+		info_for_dialog_screen="$info_for_dialog_screen\nReturned data: $data"
 		else		
 		echo "Returned data: "$data
 		fi		
@@ -7327,7 +7363,7 @@ echo ""
 function getAlarmList {
 
 
-# Request to API getKpiStationYear
+# Request to API getAlarmList
 local getAlarmList=$(printf '{"stationCodes": "'$1'", "beginTime":'$2', "endTime":'$3', "language":"'$4'", "types":"'$7'", "devTypes":"'$8'", "levels":"'$6'", "status":"'$5'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getAlarmList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
 

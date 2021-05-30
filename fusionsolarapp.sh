@@ -169,12 +169,12 @@ then
 		
 		if [[ $getStationList_connection == true  ]];
 		then	
-			# We start function to get list of devices inside one particular plant
-			getDevList ${stations_Code_array[0]} $number_of_plants
+			# We start function to get list of devices inside one particular plant this fuction is necessary to work if you d'like use functions getDevReal*
+			#getDevList ${stations_Code_array[0]} $number_of_plants
 			
 						
 			# Statistical data about whole Power Plant
-			
+			#date=1621981136530
 			getStationRealKpi ${stations_Code_array[0]}	
 			#getKpiStationHour ${stations_Code_array[0]} $date
 			#getKpiStationDay ${stations_Code_array[0]} $date
@@ -185,11 +185,11 @@ then
 			# Statistical data about particular device/devices inside Power Plant
 			
 			# Devices data precisious all voltages etc real-time
-			getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
-			#getDevFiveMinutes ${device_Id_array[1]} ${device_TypeId_array[1]} $date
+			#getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
+			#getDevFiveMinutes ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
 			#getDevKpiDay ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
 			#getDevKpiMonth ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
-			#getDevKpiYear ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
+			#getDevKpiYear ${device_Id_array[1]} ${device_TypeId_array[1]} $date
 			
 			
 			#Error comunicates

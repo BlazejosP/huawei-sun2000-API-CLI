@@ -24,14 +24,15 @@ if [ ! -z "$userName" ] && [ ! -z "$systemCode" ];
 	fi
 
 
+#DIALOG=${DIALOG:=whiptail}
 DIALOG=${DIALOG:=dialog}
-
+#DIALOG=${DIALOG:=gdialog}
 
 	$DIALOG --title " Login to API" --clear \
 	--backtitle "Huawei FusionSolarApp API" \
         --msgbox "$login_text" 10 50
 	--shadow
-clear #clears the terminal screen
+	clear #clears the terminal screen
 
 # Function to login to API
 login_to_API $DIALOG
@@ -40,7 +41,9 @@ login_to_API $DIALOG
 
 
 	$DIALOG --title " Login to API" --clear \
-	--backtitle $info_for_dialog_backtitle \
-        --msgbox  $info_for_dialog_screen 10 50
-      	--shadow
-clear #clears the terminal screen
+	--backtitle "$info_for_dialog_backtitle" \
+        --msgbox  "$info_for_dialog_screen" 10 50
+        --shadow
+	clear #clears the terminal screen
+
+
