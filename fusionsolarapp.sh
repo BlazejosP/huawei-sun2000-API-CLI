@@ -170,32 +170,33 @@ then
 		if [[ $getStationList_connection == true  ]];
 		then	
 			# We start function to get list of devices inside one particular plant this fuction is necessary to work if you d'like use functions getDevReal*
-			#getDevList ${stations_Code_array[0]} $number_of_plants
+			getDevList ${stations_Code_array[0]} $number_of_plants
 			
 						
 			# Statistical data about whole Power Plant
-			#date=1621981136530
+			#curent_time=1621981136530
 			getStationRealKpi ${stations_Code_array[0]}	
-			#getKpiStationHour ${stations_Code_array[0]} $date
-			#getKpiStationDay ${stations_Code_array[0]} $date
-			#getKpiStationMonth ${stations_Code_array[0]} $date
-			#getKpiStationYear ${stations_Code_array[0]} $date
+			#getKpiStationHour ${stations_Code_array[0]} $curent_time
+			#getKpiStationDay ${stations_Code_array[0]} $curent_time
+			#getKpiStationMonth ${stations_Code_array[0]} $curent_time
+			#getKpiStationYear ${stations_Code_array[0]} $curent_time
 			
 			
 			# Statistical data about particular device/devices inside Power Plant
 			
 			# Devices data precisious all voltages etc real-time
 			#getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
-			#getDevFiveMinutes ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
-			#getDevKpiDay ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
-			#getDevKpiMonth ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
-			#getDevKpiYear ${device_Id_array[1]} ${device_TypeId_array[1]} $date
+			#getDevFiveMinutes ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
+			#getDevKpiDay ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
+			#getDevKpiMonth ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
+			#getDevKpiYear ${device_Id_array[0]} ${device_TypeId_array[0]} $(expr $curent_time - 31622399000) # minus one year
+			#getDevKpiYear ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time #actually year
 			
 			
 			#Error comunicates
 			
 			# we cover one month before chosen date that is as far as API allows
-			Begining_time=$(expr $date - 2629743000)			
+			Begining_time=$(expr $curent_time - 2629743000)			
 			#Languages. The value must be zh_CN, en_UK, ja_JP, it_IT, nl_NL, pt_BR, de_DE, fr_FR, es_ES, or po_PO.
 			language="en_UK"
 			#status Alarm status. Multiple alarm statuses are separated by commas (,), for example, 1,2. 1: not handled (active); 2: acknowledged (by a user); 3: being handled (transferred to a defect ticket); 4: handled (defect handling has ended); 5: cleared (by a user); 6: cleared (automatically by the device)
