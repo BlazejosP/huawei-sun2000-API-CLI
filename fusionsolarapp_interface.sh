@@ -37,13 +37,18 @@ DIALOG=${DIALOG:=dialog}
 # Function to login to API
 login_to_API $DIALOG
 
-
-
-
 	$DIALOG --title " Login to API" --clear \
 	--backtitle "$info_for_dialog_backtitle" \
         --msgbox  "$info_for_dialog_screen" 10 50
         --shadow
 	clear #clears the terminal screen
 
+# Function to logout from API
+logout_from_API $DIALOG
+
+	$DIALOG --title " Logout from API" --clear \
+	--backtitle "$info_for_dialog_backtitle" \
+        --msgbox  "$info_for_dialog_screen" 10 50
+        --shadow
+	clear #clears the terminal screen
 

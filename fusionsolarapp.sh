@@ -167,6 +167,7 @@ then
 		# We start function to get list of plants
 		getStationList
 		
+		
 		if [[ $getStationList_connection == true  ]];
 		then	
 			# We start function to get list of devices inside one particular plant this fuction is necessary to work if you d'like use functions getDevReal*
@@ -175,7 +176,7 @@ then
 						
 			# Statistical data about whole Power Plant
 			#curent_time=1621981136530
-			getStationRealKpi ${stations_Code_array[0]}	
+			#getStationRealKpi ${stations_Code_array[0]}	
 			#getKpiStationHour ${stations_Code_array[0]} $curent_time
 			#getKpiStationDay ${stations_Code_array[0]} $curent_time
 			#getKpiStationMonth ${stations_Code_array[0]} $curent_time
@@ -211,7 +212,8 @@ then
 			
 			#getAlarmList ${stations_Code_array[0]} $Begining_time $date $language $status $alarm_severity $alarm_type $device_type
 			
-			
+			#logout from API with unregistration of Xsrf token
+			logout_from_API
 			
 
 			# Different dates for tests

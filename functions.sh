@@ -593,17 +593,27 @@ function in_case_of_error_with_connection_to_API {
 
 	local immediately=$(echo ''$1''  | jq '.data.immediately' )
 		if [[ $immediately == true ]];
-			then
-				local when_relogin="NOW"
+		then
+			local when_relogin="NOW"
 		elif [[ $immediately == false ]];
-			then
-				local when_relogin="NOT NOW"
+		then
+			local when_relogin="NOT NOW"
 		else
-				local when_relogin="Don't know when"
+			local when_relogin="Don't know when"
 		fi	
 
-		local message=$(echo ''$1''  | jq '.data.message' )
-		echo "Message: "$when_relogin" "$message
+	local message=$(echo ''$1''  | jq '.data.message' )
+		if [[ ! $message =~ "null"  ]];
+		then
+			if [ ! -z "$DIALOG" ];
+				then
+					info_for_dialog_screen=$info_for_dialog_screen"\nMessage: "$when_relogin" "$message
+				else		
+					echo "Message: "$when_relogin" "$message
+				fi
+		fi
+		
+		
 
 }
 
@@ -622,17 +632,17 @@ if [ ! -z "$DIALOG" ];
 			then
 			TERM=ansi $DIALOG --title " Please wait connecting!" \
 			     	--backtitle "Huawei FusionSolarApp API" \
-       			--infobox "\nConnection and login to API with given Username&Password" 10 30    		
+       			--infobox "\nConnection to API" 10 30    		
 			else
 			$DIALOG --title " Please wait connecting!" \
 			      	--backtitle "Huawei FusionSolarApp API" \
-       			--infobox "\nConnection and login to API with given Username&Password" 10 30
+       			--infobox "\nConnection to API" 10 30
        		fi
-       		
 
 	else
 		echo "Please wait connecting!"
-		echo "Connection and login to API with given Username&Password"		
+		echo "Connection to API"
+		echo ""		
 	fi
 
 # Login to FusionSolarAPI with Username and Password
@@ -771,11 +781,10 @@ if [[ $sucesfully_login_true_or_false =~ "false"  ]];
 	then		
 			if [ ! -z "$DIALOG" ];
 			then
-				info_for_dialog_screen="Login to server Error :("
+				info_for_dialog_screen="API login to server Error"
 				info_for_dialog_backtitle=$info_for_dialog_screen
 			else
-				echo ""
-				echo -e "Login to server \e[41mError :(\e[0m"			
+				echo -e "API \e[4mlogin\e[0m to server \e[41mError\e[0m"			
 			fi
 
 		# our JOSN response from server postion in array we extract that from headers and add to variable we chose last postion in our array
@@ -786,11 +795,10 @@ elif [[ $sucesfully_login_true_or_false =~ "true"  ]];
 	then		
 			if [ ! -z "$DIALOG" ];
 			then
-				info_for_dialog_screen="Login to server OK :)"
+				info_for_dialog_screen="API login to server OK"
 				info_for_dialog_backtitle=$info_for_dialog_screen
 			else		
-				echo ""
-				echo -e "Login to server \e[42mOK :)\e[0m"
+				echo -e "API \e[4mlogin\e[0m to server \e[42mOK\e[0m"
 			fi
 			
 		# our JOSN response from server postion in array we extract that from headers and add to variable we chose last postion in our array
@@ -800,11 +808,11 @@ else
 
 	if [ ! -z "$DIALOG" ];
 	then
-		info_for_dialog_screen="Problems with conection to Huawei Server" 
+		info_for_dialog_screen="Undefined problem with conection to Huawei Server" 
 		info_for_dialog_backtitle=$info_for_dialog_screen
 	else
 		echo ""
-		echo -e "Problems with conection to Huawei Server" 
+		echo -e "Undefined problem with conection to Huawei Server" 
 	fi
 fi
 
@@ -853,11 +861,11 @@ else
 
 	if [ ! -z "$DIALOG" ];
 		then
-				info_for_dialog_screen="$info_for_dialog_screen\nNetwork Error Returned data: $data"
+				info_for_dialog_screen="$info_for_dialog_screen\nUndefined Error Returned data: $data"
 		else		
 			echo ""
-			echo -e "\e[41mNetwork Error :(\e[0m" 
-			echo "Returned data: "$data
+			echo -e "\e[41mUndefined Error\e[0m" 
+			echo "\nReturned data: "$data
 			#program stops
 			exit
 	fi
@@ -917,7 +925,7 @@ then
 			then
 			info_for_dialog_screen="$info_for_dialog_screen\nRequest parameter: $params"
 			else		
-			echo "Request parameter: "$params
+			echo "\nRequest parameter: "$params
 			fi
 		fi		
 	fi
@@ -932,7 +940,7 @@ then
 		then
 		info_for_dialog_screen="$info_for_dialog_screen\nReturned data: $data"
 		else		
-		echo "Returned data: "$data
+		echo "\nReturned data: "$data
 		fi		
 	fi		
 fi
@@ -940,6 +948,199 @@ fi
 
 }
 
+
+
+function logout_from_API {
+
+
+#check if data about dialog is active are delivered into function
+#echo $1
+#echo $DIALOG
+
+# window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
+if [ ! -z "$DIALOG" ];
+	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title " Please wait disconnecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nDisconnection from API" 10 30    		
+			else
+			$DIALOG --title " Please wait disconnecting!" \
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nDisconnection from API" 10 30
+       		fi
+       		
+
+	else
+		echo "Please wait disconnecting!"
+		echo "Disconnection from API"
+		echo ""		
+	fi
+
+# Testing that data are correct
+#echo $xsrf_token
+
+# Request to API logout
+local logout=$(printf '{"xsrfToken": "'$xsrf_token'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/logout  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+
+
+
+#show result of qustion in JOSN
+#echo $logout  | jq
+
+local success=$(echo ''$logout''  | jq '.success' )
+local failCode=$(echo ''$logout''  | jq '.failCode' )
+local message=$(echo ''$logout''  | jq '.message' )
+
+
+
+#local data=$(echo ''$logout''  | jq '.data[]' )
+
+if [[ $success =~ "false"  ]];
+	then		
+		# we take actually time for other question to API too
+		curent_time=$(echo ''$logout''  | jq '.params' )
+			curent_time=$(echo ''$curent_time''  | jq '.currentTime' )
+
+
+
+		#curent_time_actually=${curent_time::-3}
+		#echo $curent_time_actually
+
+		#shorter time for read in unix
+		#curent_time=${curent_time::-3}
+
+		#echo $curent_time
+		#date=$(date -d @''$(echo ${curent_time::-3})'')
+		#echo $date
+
+		#date=$curent_time
+fi
+
+#echo "Request success or failure flag: " $success
+if [[ $success == "true"  ]];
+	then	
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="API logout from server OK"
+				info_for_dialog_backtitle=$info_for_dialog_screen
+			else		
+				echo -e "API \e[4mlogout\e[0m from server \e[42mOK\e[0m"
+		fi
+		#login_status=true
+		
+elif [[ $success == "false" ]];
+	then
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="API Logout from server Error"
+				info_for_dialog_backtitle=$info_for_dialog_screen
+			else		
+				echo -e "API \e[4mlogout\e[0m from server \e[41mError\e[0m"
+		fi
+		#login_status=false
+		
+else
+
+	if [ ! -z "$DIALOG" ];
+		then
+				info_for_dialog_screen="Undefined Error Returned data: $data"
+				info_for_dialog_backtitle=$info_for_dialog_screen
+		else		
+			echo ""
+			echo -e "\e[41Undefined Error\e[0m" 
+			echo "\nReturned data: "$data
+			#program stops
+			exit
+	fi
+
+fi
+
+#echo "Request success or failure flag: " $success
+if [[ $success == "true"  ]];
+	then	
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="$info_for_dialog_screen\nLogout accepted by Huawei Server"
+			else		
+				echo "Logout accepted by Huawei Server"
+		fi
+		login_status=true
+elif [[ $success == "false" ]];
+	then
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="$info_for_dialog_screen\nLogout not accepted by Huawei Server"
+			else		
+				echo "Logout not accepted by Huawei Server"
+		fi
+		login_status=false
+else
+
+	if [ ! -z "$DIALOG" ];
+		then
+				info_for_dialog_screen="$info_for_dialog_screen\nUndefined Error Returned data: $data"
+		else		
+			echo ""
+			echo -e "\e[41mUndefined Error\e[0m" 
+			echo "\nReturned data: "$data
+			#program stops
+			exit
+	fi
+
+fi
+
+#echo "Error code: " $failCode " (0: Normal)"
+# we call to function with errors list
+Error_Codes_List $failCode
+
+#echo "Optional message: " $message
+if [[ ! $message == "\"\""  ]];
+then	
+	if [[ ! $message =~ "null"  ]];
+	then
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
+			else		
+				echo "Optional message: " $message
+		fi
+	fi
+fi
+
+
+if [[ $success =~ "false"  ]];
+then	
+	#shorter time for read in unix
+	local curent_time_actually=$(date -d @''$(echo ${curent_time::-3})'')
+	
+	if [ ! -z "$DIALOG" ];
+	then
+		info_for_dialog_screen="$info_for_dialog_screen\nTime of your Request to API: $curent_time_actually"
+		info_for_dialog_screen="$info_for_dialog_screen\n\nYour data:"
+		info_for_dialog_screen="$info_for_dialog_screen\nxsrfToken: $xsrf_token"
+	else		
+		echo "Time of your Request to API: "$curent_time_actually
+		echo ""
+		echo "Your data:"
+		echo "	xsrfToken: "$xsrf_token
+		echo ""
+	fi
+
+
+fi
+
+
+# in case of error
+if [[ $success == "false"  ]];
+	then	
+	#fuction which works when connection error apears	
+	in_case_of_error_with_connection_to_API $logout
+fi
+
+
+}
 
 
 function getStationList {
@@ -955,7 +1156,6 @@ local getStationList=$(printf '{ }'| http  --follow --timeout 3600 POST https://
 
 
 local success=$(echo ''$getStationList''  | jq '.success' )
-local buildCode=$(echo ''$getStationList''  | jq '.buildCode' )
 local failCode=$(echo ''$getStationList''  | jq '.failCode' )
 local message=$(echo ''$getStationList''  | jq '.message' )
 
@@ -1019,7 +1219,6 @@ number_of_plants=${#stations_Name_array[@]}
 #station_Addres="$(echo "$station_Addres" | tr -d '[:punct:]')"
 
 #removing " on begining and end
-local buildCode=`echo "$buildCode" | grep -o '[[:digit:]]'`
 local buildState=`echo "$buildState" | grep -o '[[:digit:]]'`
 local combineType=`echo "$combineType" | grep -o '[[:digit:]]'`
 
