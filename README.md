@@ -83,6 +83,5 @@ Configuration&Usage
 
 ![TUI1](pictures/fusionsolarapp_interface1.png)
 
-![TUI2](pictures/fusionsolarapp_interface2.png)
 
 
