@@ -4,7 +4,7 @@
 
 
 inverter_state () {
-# List of possible Inverter Status (inverter_state) Description by Huawei. Based on documentation SmartPVMS.V300R006C10_API_Northbound.Interface.Reference.1.pdf pages 87-88 and own obseration of device status and also new documentation SmartPVMS V500R007C00 Northbound Interface Reference.pdf pages 97-98
+# List of possible Inverter Status (inverter_state) Description by Huawei. Based on documentation SmartPVMS.V300R006C10_API_Northbound.Interface.Reference.1.pdf pages 87-88 and my own obserations of device status and new documentation SmartPVMS V500R007C00 Northbound Interface Reference.pdf pages 97-98
 
 #both documents
 if [ $1 == "000"  ] ||  [ $1 == "0" ];
@@ -154,11 +154,9 @@ then
 	printf "Communication disconnection (written by the SmartLogger)"
 elif [ $1 == "c000"  ] ||  [ $1 == "C000" ];
 then	
-	printf "Loading (written by the SmartLogger)"
-	
-	
+	printf "Loading (written by the SmartLogger)"	
 else
-	echo "Unknown state"
+	printf "Unknown state"
 fi
 
 
@@ -166,142 +164,289 @@ fi
 
 Device_type_ID () {
 # List of possible smart devices in Power Plant by Huawei. Based on documentation SmartPVMS.V300R006C10_API_Northbound.Interface.Reference.1.pdf pages 28-30 and SmartPVMS V500R007C00 Northbound Interface Reference.pdf pages 41-42
-if [ $1 == "1"  ];
-then
-	printf "	String Inverter"
-elif [ $1 == "2"  ];
-then	
-	echo "		SmartLogger"
-elif [ $1 == "3"  ];
-then	
-	echo "		String"
-elif [ $1 == "6"  ];
-then	
-	echo "		Bay"
-elif [ $1 == "7"  ];
-then	
-	echo "		Busbar"
-elif [ $1 == "8"  ];
-then	
-	echo "		Transformer"
-elif [ $1 == "9"  ];
-then	
-	echo "		Transformer meter"
-elif [ $1 == "10"  ];
-then	
-	echo "		EMI"
-elif [ $1 == "11"  ];
-then	
-	echo "		AC combiner box"
-elif [ $1 == "13"  ];
-then	
-	echo "		Protocol converter"
-elif [ $1 == "14"  ];
-then	
-	echo "		Central Inverter"
-elif [ $1 == "15"  ];
-then	
-	echo "		DC combiner box"
-elif [ $1 == "16"  ];
-then	
-	echo "		General device"
-elif [ $1 == "17"  ];
-then	
-	echo "		Grid meter"
-elif [ $1 == "18"  ];
-then	
-	echo "		Step-up station"
-elif [ $1 == "19"  ];
-then	
-	echo "		Factory-used energy generation area meter"
-elif [ $1 == "20"  ];
-then	
-	echo "		Solar power forecasting system"
-elif [ $1 == "21"  ];
-then	
-	echo "		Factory-used energy non-generation area meter"
-elif [ $1 == "22"  ];
-then	
-	echo "		PID"
-elif [ $1 == "23"  ];
-then	
-	echo "		Virtual device of plant monitoring system"
-elif [ $1 == "24"  ];
-then	
-	echo "		Power quality device"
-elif [ $1 == "25"  ];
-then	
-	echo "		Step-up transformer"
-elif [ $1 == "26"  ];
-then	
-	echo "		Photovoltaic grid-connection cabinet"
-elif [ $1 == "27"  ];
-then	
-	echo "		Photovoltaic grid-connection panel"
-elif [ $1 == "37"  ];
-then	
-	echo "		Pinnet data logger"
-elif [ $1 == "38"  ];
-then	
-	echo "		Residential inverter"
-elif [ $1 == "39"  ];
-then	
-	echo "		Battery"
-elif [ $1 == "40"  ];
-then	
-	echo "		Backup Box"
-elif [ $1 == "45"  ];
-then	
-	echo "		PLC"
-elif [ $1 == "46"  ];
-then	
-	echo "		Optimizer"
-elif [ $1 == "47"  ];
-then	
-	echo "		Power Sensor"
-elif [ $1 == "52"  ];
-then	
-	echo "		SAJ data logger"
-elif [ $1 == "53"  ];
-then	
-	echo "		High voltage bay of the main transformer"
-elif [ $1 == "54"  ];
-then	
-	echo "		Main transformer"
-elif [ $1 == "55"  ];
-then	
-	echo "		Low voltage bay of the main transformer"
-elif [ $1 == "56"  ];
-then	
-	echo "		Bus bay"
-elif [ $1 == "57"  ];
-then	
-	echo "		Line bay"
-elif [ $1 == "58"  ];
-then	
-	echo "		Plant transformer bay"
-elif [ $1 == "59"  ];
-then	
-	echo "		SVC/SVG bay"
-elif [ $1 == "60"  ];
-then	
-	echo "		Bus tie/section bay"
-elif [ $1 == "61"  ];
-then	
-	echo "		Plant power supply device"
-elif [ $1 == "62"  ];
-then	
-	printf "	Dongle"
-elif [ $1 == "63"  ];
-then	
-	echo "		Distributed SmartLogger"
-elif [ $1 == "70"  ];
-then	
-	echo "		Safety box"
-else
-	echo "		Unknown Device"
-fi
 
+if [ -z "$2" ];
+then
+	#SmartPVMS V500R007C00	version
+	if [ $1 == "1"  ];
+	then	
+		printf "String Inverter"	
+	elif [ $1 == "8"  ];
+	then	
+		printf "Transformer"
+	elif [ $1 == "10"  ];
+	then	
+		printf "EMI"
+	elif [ $1 == "13"  ];
+	then	
+		printf "Protocol converter"
+	elif [ $1 == "16"  ];
+	then	
+		printf "General device"
+	elif [ $1 == "17"  ];
+	then	
+		printf "Grid meter"
+	elif [ $1 == "22"  ];
+	then	
+		printf "PID"
+	elif [ $1 == "37"  ];
+	then	
+		printf "Pinnet data logger"
+	elif [ $1 == "38"  ];
+	then	
+		printf "Residential inverter"
+	elif [ $1 == "39"  ];
+	then	
+		printf "Battery"
+	elif [ $1 == "40"  ];
+	then	
+		printf "Backup Box"
+	elif [ $1 == "45"  ];
+	then	
+		printf "PLC"
+	elif [ $1 == "46"  ];
+	then	
+		printf "Optimizer"
+	elif [ $1 == "47"  ];
+	then	
+		printf "Power Sensor"
+	elif [ $1 == "62"  ];
+	then	
+		printf "Dongle"
+	elif [ $1 == "63"  ];
+	then	
+		printf "Distributed SmartLogger"
+	elif [ $1 == "70"  ];
+	then	
+		printf "Safety box"
+
+	#SmartPVMS V300R006C10	version
+	elif [ $1 == "2"  ];
+	then	
+		printf "SmartLogger"
+	elif [ $1 == "3"  ];
+	then	
+		printf "String"
+	elif [ $1 == "6"  ];
+	then	
+		printf "Bay"
+	elif [ $1 == "7"  ];
+	then	
+		printf "Busbar"
+	elif [ $1 == "9"  ];
+	then	
+		printf "Transformer meter"
+	elif [ $1 == "11"  ];
+	then	
+		printf "AC combiner box"
+	elif [ $1 == "14"  ];
+	then	
+		printf "Central Inverter"
+	elif [ $1 == "15"  ];
+	then	
+		printf "DC combiner box"
+	elif [ $1 == "18"  ];
+	then	
+		printf "Step-up station"
+	elif [ $1 == "19"  ];
+	then	
+		printf "Factory-used energy generation area meter"
+	elif [ $1 == "20"  ];
+	then	
+		printf "Solar power forecasting system"
+	elif [ $1 == "21"  ];
+	then	
+		printf "Factory-used energy non-generation area meter"
+	elif [ $1 == "23"  ];
+	then	
+		printf "Virtual device of plant monitoring system"
+	elif [ $1 == "24"  ];
+	then	
+		printf "Power quality device"
+	elif [ $1 == "25"  ];
+	then	
+		printf "Step-up transformer"
+	elif [ $1 == "26"  ];
+	then	
+		printf "Photovoltaic grid-connection cabinet"
+	elif [ $1 == "27"  ];
+	then	
+		printf "Photovoltaic grid-connection panel"
+	elif [ $1 == "52"  ];
+	then	
+		printf "SAJ data logger"
+	elif [ $1 == "53"  ];
+	then	
+		printf "High voltage bay of the main transformer"
+	elif [ $1 == "54"  ];
+	then	
+		printf "Main transformer"
+	elif [ $1 == "55"  ];
+	then	
+		printf "Low voltage bay of the main transformer"
+	elif [ $1 == "56"  ];
+	then	
+		printf "Bus bay"
+	elif [ $1 == "57"  ];
+	then	
+		printf "Line bay"
+	elif [ $1 == "58"  ];
+	then	
+		printf "Plant transformer bay"
+	elif [ $1 == "59"  ];
+	then	
+		printf "SVC/SVG bay"
+	elif [ $1 == "60"  ];
+	then	
+		printf "Bus tie/section bay"
+	elif [ $1 == "61"  ];
+	then	
+		printf "Plant power supply device"
+		
+	else
+		printf "Unknown Device"
+	fi
+	
+elif [ ! -z "$2" ] && [ $2 == "no_whitespace" ];
+then
+	if [ $1 == "1"  ];
+	then	
+		printf "String_Inverter"	
+	elif [ $1 == "2"  ];
+	then	
+		printf "SmartLogger"
+	elif [ $1 == "3"  ];
+	then	
+		printf "String"
+	elif [ $1 == "6"  ];
+	then	
+		printf "Bay"
+	elif [ $1 == "7"  ];
+	then	
+		printf "Busbar"
+	elif [ $1 == "8"  ];
+	then	
+		printf "Transformer"
+	elif [ $1 == "9"  ];
+	then	
+		printf "Transformer_meter"
+	elif [ $1 == "10"  ];
+	then	
+		printf "EMI"
+	elif [ $1 == "11"  ];
+	then	
+		printf "AC_combiner_box"
+	elif [ $1 == "13"  ];
+	then	
+		printf "Protocol_converter"
+	elif [ $1 == "14"  ];
+	then	
+		printf "Central_Inverter"
+	elif [ $1 == "15"  ];
+	then	
+		printf "DC_combiner_box"
+	elif [ $1 == "16"  ];
+	then	
+		printf "General_device"
+	elif [ $1 == "17"  ];
+	then	
+		printf "Grid_meter"
+	elif [ $1 == "18"  ];
+	then	
+		printf "Step-up station"
+	elif [ $1 == "19"  ];
+	then	
+		printf "Factory-used_energy_generation_area_meter"
+	elif [ $1 == "20"  ];
+	then	
+		printf "Solar_power_forecasting_system"
+	elif [ $1 == "21"  ];
+	then	
+		printf "Factory-used_energy_non-generation_area_meter"
+	elif [ $1 == "22"  ];
+	then	
+		printf "PID"
+	elif [ $1 == "23"  ];
+	then	
+		printf "Virtual_device_of_plant_monitoring_system"
+	elif [ $1 == "24"  ];
+	then	
+		printf "Power_quality_device"
+	elif [ $1 == "25"  ];
+	then	
+		printf "Step-up_transformer"
+	elif [ $1 == "26"  ];
+	then	
+		printf "Photovoltaic_grid-connection_cabinet"
+	elif [ $1 == "27"  ];
+	then	
+		printf "Photovoltaic_grid-connection_panel"
+	elif [ $1 == "37"  ];
+	then	
+		printf "Pinnet_data_logger"
+	elif [ $1 == "38"  ];
+	then	
+		printf "Residential_inverter"
+	elif [ $1 == "39"  ];
+	then	
+		printf "Battery"
+	elif [ $1 == "40"  ];
+	then	
+		printf "Backup_Box"
+	elif [ $1 == "45"  ];
+	then	
+		printf "PLC"
+	elif [ $1 == "46"  ];
+	then	
+		printf "Optimizer"
+	elif [ $1 == "47"  ];
+	then	
+		printf "Power_Sensor"
+	elif [ $1 == "52"  ];
+	then	
+		printf "SAJ_data_logger"
+	elif [ $1 == "53"  ];
+	then	
+		printf "High_voltage_bay_of_the_main_transformer"
+	elif [ $1 == "54"  ];
+	then	
+		printf "Main_transformer"
+	elif [ $1 == "55"  ];
+	then	
+		printf "Low_voltage_bay_of_the_main_transformer"
+	elif [ $1 == "56"  ];
+	then	
+		printf "Bus_bay"
+	elif [ $1 == "57"  ];
+	then	
+		printf "Line_bay"
+	elif [ $1 == "58"  ];
+	then	
+		printf "Plant_transformer_bay"
+	elif [ $1 == "59"  ];
+	then	
+		printf "SVC/SVG_bay"
+	elif [ $1 == "60"  ];
+	then	
+		printf "Bus_tie/section_bay"
+	elif [ $1 == "61"  ];
+	then	
+		printf "Plant_power_supply_device"
+	elif [ $1 == "62"  ];
+	then	
+		printf "Dongle"
+	elif [ $1 == "63"  ];
+	then	
+		printf "Distributed_SmartLogger"
+	elif [ $1 == "70"  ];
+	then	
+		printf "Safety_box"
+	else
+		printf "Unknown_Device"
+	fi
+else
+	printf "Error"
+fi
 }
 
 Error_Codes_List () {
@@ -1145,11 +1290,32 @@ fi
 
 function getStationList {
 
+#check if data about dialog is active are delivered into function
+#echo $1
+#echo $DIALOG
+
+
+# window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
+if [ ! -z "$DIALOG" ];
+	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title "Please wait connecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetStationList" 10 30  		
+			else
+			$DIALOG --title "Please wait connecting!" \
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetStationList" 10 30
+       		fi
+	
+fi
+
 # Testing that data are correct
 #echo $xsrf_token
 
 # Request to API getStationList
-local getStationList=$(printf '{ }'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getStationList=$(printf '{}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
 #show result of qustion in JOSN
 #echo $getStationList  | jq
@@ -1224,20 +1390,37 @@ local combineType=`echo "$combineType" | grep -o '[[:digit:]]'`
 
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
-	then	
-		echo ""
-		echo -e "API \e[4mgetStationList\e[0m connection \e[42mOK\e[0m"
-		getStationList_connection=true
-elif [[ $success == "false" ]];
-	then
-		echo ""
-		echo -e "API \e[4mgetStationList\e[0m connection \e[41mError\e[0m"
-		getStationList_connection=false
+then
+			if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getStationList connection OK"
+			else
+				echo ""
+				echo -e "API \e[4mgetStationList\e[0m connection \e[42mOK\e[0m"
+			fi	
+	getStationList_connection=true
+elif [[ $success == "false"  ]];
+then
+			if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getStationList connection Error"
+			else
+				echo ""
+				echo -e "API \e[4mgetStationList\e[0m connection \e[41mError\e[0"
+			fi
+	getStationList_connection=false
 else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
+			if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="Undefined Error "
+			else
+				echo ""
+				echo -e "\e[41Undefined Error\e[0m" 
+				echo "\nReturned data: "$data
+			fi
 	#program stops
 	exit
+
 fi
 
 #echo "Error code: " $failCode " (0: Normal)"
@@ -1265,33 +1448,99 @@ if [[ $success == "true"  ]];
 	then	
 		curent_time_actually=$(echo ${curent_time::-3})
 		curent_time_actually=$(date -d @$curent_time_actually)
-		echo "Time of your Request to API: "$curent_time_actually
+		
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_actually
+			else
+				echo "Time of your Request to API: "$curent_time_actually
+		fi
 fi
 
 local count=0
 for s in "${#stations_Name_array[@]}"; do
-	local number_plant=$(( $count+1 ))
-	echo ""
-	echo -e "	\e[93mPlant "$number_plant": \e[0m\e[1m"${stations_Code_array[$count]}"\e[0m"
+	number_plant[$count]=$(( $count+1 ))
+			if [ ! -z "$DIALOG" ];
+			then
+			results_for_dialog_screen[$count]="\nPlant ID: "${stations_Code_array[$count]}
+			else
+				echo ""
+				echo -e "	\e[93mPlant "${number_plant[$count]}": \e[0m\e[1m"${stations_Code_array[$count]}"\e[0m"
+			fi
+	
 	if [[ ! ${stations_Name_array[$count]} == null  ]];
 		then
-		echo "	Plant Name: "${stations_Name_array[$count]}
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nPlant Name: "${stations_Name_array[$count]}
+			else
+				echo "	Plant Name: "${stations_Name_array[$count]}
+			fi
 	fi
 	if [[ ! ${stations_Addres_array[$count]} == null  ]];
 		then
-		echo "	Address of the plant: "${stations_Addres_array[$count]}
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nAddress of the plant: "${stations_Addres_array[$count]}
+			else
+				echo "	Address of the plant: "${stations_Addres_array[$count]}
+			fi
+		
 	fi
 	if [[ ! ${stations_capacity_array[$count]} == null  ]];
 		then
-		echo "	Installed capacity: "${stations_capacity_array[$count]}" MWp"
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nInstalled capacity: "${stations_capacity_array[$count]}" MWp"
+			else
+				echo "	Installed capacity: "${stations_capacity_array[$count]}" MWp"
+			fi
+		
 	fi
 	if [[ ! ${stations_Linkman_array[$count]} == null  ]];
 		then
-		echo "	Plant contact: "${stations_Linkman_array[$count]}
+			case "${stations_Linkman_array[$count]}" in
+   				"000000010000000"*)
+           				 if [ ! -z "$DIALOG" ];
+						then
+							results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nPlant contact: Encrypted"
+					else
+							echo "	Plant contact: Encrypted"
+					fi
+				;;
+				*)
+           				if [ ! -z "$DIALOG" ];
+						then
+							results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nPlant contact: "${stations_Linkman_array[$count]}
+					else
+							echo "	Plant contact: "${stations_Linkman_array[$count]}
+					fi
+				;;
+				esac
 	fi
 	if [[ ! ${stations_owner_phone_array[$count]} == null  ]];
 		then
-		echo "	Contact phone number :"${stations_owner_phone_array[$count]}
+		
+				case "${stations_owner_phone_array[$count]}" in
+   				"000000010000000"*)
+           				if [ ! -z "$DIALOG" ];
+						then
+							results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nContact phone number: Encrypted"
+					else
+							echo "	Contact phone number: Encrypted"
+					fi
+				;;
+				*)
+           				if [ ! -z "$DIALOG" ];
+						then
+							results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nContact phone number: "${stations_owner_phone_array[$count]}
+					else
+							echo "	Contact phone number: "${stations_owner_phone_array[$count]}
+					fi
+				;;
+				esac
+	
+		
 	fi
 	
 	if [[ ! ${stations_buildState_array[$count]} == null  ]];
@@ -1299,7 +1548,7 @@ for s in "${#stations_Name_array[@]}"; do
 	
 		if [[ ${stations_buildState_array[$count]} == 1 ]];
 			then	
-			plant_status="Not built"
+			plant_status="Not constructed"
 		elif [[ ${stations_buildState_array[$count]} == 2 ]];
 			then
 			plant_status="Under construction"
@@ -1309,7 +1558,14 @@ for s in "${#stations_Name_array[@]}"; do
 		else
 			plant_status="Unknown"
 		fi
-		echo "	Plant Status: "$plant_status
+		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nPlant Status: "$plant_status
+			else
+				echo "	Plant Status: "$plant_status
+			fi
+		
 	fi
 	
 	if [[ ! ${stations_combineType_array[$count]} == null  ]];
@@ -1320,14 +1576,20 @@ for s in "${#stations_Name_array[@]}"; do
 			Grid_connection_type="Utility"
 		elif [[ ${stations_combineType_array[$count]} == 2 ]];
 			then
-			Grid_connection_type="C&I plant"
+			Grid_connection_type="commercial & industrial plant"
 		elif [[ ${stations_combineType_array[$count]} == 3 ]];
 			then
 			Grid_connection_type="Residential plant"
 		else
 			Grid_connection_type="Unknown"
 		fi
-		echo "	Grid connection type: "$Grid_connection_type
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nGrid connection type: "$Grid_connection_type
+			else
+				echo "	Grid connection type: "$Grid_connection_type
+			fi	
 	fi
 	
 	if [[ ! ${stations_aidType_array[$count]}  == null  ]];
@@ -1341,7 +1603,13 @@ for s in "${#stations_Name_array[@]}"; do
 		else
 			Poverty_alleviation_plant_flag="Unknown"
 		fi
-		echo "	Poverty alleviation plant: "$Poverty_alleviation_plant_flag
+		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nPoverty alleviation plant: "$Poverty_alleviation_plant_flag
+			else
+				echo "	Poverty alleviation plant: "$Poverty_alleviation_plant_flag
+			fi
 	fi
 
 
@@ -1362,6 +1630,28 @@ fi
 
 
 function getDevList {
+
+#check if data about dialog is active are delivered into function
+#echo $1
+#echo $DIALOG
+
+
+# window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
+if [ ! -z "$DIALOG" ];
+	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title "Please wait connecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetDevList" 10 30  		
+			else
+			$DIALOG --title "Please wait connecting!" \
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetDevList" 10 30
+       		fi
+	
+fi
+
 
 # Request to API getDevList
 local getDevList=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
@@ -1423,17 +1713,33 @@ local inverter_Type="$(echo "$inverter_Type" | tr -d '[:punct:]')"
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
 	then	
-		echo ""
-		echo -e "API \e[4mgetDevList\e[0m connection \e[42mOK\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevList connection OK"
+		else
+				echo ""
+				echo -e "API \e[4mgetDevList\e[0m connection \e[42mOK\e[0m"
+		fi	
 		getDevList_connection=true
 elif [[ $success == "false" ]];
 	then
-		echo ""
-		echo -e "API \e[4mgetDevList\e[0m connection \e[41mError\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevList connection Error"
+		else
+				echo ""
+				echo -e "API \e[4mgetDevList\e[0m connection \e[41mError\e[0"
+		fi
 		getDevList_connection=false
 else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="Undefined Error "
+		else
+				echo ""
+				echo -e "\e[41Undefined Error\e[0m" 
+				echo "\nReturned data: "$data
+		fi
 	#program stops
 	exit
 fi
@@ -1464,48 +1770,134 @@ if [[ $success == "true"  ]];
 	then	
 		local curent_time_actually=$(echo ${currentTime::-3})
 		local curent_time_actually=$(date -d @$curent_time_actually)
-		echo "Time of your Request to API: "$curent_time_actually
+		
+		if [ ! -z "$DIALOG" ];
+		then
+				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_actually
+		else
+				echo "Time of your Request to API: "$curent_time_actually
+		fi
 #fi
 
-echo ""
-echo -e "\e[93mPlant "$2": \e[0m\e[1m"${device_stationCode_array[$count]}"\e[0m"
-echo "Number of devices: "$number_of_devices
-echo ""
+if [ ! -z "$DIALOG" ];
+then
+	summary_for_dialog_screen[$count]="\nPlant "$2": "${device_stationCode_array[$count]}"\nNumber of devices: "$number_of_devices
+else
+	echo ""
+	echo -e "\e[93mPlant "$2": \e[0m\e[1m"${device_stationCode_array[$count]}"\e[0m"
+	echo "Number of devices: "$number_of_devices
+	echo ""
+fi
 
 local count=0
 for s in "${device_Name_array[@]}"; do 
 	local number_of_device=$(( $count+1 ))
-	echo -e "	\e[93mDevice "$number_of_device":\e[0m ${device_Id_array[$count]}"
-	#echo "	Device type ID: "${device_TypeId_array[$count]}
-	# we call to function with Devices ID list
 	
-	Device_type_ID ${device_TypeId_array[$count]}
-
-	if [ ! -z "${device_inverter_Type_array[$count]}" ]
+	if [ ! -z "$DIALOG" ];
 	then
-		echo "	Model: "${device_inverter_Type_array[$count]}
+		results_for_dialog_screen[$count]="\nDevice "$number_of_device": "${device_Id_array[$count]} 
+		results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nType: "$( Device_type_ID ${device_TypeId_array[$count]} )
+	else
+			echo -e "	\e[93mDevice "$number_of_device":\e[0m ${device_Id_array[$count]}"
+			#echo "	Device type ID: "${device_TypeId_array[$count]}
+			# we call to function with Devices ID list
+			printf "	" 
+			Device_type_ID ${device_TypeId_array[$count]}			
+	fi	
+	if [ ! -z "${device_inverter_Type_array[$count]}" ]
+	then	
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nModel: "${device_inverter_Type_array[$count]}	 
+			
+		else
+			echo "	Model: "${device_inverter_Type_array[$count]}		
+		fi				
 	fi
 	
-	echo "	Device Name: "${device_Name_array[$count]}
-	echo "	Device SN: "${device_esnCode_array[$count]}
-	
-	
+	if [ ! -z "${device_Name_array[$count]}" ]
+	then
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nDevice Name: "${device_Name_array[$count]}
+		else
+			echo "	Device Name: "${device_Name_array[$count]}
+		fi
+	fi
+	if [ ! -z "${device_esnCode_array[$count]}" ]
+	then
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nDevice SN: "${device_esnCode_array[$count]}
+		else
+			echo "	Device SN: "${device_esnCode_array[$count]}
+		fi
+	fi	
 	if [[ ! $1 == ${device_stationCode_array[$count]}  ]];
 	then	
-		echo "	Plant name: "${device_stationCode_array[$count]}
+		if [ ! -z "$DIALOG" ];
+		then
+		results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nPlant name: "${device_stationCode_array[$count]}
+		else
+			echo "	Plant name: "${device_stationCode_array[$count]}
+		fi
 	fi
-		
-	echo "	Software version: "${device_software_Version_array[$count]}
-	
-	if [[ ! ${device_longitude_array[$count]} == null  ]];
+	if [[ ! $1 == ${device_software_Version_array[$count]} ]];
 	then	
-		echo "	longitude: "${device_longitude_array[$count]}
-	fi
-	if [[ ! ${device_latitude_array[$count]} == null  ]];
+		if [ ! -z "$DIALOG" ];
+		then
+		results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nSoftware version: "${device_software_Version_array[$count]}
+		else
+			echo "	Software version: "${device_software_Version_array[$count]}
+		fi
+	fi		
+	if [[ ! $1 == ${device_longitude_array[$count]} ]];
 	then	
-		echo "	latitude: "${device_latitude_array[$count]}
+		if [[ ! ${device_longitude_array[$count]} == null  ]];
+		then
+			if [ ${device_longitude_array[$count]} == 1 ] && [ ${device_latitude_array[$count]} == 1 ] ;
+			then
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nlongitude: Not existing"
+				else
+					echo "	longitude: Not existing"
+				fi
+			else
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nlongitude: "${device_longitude_array[$count]}
+				else
+					echo "	longitude: "${device_longitude_array[$count]}
+				fi
+			fi
+		fi
+	fi	
+	if [[ ! $1 == ${device_latitude_array[$count]} ]];
+	then	
+		if [[ ! ${device_latitude_array[$count]} == null  ]];
+		then
+			if [ ${device_latitude_array[$count]} == 1 ] && [ ${device_longitude_array[$count]} == 1 ] ;
+			then
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nlatitude: Not existing"
+				else
+					echo "	latitude: Not existing"
+					echo ""
+				fi
+			else
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nlatitude: "${device_latitude_array[$count]}
+				else
+					echo "	latitude: "${device_latitude_array[$count]}
+					echo ""
+				fi
+			fi
+		fi
 	fi
-	echo ""
+
     (( count++ ))
 done
 
@@ -1518,12 +1910,26 @@ if [[ $success == "false"  ]];
 	in_case_of_error_with_connection_to_API $getDevList
 fi
 
-echo ""
-
 }
 
 
 function getStationRealKpi {
+
+# window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
+if [ ! -z "$DIALOG" ];
+	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title "Please wait connecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetStationRealKpi" 10 30  		
+			else
+			$DIALOG --title "Please wait connecting!" \
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetStationRealKpi" 10 30
+       		fi
+	
+fi
 
 
 # Request to API getStationRealKpi
@@ -1579,23 +1985,41 @@ eval "day_income_array=(${day_income})"
 eval "total_income_array=(${total_income})"
 eval "real_health_state_array=(${real_health_state})"
 
+
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
 	then	
-		echo ""
-		echo -e "API \e[4mgetStationRealKpi\e[0m connection \e[42mOK\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevList connection OK"
+		else
+				echo ""
+				echo -e "API \e[4mgetStationRealKpi\e[0m connection \e[42mOK\e[0m"
+		fi	
 		getStationRealKpi_connection=true
 elif [[ $success == "false" ]];
 	then
-		echo ""
-		echo -e "API \e[4mgetStationRealKpi\e[0m connection \e[41mError\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevList connection Error"
+		else
+				echo ""
+				echo -e "API \e[4mgetStationRealKpi\e[0m connection \e[41mError\e[0m"
+		fi
 		getStationRealKpi_connection=false
 else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="Undefined Error "
+		else
+				echo ""
+				echo -e "\e[41Undefined Error\e[0m" 
+				echo "\nReturned data: "$data
+		fi
 	#program stops
 	exit
 fi
+
 
 #echo "Error code: " $failCode " (0: Normal)"
 # we call to function with errors list
@@ -1616,44 +2040,143 @@ then
 fi
 
 
+
 #echo "Current Time: "$currentTime
 #shorter time for read in unix
 if [[ $success == "true"  ]];
 	then	
 		local curent_time_actually=$(echo ${currentTime::-3})
 		local curent_time_actually=$(date -d @$curent_time_actually)
-		echo "Time of your Request to API: "$curent_time_actually
+		
+		if [ ! -z "$DIALOG" ];
+		then
+				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_actually
+		else
+				echo "Time of your Request to API: "$curent_time_actually
+		fi
+#fi
 
-echo ""
-echo "Numbers of plants to check: "${#stationCodes_array[@]}
+if [ ! -z "$DIALOG" ];
+then
+	summary_for_dialog_screen[$count]="\nNumbers of plants to check: "${#stationCodes_array[@]}
+else
+	echo ""
+	echo -e "\e[93mNumbers of plants to check: \e[0m\e[1m"${#stationCodes_array[@]}"\e[0m"
+	echo ""
+fi
 
 
 local count=0
 for s in "${#stationCode_array[@]}"; do
 	local number_plant=$(( $count+1 ))
-	echo ""
-	echo -e "	\e[93mPlant "$number_plant": \e[0m\e[1m"${stationCode_array[$count]}"\e[0m"
 	
+	if [[ ! ${stationCode_array[$count]} == null  ]];
+	then	
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]="\nPlant $number_plant: "${stationCode_array[$count]}
+		else
+			echo ""
+			echo -e "	\e[93mPlant "$number_plant": \e[0m\e[1m"${stationCode_array[$count]}"\e[0m"
+		fi
+		
+		csv[$count]="Plant $number_plant;"${stationCode_array[$count]}"\r"
+		xml[$count]="<Plant_$number_plant>${stationCode_array[$count]}</Plant_$number_plant>\r" 
+		josn[$count]="		\"Plant_$number_plant\": \"${stationCode_array[$count]}\",\r" 
+		
+	fi
+		
 	if [[ ${real_health_state_array[$count]} == 1 ]];
 		then	
-		plant_healt="Disconnected"
+		plant_health="Disconnected"
 	elif [[ ${real_health_state_array[$count]} == 2 ]];
 		then
-		plant_healt="Faulty"
+		plant_health="Faulty"
 	elif [[ ${real_health_state_array[$count]} == 3 ]];
 		then
-		plant_healt="Healthy"
+		plant_health="Healthy"
 	else
-		plant_healt="Unknown"
+		plant_health="Unknown"
 	fi
-	echo "	Plant health status: "$plant_healt
 	
-	echo "	Yield today: "${Day_power_array[$count]}" kWh"
-	echo "	Yield this month: "${month_power_array[$count]}" kWh"
-	echo "	Total yield: "${total_power_array[$count]}" kWh"
-	echo "	Revenue today: "${day_income_array[$count]}" ¥"
-	echo "	Total revenue: "${total_income_array[$count]}" ¥"
-	echo ""
+	if [[ ! $plant_health == null  ]];
+	then
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nPlant health status: "$plant_health
+		else
+			echo ""
+			echo "	Plant health status: "$plant_health
+		fi
+		csv[$count]=${csv[$count]}"Plant health status;"$plant_health"\r"	
+		xml[$count]=${xml[$count]}"<plant_health>$plant_health</plant_health>\r"
+		josn[$count]=${josn[$count]}"		\"plant_health\": \"$plant_health\",\r"
+	fi	
+	if [[ ! ${Day_power_array[$count]} == null  ]];
+	then
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]="${results_for_dialog_screen[$count]}\nYield today: "${Day_power_array[$count]}" kWh"
+		else
+			echo "	Yield today: "${Day_power_array[$count]}" kWh"
+		fi
+		csv[$count]=${csv[$count]}"Yield today;"${Day_power_array[$count]}";kWh\r"
+		xml[$count]=${xml[$count]}"<yield_today><value>${Day_power_array[$count]}</value><unit>kWh</unit></yield_today>\r"
+		josn[$count]=${josn[$count]}"		\"yield_today\": {\r			\"value\": \"${Day_power_array[$count]}\",\r			\"unit\": \"kWh\"\r		},\r"
+		
+      
+		
+	fi	
+	if [[ ! ${month_power_array[$count]} == null  ]];
+	then
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]="${results_for_dialog_screen[$count]}\nYield this month: "${month_power_array[$count]}" kWh"
+		else
+			echo "	Yield this month: "${month_power_array[$count]}" kWh"
+		fi
+		csv[$count]=${csv[$count]}"Yield this month;"${month_power_array[$count]}";kWh\r"
+		xml[$count]=${xml[$count]}"<yield_month><value>${month_power_array[$count]}</value><unit>kWh</unit></yield_month>\r"
+		josn[$count]=${josn[$count]}"		\"yield_month\": {\r			\"value\": \"${month_power_array[$count]}\",\r			\"unit\": \"kWh\"\r		},\r"
+	fi
+	if [[ ! ${total_power_array[$count]} == null  ]];
+	then		
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]="${results_for_dialog_screen[$count]}\nTotal yield: "${total_power_array[$count]}" kWh"
+		else
+			echo "	Total yield: "${total_power_array[$count]}" kWh"
+		fi
+		csv[$count]=${csv[$count]}"Total yield;"${total_power_array[$count]}";kWh\r"
+		xml[$count]=${xml[$count]}"<total_yield><value>${total_power_array[$count]}</value><unit>kWh</unit></total_yield>\r"
+		josn[$count]=${josn[$count]}"		\"total_yield\": {\r			\"value\": \"${total_power_array[$count]}\",\r			\"unit\": \"kWh\"\r		},\r"
+	fi
+	if [[ ! ${day_income_array[$count]} == null  ]];
+	then					
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]="${results_for_dialog_screen[$count]}\nRevenue today: "${day_income_array[$count]}" ¥"
+		else
+			echo "	Revenue today: "${day_income_array[$count]}" ¥"
+		fi
+		csv[$count]=${csv[$count]}"Revenue today;"${day_income_array[$count]}";¥\r"
+		xml[$count]=${xml[$count]}"<today_revenue><value>${day_income_array[$count]}</value><unit>¥</unit></today_revenue>\r"
+		josn[$count]=${josn[$count]}"		\"today_revenue\": {\r			\"value\": \"${day_income_array[$count]}\",\r			\"unit\": \"¥\"\r		},\r"
+	fi
+	if [[ ! ${total_income_array[$count]} == null  ]];
+	then						
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$count]="${results_for_dialog_screen[$count]}\nTotal revenue: "${total_income_array[$count]}" ¥"
+		else
+			echo "	Total revenue: "${total_income_array[$count]}" ¥"
+		fi
+		csv[$count]=${csv[$count]}"Total revenue;"${total_income_array[$count]}";¥\r"
+		xml[$count]=${xml[$count]}"<total_revenue><value>${total_income_array[$count]}</value><unit>¥</unit></total_revenue>\r"
+		josn[$count]=${josn[$count]}"		\"total_revenue\": {\r			\"value\": \"${total_income_array[$count]}\",\r			\"unit\": \"¥\"\r		},\r"
+	fi
+	
+	
 	(( count++ ))
 done
 
@@ -1857,7 +2380,7 @@ function getKpiStationDay {
 local getKpiStationDay=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationDay  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
 
-#echo $getKpiStationDay | jq
+echo $getKpiStationDay | jq
 
 
 local success=$(echo ''$getKpiStationDay''  | jq '.success' )
@@ -2071,7 +2594,7 @@ function getKpiStationMonth {
 # Request to API getKpiStationMonth
 local getKpiStationMonth=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationMonth  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
 
-#echo $getKpiStationMonth | jq
+echo $getKpiStationMonth | jq
 
 local success=$(echo ''$getKpiStationMonth''  | jq '.success' )
 local buildCode=$(echo ''$getKpiStationMonth''  | jq '.buildCode' )
@@ -2281,7 +2804,7 @@ function getKpiStationYear {
 local getKpiStationYear=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
 
-#echo $getKpiStationYear | jq
+echo $getKpiStationYear | jq
 
 local success=$(echo ''$getKpiStationYear''  | jq '.success' )
 local failCode=$(echo ''$getKpiStationYear''  | jq '.failCode' )

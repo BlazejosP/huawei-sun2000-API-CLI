@@ -186,15 +186,18 @@ then
 			# Statistical data about particular device/devices inside Power Plant
 			
 			# Devices data precisious all voltages etc real-time
-			#getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
+			getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
 			#getDevFiveMinutes ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
 			#getDevKpiDay ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
 			#getDevKpiMonth ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
+			#Months in previous year
+			#getDevKpiMonth ${device_Id_array[0]} ${device_TypeId_array[0]} $(expr $curent_time - 31622399000) # minus one year
 			#getDevKpiYear ${device_Id_array[0]} ${device_TypeId_array[0]} $(expr $curent_time - 31622399000) # minus one year
 			#getDevKpiYear ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time #actually year
 			
 			
 			#Error comunicates
+			#---------
 			
 			# we cover one month before chosen date that is as far as API allows
 			Begining_time=$(expr $curent_time - 2629743000)			
@@ -211,6 +214,8 @@ then
 			
 			
 			#getAlarmList ${stations_Code_array[0]} $Begining_time $date $language $status $alarm_severity $alarm_type $device_type
+			
+			#---------
 			
 			#logout from API with unregistration of Xsrf token
 			logout_from_API
