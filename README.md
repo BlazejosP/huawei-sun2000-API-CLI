@@ -75,7 +75,7 @@ Configuration&Usage
 <b>fusionsolarapp.sh</b> - which is using official Huawei API called OpenAPI by Huawei. Now this script can pull and show on the screen data Real-time(actually), every 5min , daily, monthly, yearly for Plants (which may include many inverters+any other devices data together) and Individual Devices (like every one inverter, battery etc.) This script is now under development and for now can only grab all the data from your devices and show them on screen. In not so long time will be able also send this data to InfluxDB(grafana), Domoticz, MQTT. This script need individual configuration inside if you need data tailored to your needs. How do this is described here https://github.com/BlazejosP/huawei-sun2000-API-CLI/issues/12
 
 
-![FusionSolarApp](pictures/fusionsolarapp.png)
+![FusionSolarApp](pictures/fusionsolarappnew.png)
 
 ~~Changes in files structure and disaperance of unofficial API~~
 -
