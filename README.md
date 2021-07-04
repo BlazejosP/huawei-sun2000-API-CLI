@@ -67,6 +67,9 @@ sudo apt-get install grep
 sudo apt-get install httpie
 
 sudo apt-get install mosquitto-clients (if you use MQTT sending option)
+
+sudo apt-get install l dialog (if you plan use TUI)
+
 ```
 On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problems if are not installed already. 
 
@@ -74,10 +77,12 @@ Configuration&Usage
 -
 <b>fusionsolarapp.sh</b> - which is using official Huawei API called OpenAPI by Huawei. Now this script can pull and show on the screen data Real-time(actually), every 5min , daily, monthly, yearly for Plants (which may include many inverters+any other devices data together) and Individual Devices (like every one inverter, battery etc.) This script is now under development and for now can only grab all the data from your devices and show them on screen. In not so long time will be able also send this data to InfluxDB(grafana), Domoticz, MQTT. This script need individual configuration inside if you need data tailored to your needs. How do this is described here https://github.com/BlazejosP/huawei-sun2000-API-CLI/issues/12
 
-
 ![FusionSolarApp](pictures/fusionsolarappnew.png)
 
-~~Changes in files structure and disaperance of unofficial API~~
--
-After upgrade of Server to version SmartPVMS V500R007C00CP1301 by Huawei official API should work now. ~~Unofficial api from kioskmode.sh is based on older version now this unofficial API is not avaiable anymore.~~ Is possible to made this kioskmode.sh working again planed for June.
+<b>fusionsolarapp_interface.sh</b>  - this is the same program but with TUI graphical interface you must install additionally dialog. As for now you can login inside software will ask you about Login and Password if this data are not provided by config.conf. Then inside as for now you can check realtime plant performace and devices which are inside plant. Also is possible save data's to a file. This program is now partialy working so not every functionality is already implemented. When will be finished will have the same usability as text version.
+
+![TUI1](pictures/fusionsolarapp_interface1.png)
+
+![TUI2](pictures/fusionsolarapp_interface2.png)
+
 
