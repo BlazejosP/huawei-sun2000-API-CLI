@@ -68,7 +68,7 @@ sudo apt-get install httpie
 
 sudo apt-get install mosquitto-clients (if you use MQTT sending option)
 
-sudo apt-get install l dialog (if you plan use TUI)
+sudo apt-get install dialog (if you plan use TUI)
 
 ```
 On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problems if are not installed already. 
