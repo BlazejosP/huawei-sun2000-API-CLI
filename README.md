@@ -79,7 +79,7 @@ Configuration&Usage
 
 ![FusionSolarApp](pictures/fusionsolarappnew.png)
 
-<b>fusionsolarapp_interface.sh</b>  - this is the same program but with TUI graphical interface you must install additionally dialog. As for now you can login inside software will ask you about Login and Password if this data are not provided by config.conf. Then inside as for now you can check realtime plant performace and devices which are inside plant. Also is possible save data's to a file. This program is now partialy working so not every functionality is already implemented. When will be finished will have the same usability as text version.
+<b>fusionsolarapp_interface.sh</b>  - this is the same program but with TUI graphical interface you must install additionally dialog. As for now you can login inside software will ask you about Login and Password if this data are not provided by config.conf. Then inside you can check realtime plant performace and devices which are inside plant. Also is possible save data's to a file. This program is now partialy working so not every functionality is already implemented. When will be finished will have the same usability as text version.
 
 ![TUI1](pictures/fusionsolarapp_interface1.png)
 
