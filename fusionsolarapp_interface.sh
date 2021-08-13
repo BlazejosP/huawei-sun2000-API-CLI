@@ -159,10 +159,10 @@ getStationKPI_menu() {
 	 --backtitle "Plant ${number_plant[$count]}: ${stations_Code_array[$count]}" \
 	 --menu "Which data want to see?" 15 60 10 \
 	 1 "REAL-TIME data" \
-	 2 "Every HOUR of particular day (Not working yet)" \
-	 3 "Every DAY of particular month (Not working yet)" \
-	 4 "Every MONTH of particular year (Not working yet)" \
-	 5 "Every YEAR of particular century (Not working yet)" \
+	 2 "Every HOUR of particular day (not implemented)" \
+	 3 "Every DAY of particular month (not implemented)" \
+	 4 "Every MONTH of particular year (not implemented)" \
+	 5 "Every YEAR of particular century (not implemented)" \
 	 --output-fd 1)
 
 	exitstatus=$?
@@ -391,7 +391,7 @@ Devices_list_menu() {
 	
 	Our_menu_devices_list=$($DIALOG  --ok-label "Browse" --extra-button --extra-label "Back" --cancel-label "Logout" --title "Plant Device's list" \
 	 --backtitle "Devices from plant: ${device_stationCode_array[$count]}" \
-	 --menu "Plant ${device_stationCode_array[$count]} device's list chose one to see an internal data" 15 50 10 \
+	 --menu "Plant ${device_stationCode_array[$count]} device's list choose one to see an internal data" 15 50 10 \
 	${devices_number_and_list_array_for_dialog[@]} \
 	--output-fd 1)
         #3>&1 1>&2 2>&3)
@@ -422,10 +422,40 @@ Devices_list_menu() {
 				then
 					# Menu with devices in plant
 					#Devices_list_menu
-					$DIALOG --title "Plant ${number_plant[$count]}: ${stations_Code_array[$count]}" \
- 			 		--backtitle "Devices from plant: ${device_stationCode_array[$count]}" \
-					--msgbox  "Not implemended" 10 50
-					Devices_list_menu
+					#$DIALOG --title "Plant ${number_plant[$count]}: ${stations_Code_array[$count]}" \
+ 			 		#--backtitle "Devices from plant: ${device_stationCode_array[$count]}" \
+					#--msgbox  "Not implemended" 10 50
+					if [ $(echo "$( Device_type_ID ${device_TypeId_array[$(( $Our_menu_devices_list-1 ))]} "no_whitespace")" ) == "String_Inverter" ]
+					then
+					  
+						getDeviceKPI_menu ${devices_number_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} "String_Inverter"
+					elif [ $(echo "$( Device_type_ID ${device_TypeId_array[$(( $Our_menu_devices_list-1 ))]} "no_whitespace")" ) = "EMI" ]
+					then
+					  
+						getDeviceKPI_menu ${devices_number_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}
+					elif [ $(echo "$( Device_type_ID ${device_TypeId_array[$(( $Our_menu_devices_list-1 ))]} "no_whitespace")" ) = "Grid_meter" ]
+					then
+					  
+						getDeviceKPI_menu ${devices_number_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}
+					elif [ $(echo "$( Device_type_ID ${device_TypeId_array[$(( $Our_menu_devices_list-1 ))]} "no_whitespace")" ) = "Residential_inverter" ]
+					then
+					  
+						getDeviceKPI_menu ${devices_number_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}
+					elif [ $(echo "$( Device_type_ID ${device_TypeId_array[$(( $Our_menu_devices_list-1 ))]} "no_whitespace")" ) = "Battery" ]
+					then
+					  
+						getDeviceKPI_menu ${devices_number_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}
+					elif [ $(echo "$( Device_type_ID ${device_TypeId_array[$(( $Our_menu_devices_list-1 ))]} "no_whitespace")" ) = "Power_Sensor" ]
+					then
+					  
+						getDeviceKPI_menu ${devices_number_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} $(echo "$( Device_type_ID ${device_TypeId_array[$(( $Our_menu_devices_list-1 ))]} "no_whitespace")" )
+					else
+						$DIALOG --title "Device ${devices_number_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}: ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 			 			--backtitle "Device ${devices_number_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}: ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+						--msgbox  "This device $(echo "$( Device_type_ID ${device_TypeId_array[$(( $Our_menu_devices_list-1 ))]} "no_whitespace")" ) has no any aditionally data" 10 50
+						Devices_list_menu
+					fi
+					
 				else
 					#echo  $exitstatus
 					#clear #clears the terminal screen
@@ -466,7 +496,154 @@ Devices_list_menu() {
 }
 
 
+getDeviceKPI_menu() {
 
+if [ $3 == "String_Inverter" ] || [ $3 = "Residential_inverter" ] || [ $3 = "Battery" ];
+then
+	Our_menu_getDeviceKPI=$($DIALOG  --ok-label "Browse" --extra-button --extra-label "Back" --cancel-label "Logout" 		 --title "Device $1: $2" \
+	 --backtitle "Device $1: $2" \
+	 --menu "Which data want to see?" 15 60 10 \
+	 1 "REAL-TIME data" \
+	 2 "Every HOUR of particular day (not implemented)" \
+	 3 "Every DAY of particular month (not implemented)" \
+	 4 "Every MONTH of particular year (not implemented)" \
+	 5 "Every YEAR of particular century (not implemented)" \
+	 --output-fd 1)
+
+	exitstatus=$?
+        #echo $exitstatus
+        if [ $exitstatus = 0 ];
+        then 
+		
+	case "$Our_menu_getDeviceKPI" in
+	
+			# Options for device from API
+			 1)	# Real-time data for Device				
+				getDeviceKPI_entry				
+        			;;
+        			 	      					
+ 			 *) 	$DIALOG --title "Device $1: $2" \
+ 			 	--backtitle "Device $1: $2" \
+				--msgbox  "Not implemented now" 10 50
+				
+				Devices_list
+		esac	
+		
+    	elif [ $exitstatus = 1 ]; 
+    	then
+    		#logout from account
+    		logout_from_API
+    		
+    		$DIALOG --title "List of Power Stations" \
+ 		--backtitle "Logout from API" \
+		--msgbox  "$info_for_dialog_screen" 10 50
+    		
+    		#clear #clears the terminal screen
+		exit
+		
+	elif [ $exitstatus = 3 ]; 
+    	then	
+	         #go back to menu of devices
+		Devices_list	
+	else
+    		
+    		#clear #clears the terminal screen
+    		exit
+	fi 
+
+
+elif [ $3 == "EMI" ] || [ $3 = "Grid_meter" ] || [ $3 = "Power_Sensor" ];
+then
+	Our_menu_getDeviceKPI=$($DIALOG  --ok-label "Browse" --extra-button --extra-label "Back" --cancel-label "Logout" 		 --title "Device $1: $2" \
+	 --backtitle "Device $1: $2" \
+	 --menu "Which data want to see?" 15 60 10 \
+	 1 "REAL-TIME data" \
+	 2 "Every HOUR of particular day (not implemented)" \
+	 --output-fd 1)
+
+	exitstatus=$?
+        #echo $exitstatus
+        if [ $exitstatus = 0 ];
+        then 
+		
+	case "$Our_menu_getDeviceKPI" in
+	
+			# Options for device from API
+			 1)	# Real-time data for device				
+				getDeviceKPI_entry				
+        			;; 	
+        			      					
+ 			 *) 	$DIALOG --title "Device $1: $2" \
+ 			 	--backtitle "Device $1: $2" \
+				--msgbox  "Not implemented now" 10 50
+				
+				Devices_list
+				
+		esac	
+		
+    	elif [ $exitstatus = 1 ]; 
+    	then
+    		#logout from account
+    		logout_from_API
+    		
+    		$DIALOG --title "List of Power Stations" \
+ 		--backtitle "Logout from API" \
+		--msgbox  "$info_for_dialog_screen" 10 50
+    		
+    		#clear #clears the terminal screen
+		exit
+		
+	elif [ $exitstatus = 3 ]; 
+    	then	
+	        #go back to menu of devices
+		Devices_list	
+	else
+    		
+    		#clear #clears the terminal screen
+    		exit
+	fi 
+fi
+
+}
+
+getDeviceKPI_entry() {
+
+getDevRealKpi ${device_Id_array[$count]} ${device_TypeId_array[$count]} # data device number and deice type question about real-time data from particular device
+
+#call to next function
+getDeviceKPI_results
+
+}
+
+getDeviceKPI_results() {
+
+
+    		$DIALOG --extra-button --extra-label "Save to file" \
+    		--title "Device: ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 		--backtitle "Device: ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 		--output-fd 1 \
+		--msgbox  "$info_for_dialog_screen ${summary_for_dialog_screen[$count]}\n${results_for_dialog_screen[$count]}" 15 50
+		
+		exitstatus=$?
+        	#echo $exitstatus
+        	
+        	if [ $exitstatus = 0 ];
+       	then 
+       		# get back to manu of Plant options
+       		Devices_list
+       		
+       	elif [ $exitstatus = 3 ];
+       	then 
+       		#save to different files csv/txt/xml/josn		
+			save_to_file
+        	else
+    		
+    			#clear #clears the terminal screen
+    			exit
+    		
+		fi
+
+}
 
 
 

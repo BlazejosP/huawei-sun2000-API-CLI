@@ -3000,6 +3000,22 @@ echo ""
 
 function getDevRealKpi {
 
+# window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
+if [ ! -z "$DIALOG" ];
+	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title "Please wait connecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetDevRealKpi" 10 30  		
+			else
+			$DIALOG --title "Please wait connecting!" \
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\n getDevRealKpi" 10 30
+       		fi
+	
+fi
+
 
 # Request to API getKpiStationYear
 local getDevRealKpi=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
@@ -3720,20 +3736,37 @@ fi
 IFS="," read -a devIds_array <<< $devIds
 IFS="," read -a devTypeId_array <<< $devTypeId
 
+
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
 	then	
-		echo ""
-		echo -e "API \e[4mgetDevRealKpi\e[0m connection \e[42mOK\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevRealKpi connection OK"
+		else
+			echo ""
+			echo -e "API \e[4mgetDevRealKpi\e[0m connection \e[42mOK\e[0m"
+		fi
 		getDevRealKpi_connection=true
 elif [[ $success == "false" ]];
 	then
-		echo ""
-		echo -e "API \e[4mgetDevRealKpi\e[0m connection \e[41mError\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevRealKpi connection Error"
+		else
+			echo ""
+			echo -e "API \e[4mgetDevRealKpi\e[0m connection \e[41mError\e[0m"
+		fi
 		getDevRealKpi_connection=false
 else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="Undefined Error "
+		else
+				echo ""
+				echo -e "\e[41Undefined Error\e[0m" 
+				echo "\nReturned data: "$data
+		fi
 	#program stops
 	exit
 fi
@@ -3756,368 +3789,1163 @@ then
 	fi
 fi
 
+#echo "Current Time: "$currentTime
+#shorter time for read in unix
+if [[ $success == "true"  ]];
+	then	
+		local curent_time_actually=$(echo ${currentTime::-3})
+		local curent_time_of_request=$(date -d @$curent_time_actually)
+		
+		if [ ! -z "$DIALOG" ];
+		then
+				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_of_request
+		else
+				echo "Time of your Request to API: "$curent_time_of_request
+		fi
 
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(date -d @$curent_time_actually)
-echo "Time of your Request to API: "$curent_time_of_request
+
 
 # if we have String inverter
 if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
+		
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}"\n"
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
+
 	
 	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )) 
 	do
-		echo -e "\e[93m \c" 
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$c]=$(printf "\n"
+			Device_type_ID ${devTypeId_array[$c]}
+			echo " ID: "${devId_array[$c]});
+
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$c]}
+			echo -e "\e[0m ID: "${devId_array[$c]}
+		fi
+		
+		csv[$c]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$c]}";\r");
+		
+		#xml[$c]=$(printf "<"
+		#Device_type_ID ${devTypeId_array[$c]} "no_whitespace"
+		#printf ">${devId_array[$c]}</"
+		#Device_type_ID ${devTypeId_array[$c]} "no_whitespace"
+		#printf ">\r"); 
+		
+		xml[$c]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$c]}"</Device_Number>\r"); 
+		
+		
+		josn[$c]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$c]}"\",\r");
+
 		
 		if [[ ! ${inverter_state_array[$c]} == null  ]];
 		then	
-			printf "	Inverter status: "
 			#decimal number to hexdecimal
 			local hex=$( printf "%x" ${inverter_state_array[$c]} );
 			#echo $hex
-			#function to check inverter status
+
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter status: "
+				inverter_state $hex);
+			else
+				printf "	Inverter status: "
+				#function to check inverter status
+				inverter_state $hex
+				echo ""
+			fi
+			
+			csv[$c]=$( echo ${csv[$c]}"\n"
+			printf "Inverter status;" 
 			inverter_state $hex
-			echo ""			
+			printf "\r");
+		
+			xml[$c]=$( echo ${xml[$c]}
+			printf "\n<Inverter_status>"
+			inverter_state $hex
+			printf "</Inverter_status>"
+			printf "\r"); 
+		
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter status\": \""
+			inverter_state $hex
+			printf "\",\r"); 			
 		fi
 		
-		#special loop  for checking if inverter is diconected
+		#special loop  for checking if inverter is disconected
 		if [[ ! $hex == "0"  ]];
 		then
 		
 				
 		if [[ ! ${ab_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid AB voltage: "${ab_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid AB voltage: "${ab_u_array[$c]}" V");
+			else
+				echo -e "	Grid AB voltage: "${ab_u_array[$c]}" V"
+			fi
+			
+			csv[$c]=$( echo ${csv[$c]}"\nGrid AB voltage;"${ab_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_AB_voltage>"${ab_u_array[$c]}"<units>V</units></Grid_AB_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid AB voltage\": {\n		\"data\": \""${ab_u_array[$c]}"\",\n		\"units\": \"V\"},\r");
 		fi
+		
 		if [[ ! ${bc_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid BC voltage: "${bc_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid BC voltage: "${bc_u_array[$c]}" V");
+			else	
+				echo -e "	Grid BC voltage: "${bc_u_array[$c]}" V"
+			fi
+			
+			csv[$c]=$( echo ${csv[$c]}"\nGrid BC voltage;"${bc_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_BC_voltage>"${bc_u_array[$c]}"<units>V</units></Grid_BC_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid BC voltage\": {\n		\"data\": \""${bc_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${ca_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid CA voltage: "${ca_u_array[$c]}" V"				
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid CA voltage: "${ca_u_array[$c]}" V");			
+			else
+				echo -e "	Grid CA voltage: "${ca_u_array[$c]}" V"
+			fi
+						
+			csv[$c]=$( echo ${csv[$c]}"\nGrid CA voltage;"${ca_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_CA_voltage>"${ca_u_array[$c]}"<units>V</units></Grid_CA_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid CA voltage\": {\n		\"data\": \""${ca_u_array[$c]}"\",\n		\"units\": \"V\"},\r");							
 		fi
+		
 		if [[ ! ${a_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase A voltage: "${a_u_array[$c]}" V"				
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase A voltage: "${a_u_array[$c]}" V");			
+			else	
+				echo -e "	Phase A voltage: "${a_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase A voltage;"${a_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_A_voltage>"${a_u_array[$c]}"<units>V</units></Phase_A_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase A voltage\": {\n		\"data\": \""${a_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${b_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase B voltage: "${b_u_array[$c]}" V"				
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase B voltage: "${b_u_array[$c]}" V");			
+			else		
+				echo -e "	Phase B voltage: "${b_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase B voltage;"${b_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_B_voltage>"${b_u_array[$c]}"<units>V</units></Phase_B_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase B voltage\": {\n		\"data\": \""${b_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${c_u_array[$c]} == null  ]];
-		then	
-			echo -e "	Phase C voltage: "${c_u_array[$c]}" V"				
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase C voltage: "${c_u_array[$c]}" V");			
+			else		
+				echo -e "	Phase C voltage: "${c_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase C voltage;"${c_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_C_voltage>"${c_u_array[$c]}"<units>V</units></Phase_C_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase C voltage\": {\n		\"data\": \""${c_u_array[$c]}"\",\n		\"units\": \"V\"},\r");								
 		fi
+		
 		if [[ ! ${a_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid phase A current: "${a_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase A current: "${a_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase A current: "${a_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase A current;"${a_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_A_current>"${a_i_array[$c]}"<units>A</units></Grid_phase_A_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase A current\": {\n		\"data\": \""${a_i_array[$c]}"\",\n		\"units\": \"A\"},\r");								
 		fi
+		
 		if [[ ! ${b_i_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid phase B current: "${b_i_array[$c]}" A"				
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase B current: "${b_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase B current: "${b_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase B current;"${b_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_B_current>"${a_i_array[$c]}"<units>A</units></Grid_phase_B_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase B current\": {\n		\"data\": \""${b_i_array[$c]}"\",\n		\"units\": \"A\"},\r");							
 		fi
+		
 		if [[ ! ${c_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid phase C current: "${c_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase C current: "${c_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase C current: "${c_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase C current;"${c_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_C_current>"${c_i_array[$c]}"<units>A</units></Grid_phase_C_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase C current\": {\n		\"data\": \""${c_i_array[$c]}"\",\n		\"units\": \"A\"},\r");						
 		fi
+		
 		if [[ ! ${efficiency_array[$c]} == null  ]];
 		then	
-			echo -e "	Inverter conversion efficiency (manufacturer): "${efficiency_array[$c]}" %"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter conversion efficiency (manufacturer): "${efficiency_array[$c]}" %");			
+			else		
+				echo -e "	Inverter conversion efficiency (manufacturer): "${efficiency_array[$c]}" %"				
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nInverter conversion efficiency (manufacturer);"${efficiency_array[$c]}";%\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Inverter_conversion_efficiency_manufacturer>"${efficiency_array[$c]}"<units>%</units></Inverter_conversion_efficiency_manufacturer>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter conversion efficiency (manufacturer)\": {\n		\"data\": \""${efficiency_array[$c]}"\",\n		\"units\": \"%\"},\r");			
 		fi
+		
 		if [[ ! ${temperature_array[$c]} == null  ]];
-		then	
-			echo -e "	Inverter internal temperature: "${temperature_array[$c]}" °C"				
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter internal temperature: "${temperature_array[$c]}" °C");			
+			else		
+				echo -e "	Inverter internal temperature: "${temperature_array[$c]}" °C"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nInverter internal temperature;"${temperature_array[$c]}";°C\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Inverter_internal_temperature>"${temperature_array[$c]}"<units>°C</units></Inverter_internal_temperature>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter internal temperature\": {\n		\"data\": \""${temperature_array[$c]}"\",\n		\"units\": \"°C\"},\r");
 		fi
+			
 		if [[ ! ${power_factor_array[$c]} == null  ]];
 		then	
-			echo -e "	Power factor: "${power_factor_array[$c]}			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPower factor: "${power_factor_array[$c]});			
+			else		
+				echo -e "	Power factor: "${power_factor_array[$c]}
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPower factor;"${power_factor_array[$c]}";\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Power_factor>"${power_factor_array[$c]}"</Power_factor>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Power factor\": \""${power_factor_array[$c]}"\",\r");				
 		fi
+		
 		if [[ ! ${elec_freq_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid frequency: "${elec_freq_array[$c]}" Hz"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid frequency: "${elec_freq_array[$c]}" Hz");			
+			else		
+				echo -e "	Grid frequency: "${elec_freq_array[$c]}" Hz"				
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid frequency;"${elec_freq_array[$c]}";Hz\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_frequency>"${elec_freq_array[$c]}"<units>Hz</units></Grid_frequency>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid frequency\": {\n		\"data\": \""${elec_freq_array[$c]}"\",\n		\"units\": \"Hz\"},\r");			
 		fi
+		
 		if [[ ! ${active_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power: "${active_power_array[$c]}" Kw"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive power: "${active_power_array[$c]}" Kw");			
+			else		
+				echo -e "	Active power: "${active_power_array[$c]}" Kw"				
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive power;"${active_power_array[$c]}";Kw\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_power>"${active_power_array[$c]}"<units>Kw</units></Active_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active power\": {\n		\"data\": \""${active_power_array[$c]}"\",\n		\"units\": \"Kw\"},\r");				
 		fi
+		
 		if [[ ! ${reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive output power: "${reactive_power_array[$c]}" KVar"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReactive output power: "${reactive_power_array[$c]}" KVar");			
+			else		
+				echo -e "	Reactive output power: "${reactive_power_array[$c]}" KVar"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReactive output power;"${reactive_power_array[$c]}";KVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reactive_output_power>"${reactive_power_array[$c]}"<units>KVar</units></Reactive_output_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reactive output power\": {\n		\"data\": \""${reactive_power_array[$c]}"\",\n		\"units\": \"KVar\"},\r");						
 		fi
+		
 		if [[ ! ${day_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Yield today: "${day_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nYield today: "${day_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Yield today: "${day_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nYield today;"${day_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Yield_today>"${day_cap_array[$c]}"<units>Kwh</units></Yield_today>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Yield today\": {\n		\"data\": \""${day_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");					
 		fi
-				if [[ ! ${mppt_power_array[$c]} == null  ]];
+		
+		if [[ ! ${mppt_power_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT (Maximum Power Point Tracking) total input power: "${mppt_power_array[$c]}" Kw"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT (Maximum Power Point Tracking) total input power: "${mppt_power_array[$c]}" Kw");			
+			else		
+				echo -e "	MPPT (Maximum Power Point Tracking) total input power: "${mppt_power_array[$c]}" Kw"						
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT (Maximum Power Point Tracking) total input power;"${mppt_power_array[$c]}";Kw\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_Maximum_Power_Point_Tracking_total_input_power>"${mppt_power_array[$c]}"<units>Kw</units></MPPT_Maximum_Power_Point_Tracking_total_input_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT (Maximum Power Point Tracking) total input power\": {\n		\"data\": \""${mppt_power_array[$c]}"\",\n		\"units\": \"Kw\"},\r");		
 		fi
+		
 		if [[ ! ${pv1_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV1 input voltage: "${pv1_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV1 input voltage: "${pv1_u_array[$c]}" V");			
+			else		
+				echo -e "	PV1 input voltage: "${pv1_u_array[$c]}" V"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV1 input voltage;"${pv1_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV1_input_voltage>"${pv1_u_array[$c]}"<units>V</units></PV1_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV1 input voltage\": {\n		\"data\": \""${pv1_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv2_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV2 input voltage: "${pv2_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV2 input voltage: "${pv2_u_array[$c]}" V");			
+			else		
+				echo -e "	PV2 input voltage: "${pv2_u_array[$c]}" V"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV2 input voltage;"${pv2_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV2_input_voltage>"${pv2_u_array[$c]}"<units>V</units></PV2_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV2 input voltage\": {\n		\"data\": \""${pv2_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv3_u_array[$c]} == null  ]];
-		then	
-			echo -e "	PV3 input voltage: "${pv3_u_array[$c]}" V"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV3 input voltage: "${pv3_u_array[$c]}" V");			
+			else		
+				echo -e "	PV3 input voltage: "${pv3_u_array[$c]}" V"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV3 input voltage;"${pv3_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV3_input_voltage>"${pv3_u_array[$c]}"<units>V</units></PV3_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV3 input voltage\": {\n		\"data\": \""${pv3_u_array[$c]}"\",\n		\"units\": \"V\"},\r");					
 		fi
+		
 		if [[ ! ${pv4_u_array[$c]} == null  ]];
-		then	
-			echo -e "	PV4 input voltage: "${pv4_u_array[$c]}" V"	
-		fi		
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV4 input voltage: "${pv4_u_array[$c]}" V");			
+			else		
+				echo -e "	PV4 input voltage: "${pv4_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV4 input voltage;"${pv4_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV4_input_voltage>"${pv4_u_array[$c]}"<units>V</units></PV4_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV4 input voltage\": {\n		\"data\": \""${pv4_u_array[$c]}"\",\n		\"units\": \"V\"},\r");		
+		fi	
+			
 		if [[ ! ${pv5_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV5 input voltage: "${pv5_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV5 input voltage: "${pv5_u_array[$c]}" V");			
+			else		
+				echo -e "	PV5 input voltage: "${pv5_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV5 input voltage;"${pv5_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV5_input_voltage>"${pv5_u_array[$c]}"<units>V</units></PV5_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV5 input voltage\": {\n		\"data\": \""${pv5_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv6_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV6 input voltage: "${pv6_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV6 input voltage: "${pv6_u_array[$c]}" V");			
+			else		
+				echo -e "	PV6 input voltage: "${pv6_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV6 input voltage;"${pv6_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV6_input_voltage>"${pv6_u_array[$c]}"<units>V</units></PV6_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV6 input voltage\": {\n		\"data\": \""${pv6_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv7_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV7 input voltage: "${pv7_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV7 input voltage: "${pv7_u_array[$c]}" V");			
+			else		
+				echo -e "	PV7 input voltage: "${pv7_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV7 input voltage;"${pv7_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV7_input_voltage>"${pv7_u_array[$c]}"<units>V</units></PV7_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV7 input voltage\": {\n		\"data\": \""${pv7_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv8_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV8 input voltage: "${pv8_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV8 input voltage: "${pv8_u_array[$c]}" V");			
+			else		
+				echo -e "	PV8 input voltage: "${pv8_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV8 input voltage;"${pv8_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV8_input_voltage>"${pv8_u_array[$c]}"<units>V</units></PV8_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV8 input voltage\": {\n		\"data\": \""${pv8_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv9_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV9 input voltage: "${pv9_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV9 input voltage: "${pv9_u_array[$c]}" V");			
+			else		
+				echo -e "	PV9 input voltage: "${pv9_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV9 input voltage;"${pv9_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV9_input_voltage>"${pv9_u_array[$c]}"<units>V</units></PV9_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV9 input voltage\": {\n		\"data\": \""${pv9_u_array[$c]}"\",\n		\"units\": \"V\"},\r");								
 		fi
+		
 		if [[ ! ${pv10_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV10 input voltage: "${pv10_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV10 input voltage: "${pv10_u_array[$c]}" V");			
+			else		
+				echo -e "	PV10 input voltage: "${pv10_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV10 input voltage;"${pv10_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV10_input_voltage>"${pv10_u_array[$c]}"<units>V</units></PV10_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV10 input voltage\": {\n		\"data\": \""${pv10_u_array[$c]}"\",\n		\"units\": \"V\"},\r");		
 		fi
+		
 		if [[ ! ${pv11_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV11 input voltage: "${pv11_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV11 input voltage: "${pv11_u_array[$c]}" V");			
+			else		
+				echo -e "	PV11 input voltage: "${pv11_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV11 input voltage;"${pv11_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV11_input_voltage>"${pv11_u_array[$c]}"<units>V</units></PV11_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV11 input voltage\": {\n		\"data\": \""${pv11_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv12_u_array[$c]} == null  ]];
-		then	
-			echo -e "	PV12 input voltage: "${pv12_u_array[$c]}" V"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV12 input voltage: "${pv12_u_array[$c]}" V");			
+			else		
+				echo -e "	PV12 input voltage: "${pv12_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV12 input voltage;"${pv12_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV12_input_voltage>"${pv12_u_array[$c]}"<units>V</units></PV12_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV12 input voltage\": {\n		\"data\": \""${pv12_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv13_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV13 input voltage: "${pv13_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV13 input voltage: "${pv13_u_array[$c]}" V");			
+			else		
+				echo -e "	PV13 input voltage: "${pv13_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV13 input voltage;"${pv13_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV13_input_voltage>"${pv13_u_array[$c]}"<units>V</units></PV13_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV13 input voltage\": {\n		\"data\": \""${pv13_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv14_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV14 input voltage: "${pv14_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV14 input voltage: "${pv14_u_array[$c]}" V");			
+			else		
+				echo -e "	PV14 input voltage: "${pv14_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV14 input voltage;"${pv14_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV14_input_voltage>"${pv14_u_array[$c]}"<units>V</units></PV14_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV14 input voltage\": {\n		\"data\": \""${pv14_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv15_u_array[$c]} == null  ]];
-		then	
-			echo -e "	PV15 input voltage: "${pv15_u_array[$c]}" V"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV15 input voltage: "${pv15_u_array[$c]}" V");			
+			else		
+				echo -e "	PV15 input voltage: "${pv15_u_array[$c]}" V"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV15 input voltage;"${pv15_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV15_input_voltage>"${pv15_u_array[$c]}"<units>V</units></PV15_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV15 input voltage\": {\n		\"data\": \""${pv15_u_array[$c]}"\",\n		\"units\": \"V\"},\r");
 		fi
+		
 		if [[ ! ${pv16_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV16 input voltage: "${pv16_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV16 input voltage: "${pv16_u_array[$c]}" V");			
+			else		
+				echo -e "	PV16 input voltage: "${pv16_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV16 input voltage;"${pv16_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV16_input_voltage>"${pv16_u_array[$c]}"<units>V</units></PV16_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV16 input voltage\": {\n		\"data\": \""${pv16_u_array[$c]}"\",\n		\"units\": \"V\"},\r");
 		fi
+		
 		if [[ ! ${pv17_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV17 input voltage: "${pv17_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV17 input voltage: "${pv17_u_array[$c]}" V");			
+			else		
+				echo -e "	PV17 input voltage: "${pv17_u_array[$c]}" V"	
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV17 input voltage;"${pv17_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV17_input_voltage>"${pv17_u_array[$c]}"<units>V</units></PV17_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV17 input voltage\": {\n		\"data\": \""${pv17_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv18_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV18 input voltage: "${pv18_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV18 input voltage: "${pv18_u_array[$c]}" V");			
+			else		
+				echo -e "	PV18 input voltage: "${pv18_u_array[$c]}" V"	
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV18 input voltage;"${pv18_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV18_input_voltage>"${pv18_u_array[$c]}"<units>V</units></PV18_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV18 input voltage\": {\n		\"data\": \""${pv18_u_array[$c]}"\",\n		\"units\": \"V\"},\r");		
 		fi
+		
 		if [[ ! ${pv19_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV19 input voltage: "${pv19_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV19 input voltage: "${pv19_u_array[$c]}" V");			
+			else		
+				echo -e "	PV19 input voltage: "${pv19_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV19 input voltage;"${pv19_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV19_input_voltage>"${pv19_u_array[$c]}"<units>V</units></PV19_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV19 input voltage\": {\n		\"data\": \""${pv19_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv20_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV20 input voltage: "${pv20_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV20 input voltage: "${pv20_u_array[$c]}" V");			
+			else		
+				echo -e "	PV20 input voltage: "${pv20_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV20 input voltage;"${pv20_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV20_input_voltage>"${pv20_u_array[$c]}"<units>V</units></PV20_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV20 input voltage\": {\n		\"data\": \""${pv20_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv21_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV21 input voltage: "${pv21_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV21 input voltage: "${pv21_u_array[$c]}" V");			
+			else		
+				echo -e "	PV21 input voltage: "${pv21_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV21 input voltage;"${pv21_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV21_input_voltage>"${pv21_u_array[$c]}"<units>V</units></PV21_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV21 input voltage\": {\n		\"data\": \""${pv21_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv22_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV22 input voltage: "${pv22_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV22 input voltage: "${pv22_u_array[$c]}" V");			
+			else		
+				echo -e "	PV22 input voltage: "${pv22_u_array[$c]}" V"	
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV22 input voltage;"${pv22_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV22_input_voltage>"${pv22_u_array[$c]}"<units>V</units></PV22_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV22 input voltage\": {\n		\"data\": \""${pv22_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv23_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV23 input voltage: "${pv23_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV23 input voltage: "${pv23_u_array[$c]}" V");			
+			else		
+				echo -e "	PV23 input voltage: "${pv23_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV23 input voltage;"${pv23_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV23_input_voltage>"${pv23_u_array[$c]}"<units>V</units></PV23_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV23 input voltage\": {\n		\"data\": \""${pv23_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv24_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV24 input voltage: "${pv24_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV24 input voltage: "${pv24_u_array[$c]}" V");			
+			else		
+				echo -e "	PV24 input voltage: "${pv24_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV24 input voltage;"${pv24_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV24_input_voltage>"${pv24_u_array[$c]}"<units>V</units></PV24_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV24 input voltage\": {\n		\"data\": \""${pv24_u_array[$c]}"\",\n		\"units\": \"V\"},\r");					
 		fi
-				if [[ ! ${pv1_i_array[$c]} == null  ]];
+		
+		if [[ ! ${pv1_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV1 input current: "${pv1_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV1 input current: "${pv1_i_array[$c]}" A");			
+			else		
+				echo -e "	PV1 input current: "${pv1_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV1 input current;"${pv1_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV1_input_current>"${pv1_i_array[$c]}"<units>A</units></PV1_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV1 input current\": {\n		\"data\": \""${pv1_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv2_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV2 input current: "${pv2_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV2 input current: "${pv2_i_array[$c]}" A");			
+			else		
+				echo -e "	PV2 input current: "${pv2_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV2 input current;"${pv2_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV2_input_current>"${pv2_i_array[$c]}"<units>A</units></PV2_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV2 input current\": {\n		\"data\": \""${pv2_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv3_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV3 input current: "${pv3_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV3 input current: "${pv3_i_array[$c]}" A");			
+			else		
+				echo -e "	PV3 input current: "${pv3_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV3 input current;"${pv3_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV3_input_current>"${pv3_i_array[$c]}"<units>A</units></PV3_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV3 input current\": {\n		\"data\": \""${pv3_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv4_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV4 input current: "${pv4_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV4 input current: "${pv4_i_array[$c]}" A");			
+			else		
+				echo -e "	PV4 input current: "${pv4_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV4 input current;"${pv4_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV4_input_current>"${pv4_i_array[$c]}"<units>A</units></PV4_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV4 input current\": {\n		\"data\": \""${pv4_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${pv5_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV5 input current: "${pv5_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV5 input current: "${pv5_i_array[$c]}" A");			
+			else		
+				echo -e "	PV5 input current: "${pv5_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV5 input current;"${pv5_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV5_input_current>"${pv5_i_array[$c]}"<units>A</units></PV5_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV5 input current\": {\n		\"data\": \""${pv5_i_array[$c]}"\",\n		\"units\": \"A\"},\r");		
 		fi
+		
 		if [[ ! ${pv6_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV6 input current: "${pv6_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV6 input current: "${pv6_i_array[$c]}" A");			
+			else		
+				echo -e "	PV6 input current: "${pv6_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV6 input current;"${pv6_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV6_input_current>"${pv6_i_array[$c]}"<units>A</units></PV6_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV6 input current\": {\n		\"data\": \""${pv6_i_array[$c]}"\",\n		\"units\": \"A\"},\r");					
 		fi
+		
 		if [[ ! ${pv7_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV7 input current: "${pv7_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV7 input current: "${pv7_i_array[$c]}" A");			
+			else		
+				echo -e "	PV7 input current: "${pv7_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV7 input current;"${pv7_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV7_input_current>"${pv7_i_array[$c]}"<units>A</units></PV7_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV7 input current\": {\n		\"data\": \""${pv7_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${pv8_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV8 input current: "${pv8_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV8 input current: "${pv8_i_array[$c]}" A");			
+			else		
+				echo -e "	PV8 input current: "${pv8_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV8 input current;"${pv8_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV8_input_current>"${pv8_i_array[$c]}"<units>A</units></PV8_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV8 input current\": {\n		\"data\": \""${pv8_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${pv9_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV9 input current: "${pv9_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV9 input current: "${pv9_i_array[$c]}" A");			
+			else		
+				echo -e "	PV9 input current: "${pv9_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV9 input current;"${pv9_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV9_input_current>"${pv9_i_array[$c]}"<units>A</units></PV9_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV9 input current\": {\n		\"data\": \""${pv9_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv10_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV10 input current: "${pv10_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV10 input current: "${pv10_i_array[$c]}" A");			
+			else		
+				echo -e "	PV10 input current: "${pv10_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV10 input current;"${pv10_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV10_input_current>"${pv10_i_array[$c]}"<units>A</units></PV10_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV10 input current\": {\n		\"data\": \""${pv10_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv11_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV11 input current: "${pv11_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV11 input current: "${pv11_i_array[$c]}" A");			
+			else		
+				echo -e "	PV11 input current: "${pv11_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV11 input current;"${pv11_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV11_input_current>"${pv11_i_array[$c]}"<units>A</units></PV11_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV11 input current\": {\n		\"data\": \""${pv11_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv12_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV12 input current: "${pv12_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV12 input current: "${pv12_i_array[$c]}" A");			
+			else		
+				echo -e "	PV12 input current: "${pv12_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV12 input current;"${pv12_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV12_input_current>"${pv12_i_array[$c]}"<units>A</units></PV12_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV12 input current\": {\n		\"data\": \""${pv12_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv13_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV13 input current: "${pv13_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV13 input current: "${pv13_i_array[$c]}" A");			
+			else		
+				echo -e "	PV13 input current: "${pv13_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV13 input current;"${pv13_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV13_input_current>"${pv13_i_array[$c]}"<units>A</units></PV13_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV13 input current\": {\n		\"data\": \""${pv13_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv14_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV14 input current: "${pv14_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV14 input current: "${pv14_i_array[$c]}" A");			
+			else		
+				echo -e "	PV14 input current: "${pv14_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV14 input current;"${pv14_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV14_input_current>"${pv14_i_array[$c]}"<units>A</units></PV14_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV14 input current\": {\n		\"data\": \""${pv14_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv15_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV15 input current: "${pv15_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV15 input current: "${pv15_i_array[$c]}" A");			
+			else		
+				echo -e "	PV15 input current: "${pv15_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV15 input current;"${pv15_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV15_input_current>"${pv15_i_array[$c]}"<units>A</units></PV15_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV15 input current\": {\n		\"data\": \""${pv15_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${pv16_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV16 input current: "${pv16_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV16 input current: "${pv16_i_array[$c]}" A");			
+			else		
+				echo -e "	PV16 input current: "${pv16_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV16 input current;"${pv16_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV16_input_current>"${pv16_i_array[$c]}"<units>A</units></PV16_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV16 input current\": {\n		\"data\": \""${pv16_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv17_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV17 input current: "${pv17_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV17 input current: "${pv17_i_array[$c]}" A");			
+			else		
+				echo -e "	PV17 input current: "${pv17_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV17 input current;"${pv17_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV17_input_current>"${pv17_i_array[$c]}"<units>A</units></PV17_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV17 input current\": {\n		\"data\": \""${pv17_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${pv18_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV18 input current: "${pv18_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV18 input current: "${pv18_i_array[$c]}" A");			
+			else		
+				echo -e "	PV18 input current: "${pv18_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV18 input current;"${pv18_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV18_input_current>"${pv18_i_array[$c]}"<units>A</units></PV18_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV18 input current\": {\n		\"data\": \""${pv18_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv19_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV19 input current: "${pv19_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV19 input current: "${pv19_i_array[$c]}" A");			
+			else		
+				echo -e "	PV19 input current: "${pv19_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV19 input current;"${pv19_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV19_input_current>"${pv19_i_array[$c]}"<units>A</units></PV19_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV19 input current\": {\n		\"data\": \""${pv19_i_array[$c]}"\",\n		\"units\": \"A\"},\r");					
 		fi
+		
 		if [[ ! ${pv20_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV20 input current: "${pv20_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV20 input current: "${pv20_i_array[$c]}" A");			
+			else		
+				echo -e "	PV20 input current: "${pv20_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV20 input current;"${pv20_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV20_input_current>"${pv20_i_array[$c]}"<units>A</units></PV20_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV20 input current\": {\n		\"data\": \""${pv20_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${pv21_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV21 input current: "${pv21_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV21 input current: "${pv21_i_array[$c]}" A");			
+			else		
+				echo -e "	PV21 input current: "${pv21_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV21 input current;"${pv21_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV21_input_current>"${pv21_i_array[$c]}"<units>A</units></PV21_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV21 input current\": {\n		\"data\": \""${pv21_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv22_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV22 input current: "${pv22_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV22 input current: "${pv22_i_array[$c]}" A");			
+			else		
+				echo -e "	PV22 input current: "${pv22_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV22 input current;"${pv22_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV22_input_current>"${pv22_i_array[$c]}"<units>A</units></PV22_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV22 input current\": {\n		\"data\": \""${pv22_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv23_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV23 input current: "${pv23_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV23 input current: "${pv23_i_array[$c]}" A");			
+			else		
+				echo -e "	PV23 input current: "${pv23_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV23 input current;"${pv23_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV23_input_current>"${pv23_i_array[$c]}"<units>A</units></PV23_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV23 input current\": {\n		\"data\": \""${pv23_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv24_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV24 input current: "${pv24_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV24 input current: "${pv24_i_array[$c]}" A");			
+			else		
+				echo -e "	PV24 input current: "${pv24_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV24 input current;"${pv24_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV24_input_current>"${pv24_i_array[$c]}"<units>A</units></PV24_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV24 input current\": {\n		\"data\": \""${pv24_i_array[$c]}"\",\n		\"units\": \"A\"},\r");					
 		fi
+		
 		if [[ ! ${total_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Total yield: "${total_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nTotal yield: "${total_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Total yield: "${total_cap_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nTotal yield;"${total_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Total_yield>"${total_cap_array[$c]}"<units>Kwh</units></Total_yield>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Total yield\": {\n		\"data\": \""${total_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");						
 		fi
+		
 		if [[ ! ${open_time_array[$c]} == null  ]];
 		then				
 			local startup_time=$(echo ${open_time_array[$c]::-3})
 			local startup_time=$(date -d @$startup_time)	
-			echo -e "	Inverter last startup time: "$startup_time					
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter last startup time: "$startup_time);			
+			else		
+				echo -e "	Inverter last startup time: "$startup_time
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nInverter last startup time;"$startup_time"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Inverter_last_startup_time>"$startup_time"</Inverter_last_startup_time>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter last startup time\": \""$startup_time"\",\r");										
 		fi
+		
 		if [[ ! ${close_time_array[$c]} == null  ]];
 		then	
 			local shutdown_time=$(echo ${close_time_array[$c]::-3})
-			local shutdown_time=$(date -d @$shutdown_time)
-			echo -e "	Inverter last shutdown time: "$shutdown_time		
+			local shutdown_time=$(date -d @$shutdown_time)	
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter last shutdown time: "$shutdown_time);			
+			else		
+				echo -e "	Inverter last shutdown time: "$shutdown_time
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nInverter last shutdown time;"$shutdown_time"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Inverter_last_shutdown_time>"$shutdown_time"</Inverter_last_shutdown_time>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter last shutdown time\": \""$shutdown_time"\",\r");			
 		fi
+		
 		if [[ ! ${mppt_total_cap_array[$c]} == null  ]];
-		then	
-			echo -e "	Total DC input energy: "${mppt_total_cap_array[$c]}" Kwh"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nTotal DC input energy: "${mppt_total_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Total DC input energy: "${mppt_total_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nTotal DC input energy;"${mppt_total_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Total_DC_input_energy>"${mppt_total_cap_array[$c]}"<units>Kwh</units></Total_DC_input_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Total DC input energy\": {\n		\"data\": \""${mppt_total_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");					
 		fi
+		
 		if [[ ! ${mppt_1_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 1 DC total energy: "${mppt_1_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 1 DC total energy: "${mppt_1_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 1 DC total energy: "${mppt_1_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 1 DC total energy;"${mppt_1_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_1_DC_total_energy>"${mppt_1_cap_array[$c]}"<units>Kwh</units></MPPT_1_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 1 DC total energy\": {\n		\"data\": \""${mppt_1_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");						
 		fi
+		
 		if [[ ! ${mppt_2_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 2 DC total energy: "${mppt_2_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 2 DC total energy: "${mppt_2_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 2 DC total energy: "${mppt_2_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 2 DC total energy;"${mppt_2_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_2_DC_total_energy>"${mppt_2_cap_array[$c]}"<units>Kwh</units></MPPT_2_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 2 DC total energy\": {\n		\"data\": \""${mppt_2_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");				
 		fi
+		
 		if [[ ! ${mppt_3_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 3 DC total energy: "${mppt_3_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 3 DC total energy: "${mppt_3_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 3 DC total energy: "${mppt_3_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 3 DC total energy;"${mppt_3_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_3_DC_total_energy>"${mppt_3_cap_array[$c]}"<units>Kwh</units></MPPT_3_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 3 DC total energy\": {\n		\"data\": \""${mppt_3_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");					
 		fi
+		
 		if [[ ! ${mppt_4_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 4 DC total energy: "${mppt_4_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 4 DC total energy: "${mppt_4_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 4 DC total energy: "${mppt_4_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 4 DC total energy;"${mppt_4_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_4_DC_total_energy>"${mppt_4_cap_array[$c]}"<units>Kwh</units></MPPT_4_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 4 DC total energy\": {\n		\"data\": \""${mppt_4_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");				
 		fi
+		
 		if [[ ! ${mppt_5_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 5 DC total energy: "${mppt_5_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 5 DC total energy: "${mppt_5_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 5 DC total energy: "${mppt_5_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 5 DC total energy;"${mppt_5_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_5_DC_total_energy>"${mppt_5_cap_array[$c]}"<units>Kwh</units></MPPT_5_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 5 DC total energy\": {\n		\"data\": \""${mppt_5_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");				
 		fi
+		
 		if [[ ! ${mppt_6_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 6 DC total energy: "${mppt_6_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 6 DC total energy: "${mppt_6_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 6 DC total energy: "${mppt_6_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 6 DC total energy;"${mppt_6_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_6_DC_total_energy>"${mppt_6_cap_array[$c]}"<units>Kwh</units></MPPT_6_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 6 DC total energy\": {\n		\"data\": \""${mppt_6_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");					
 		fi
+		
 		if [[ ! ${mppt_7_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 7 DC total energy: "${mppt_7_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 7 DC total energy: "${mppt_7_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 7 DC total energy: "${mppt_7_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 7 DC total energy;"${mppt_7_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_7_DC_total_energy>"${mppt_7_cap_array[$c]}"<units>Kwh</units></MPPT_7_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 7 DC total energy\": {\n		\"data\": \""${mppt_7_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");				
 		fi
+		
 		if [[ ! ${mppt_8_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 8 DC total energy: "${mppt_8_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 8 DC total energy: "${mppt_8_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 8 DC total energy: "${mppt_8_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 8 DC total energy;"${mppt_8_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_8_DC_total_energy>"${mppt_8_cap_array[$c]}"<units>Kwh</units></MPPT_8_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 8 DC total energy\": {\n		\"data\": \""${mppt_8_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");					
 		fi
+		
 		if [[ ! ${mppt_9_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 9 DC total energy: "${mppt_9_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 9 DC total energy: "${mppt_9_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 9 DC total energy: "${mppt_9_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 9 DC total energy;"${mppt_9_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_9_DC_total_energy>"${mppt_9_cap_array[$c]}"<units>Kwh</units></MPPT_9_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 9 DC total energy\": {\n		\"data\": \""${mppt_9_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");						
 		fi
+		
 		if [[ ! ${mppt_10_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 10 DC total energy: "${mppt_10_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 10 DC total energy: "${mppt_10_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 10 DC total energy: "${mppt_10_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 10 DC total energy;"${mppt_10_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_10_DC_total_energy>"${mppt_10_cap_array[$c]}"<units>Kwh</units></MPPT_10_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 10 DC total energy\": {\n		\"data\": \""${mppt_10_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");					
 		fi
 		
-		#special for checking if inverter is diconected 
+		#special for checking if inverter is disconected 
 		else
-			echo -e "	No any Real-time data when device is disconected!"
 		
-		#special loop finish for checking if inverter is diconected 
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nNo any Real-time data when device is disconected!");			
+			else		
+				echo -e "	No any Real-time data when device is disconected!"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nNo any Real-time data when device is disconected\!\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<No_any_Real_time_data_when_device_is_disconected>No data</No_any_Real_time_data_when_device_is_disconected>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"No any Real-time data when device is disconected\!\": {\n		\"No any Real-time data when device is disconected\!\": \"No data\"},\r");		
+		
+		
+		#special loop finish for checking if inverter is disconected 
 		fi
 
 		if [[ ! ${run_state_array[$c]} == null  ]];
@@ -4134,7 +4962,17 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 			else
 			device_status="Unknow"
 			fi
-			echo -e "	Status: "$device_status			
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nStatus: "$device_status);			
+			else		
+				echo -e "	Status: "$device_status			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nStatus;"$device_status"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Status>"$device_status"</Status>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Status\": \""$device_status"\"\r");
+						
 		fi
 	done
 fi
@@ -4144,194 +4982,623 @@ fi
 # device is Residential inverter
 if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}"\n"
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
+
 	
 	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )); do
-		echo -e "\e[93m \c" 
+	
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$c]=$(printf "\n"
+			Device_type_ID ${devTypeId_array[$c]}
+			echo " ID: "${devId_array[$c]});
+
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$c]}
+			echo -e "\e[0m ID: "${devId_array[$c]}
+		fi
+		
+		csv[$c]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$c]}";\r");
+		
+		xml[$c]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$c]}"</Device_Number>\r"); 
+		
+		
+		josn[$c]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$c]}"\",\r");
+
+		
 		
 		if [[ ! ${inverter_state_array[$c]} == null  ]];
 		then	
-			printf "	Inverter status: "
+		
 			#decimal number to hexdecimal
 			local hex=$( printf "%x" ${inverter_state_array[$c]} );
 			#echo $hex
-			#function to check inverter status
+
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter status: "
+				inverter_state $hex);
+			else
+				printf "	Inverter status: "
+				#function to check inverter status
+				inverter_state $hex
+				echo ""
+			fi
+			
+			csv[$c]=$( echo ${csv[$c]}"\n"
+			printf "Inverter status;" 
 			inverter_state $hex
-			echo ""			
+			printf "\r");
+		
+			xml[$c]=$( echo ${xml[$c]}
+			printf "\n<Inverter_status>"
+			inverter_state $hex
+			printf "</Inverter_status>"
+			printf "\r"); 
+		
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter status\": \""
+			inverter_state $hex
+			printf "\",\r"); 						
 		fi
 		if [[ ! ${ab_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid AB voltage: "${ab_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid AB voltage: "${ab_u_array[$c]}" V");
+			else
+				echo -e "	Grid AB voltage: "${ab_u_array[$c]}" V"
+			fi
+			
+			csv[$c]=$( echo ${csv[$c]}"\nGrid AB voltage;"${ab_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_AB_voltage>"${ab_u_array[$c]}"<units>V</units></Grid_AB_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid AB voltage\": {\n		\"data\": \""${ab_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${bc_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid BC voltage: "${bc_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid BC voltage: "${bc_u_array[$c]}" V");
+			else	
+				echo -e "	Grid BC voltage: "${bc_u_array[$c]}" V"
+			fi
+			
+			csv[$c]=$( echo ${csv[$c]}"\nGrid BC voltage;"${bc_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_BC_voltage>"${bc_u_array[$c]}"<units>V</units></Grid_BC_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid BC voltage\": {\n		\"data\": \""${bc_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${ca_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid CA voltage: "${ca_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid CA voltage: "${ca_u_array[$c]}" V");			
+			else
+				echo -e "	Grid CA voltage: "${ca_u_array[$c]}" V"
+			fi
+						
+			csv[$c]=$( echo ${csv[$c]}"\nGrid CA voltage;"${ca_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_CA_voltage>"${ca_u_array[$c]}"<units>V</units></Grid_CA_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid CA voltage\": {\n		\"data\": \""${ca_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${a_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Phase A voltage: "${a_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase A voltage: "${a_u_array[$c]}" V");			
+			else	
+				echo -e "	Phase A voltage: "${a_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase A voltage;"${a_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_A_voltage>"${a_u_array[$c]}"<units>V</units></Phase_A_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase A voltage\": {\n		\"data\": \""${a_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${b_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Phase B voltage: "${b_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase B voltage: "${b_u_array[$c]}" V");			
+			else		
+				echo -e "	Phase B voltage: "${b_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase B voltage;"${b_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_B_voltage>"${b_u_array[$c]}"<units>V</units></Phase_B_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase B voltage\": {\n		\"data\": \""${b_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${c_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Phase C voltage: "${c_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase C voltage: "${c_u_array[$c]}" V");			
+			else		
+				echo -e "	Phase C voltage: "${c_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase C voltage;"${c_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_C_voltage>"${c_u_array[$c]}"<units>V</units></Phase_C_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase C voltage\": {\n		\"data\": \""${c_u_array[$c]}"\",\n		\"units\": \"V\"},\r");					
 		fi
+		
 		if [[ ! ${a_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid phase A current: "${a_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase A current: "${a_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase A current: "${a_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase A current;"${a_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_A_current>"${a_i_array[$c]}"<units>A</units></Grid_phase_A_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase A current\": {\n		\"data\": \""${a_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${b_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid phase B current: "${b_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase B current: "${b_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase B current: "${b_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase B current;"${b_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_B_current>"${a_i_array[$c]}"<units>A</units></Grid_phase_B_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase B current\": {\n		\"data\": \""${b_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${c_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid phase C current: "${c_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase C current: "${c_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase C current: "${c_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase C current;"${c_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_C_current>"${c_i_array[$c]}"<units>A</units></Grid_phase_C_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase C current\": {\n		\"data\": \""${c_i_array[$c]}"\",\n		\"units\": \"A\"},\r");					
 		fi
+		
 		if [[ ! ${efficiency_array[$c]} == null  ]];
 		then	
-			echo -e "	Inverter conversion efficiency (manufacturer): "${efficiency_array[$c]}" %"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter conversion efficiency (manufacturer): "${efficiency_array[$c]}" %");			
+			else		
+				echo -e "	Inverter conversion efficiency (manufacturer): "${efficiency_array[$c]}" %"				
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nInverter conversion efficiency (manufacturer);"${efficiency_array[$c]}";%\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Inverter_conversion_efficiency_manufacturer>"${efficiency_array[$c]}"<units>%</units></Inverter_conversion_efficiency_manufacturer>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter conversion efficiency (manufacturer)\": {\n		\"data\": \""${efficiency_array[$c]}"\",\n		\"units\": \"%\"},\r");				
 		fi
+		
 		if [[ ! ${temperature_array[$c]} == null  ]];
 		then	
-			echo -e "	Inverter internal temperature: "${temperature_array[$c]}" °C"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter internal temperature: "${temperature_array[$c]}" °C");			
+			else		
+				echo -e "	Inverter internal temperature: "${temperature_array[$c]}" °C"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nInverter internal temperature;"${temperature_array[$c]}";°C\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Inverter_internal_temperature>"${temperature_array[$c]}"<units>°C</units></Inverter_internal_temperature>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter internal temperature\": {\n		\"data\": \""${temperature_array[$c]}"\",\n		\"units\": \"°C\"},\r");			
 		fi
+		
 		if [[ ! ${power_factor_array[$c]} == null  ]];
 		then	
-			echo -e "	Power factor: "${power_factor_array[$c]}			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPower factor: "${power_factor_array[$c]});			
+			else		
+				echo -e "	Power factor: "${power_factor_array[$c]}
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPower factor;"${power_factor_array[$c]}";\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Power_factor>"${power_factor_array[$c]}"</Power_factor>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Power factor\": \""${power_factor_array[$c]}"\",\r");			
 		fi
+		
 		if [[ ! ${elec_freq_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid frequency: "${elec_freq_array[$c]}" Hz"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid frequency: "${elec_freq_array[$c]}" Hz");			
+			else		
+				echo -e "	Grid frequency: "${elec_freq_array[$c]}" Hz"				
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid frequency;"${elec_freq_array[$c]}";Hz\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_frequency>"${elec_freq_array[$c]}"<units>Hz</units></Grid_frequency>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid frequency\": {\n		\"data\": \""${elec_freq_array[$c]}"\",\n		\"units\": \"Hz\"},\r");			
 		fi
+		
 		if [[ ! ${active_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power: "${active_power_array[$c]}" Kw"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive power: "${active_power_array[$c]}" Kw");			
+			else		
+				echo -e "	Active power: "${active_power_array[$c]}" Kw"				
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive power;"${active_power_array[$c]}";Kw\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_power>"${active_power_array[$c]}"<units>Kw</units></Active_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active power\": {\n		\"data\": \""${active_power_array[$c]}"\",\n		\"units\": \"Kw\"},\r");		
 		fi
+		
 		if [[ ! ${reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive output power: "${reactive_power_array[$c]}" Kvar"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReactive output power: "${reactive_power_array[$c]}" KVar");			
+			else		
+				echo -e "	Reactive output power: "${reactive_power_array[$c]}" KVar"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReactive output power;"${reactive_power_array[$c]}";KVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reactive_output_power>"${reactive_power_array[$c]}"<units>KVar</units></Reactive_output_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reactive output power\": {\n		\"data\": \""${reactive_power_array[$c]}"\",\n		\"units\": \"KVar\"},\r");			
 		fi
+		
 		if [[ ! ${day_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Yield today: "${day_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nYield today: "${day_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Yield today: "${day_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nYield today;"${day_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Yield_today>"${day_cap_array[$c]}"<units>Kwh</units></Yield_today>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Yield today\": {\n		\"data\": \""${day_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");			
 		fi
+		
 		if [[ ! ${mppt_power_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT (Maximum Power Point Tracking) total input power: "${mppt_power_array[$c]}" Kw"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT (Maximum Power Point Tracking) total input power: "${mppt_power_array[$c]}" Kw");			
+			else		
+				echo -e "	MPPT (Maximum Power Point Tracking) total input power: "${mppt_power_array[$c]}" Kw"						
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT (Maximum Power Point Tracking) total input power;"${mppt_power_array[$c]}";Kw\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_Maximum_Power_Point_Tracking_total_input_power>"${mppt_power_array[$c]}"<units>Kw</units></MPPT_Maximum_Power_Point_Tracking_total_input_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT (Maximum Power Point Tracking) total input power\": {\n		\"data\": \""${mppt_power_array[$c]}"\",\n		\"units\": \"Kw\"},\r");		
 		fi
+		
 		if [[ ! ${pv1_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV1 input voltage: "${pv1_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV1 input voltage: "${pv1_u_array[$c]}" V");			
+			else		
+				echo -e "	PV1 input voltage: "${pv1_u_array[$c]}" V"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV1 input voltage;"${pv1_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV1_input_voltage>"${pv1_u_array[$c]}"<units>V</units></PV1_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV1 input voltage\": {\n		\"data\": \""${pv1_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${pv2_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV2 input voltage: "${pv2_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV2 input voltage: "${pv2_u_array[$c]}" V");			
+			else		
+				echo -e "	PV2 input voltage: "${pv2_u_array[$c]}" V"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV2 input voltage;"${pv2_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV2_input_voltage>"${pv2_u_array[$c]}"<units>V</units></PV2_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV2 input voltage\": {\n		\"data\": \""${pv2_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv3_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV3 input voltage: "${pv3_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV3 input voltage: "${pv3_u_array[$c]}" V");			
+			else		
+				echo -e "	PV3 input voltage: "${pv3_u_array[$c]}" V"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV3 input voltage;"${pv3_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV3_input_voltage>"${pv3_u_array[$c]}"<units>V</units></PV3_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV3 input voltage\": {\n		\"data\": \""${pv3_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
+		
 		if [[ ! ${pv4_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV4 input voltage: "${pv4_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV4 input voltage: "${pv4_u_array[$c]}" V");			
+			else		
+				echo -e "	PV4 input voltage: "${pv4_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV4 input voltage;"${pv4_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV4_input_voltage>"${pv4_u_array[$c]}"<units>V</units></PV4_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV4 input voltage\": {\n		\"data\": \""${pv4_u_array[$c]}"\",\n		\"units\": \"V\"},\r");
+		fi
+					
 		if [[ ! ${pv5_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV5 input voltage: "${pv5_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV5 input voltage: "${pv5_u_array[$c]}" V");			
+			else		
+				echo -e "	PV5 input voltage: "${pv5_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV5 input voltage;"${pv5_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV5_input_voltage>"${pv5_u_array[$c]}"<units>V</units></PV5_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV5 input voltage\": {\n		\"data\": \""${pv5_u_array[$c]}"\",\n		\"units\": \"V\"},\r");		
 		fi
+		
 		if [[ ! ${pv6_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV6 input voltage: "${pv6_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV6 input voltage: "${pv6_u_array[$c]}" V");			
+			else		
+				echo -e "	PV6 input voltage: "${pv6_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV6 input voltage;"${pv6_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV6_input_voltage>"${pv6_u_array[$c]}"<units>V</units></PV6_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV6 input voltage\": {\n		\"data\": \""${pv6_u_array[$c]}"\",\n		\"units\": \"V\"},\r");		
 		fi
+		
 		if [[ ! ${pv7_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV7 input voltage: "${pv7_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV7 input voltage: "${pv7_u_array[$c]}" V");			
+			else		
+				echo -e "	PV7 input voltage: "${pv7_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV7 input voltage;"${pv7_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV7_input_voltage>"${pv7_u_array[$c]}"<units>V</units></PV7_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV7 input voltage\": {\n		\"data\": \""${pv7_u_array[$c]}"\",\n		\"units\": \"V\"},\r");		
 		fi
+		
 		if [[ ! ${pv8_u_array[$c]} == null  ]];
 		then	
-			echo -e "	PV8 input voltage: "${pv8_u_array[$c]}" V"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV8 input voltage: "${pv8_u_array[$c]}" V");			
+			else		
+				echo -e "	PV8 input voltage: "${pv8_u_array[$c]}" V"		
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV8 input voltage;"${pv8_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV8_input_voltage>"${pv8_u_array[$c]}"<units>V</units></PV8_input_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV8 input voltage\": {\n		\"data\": \""${pv8_u_array[$c]}"\",\n		\"units\": \"V\"},\r");			
 		fi
 		if [[ ! ${pv1_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV1 input current: "${pv1_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV1 input current: "${pv1_i_array[$c]}" A");			
+			else		
+				echo -e "	PV1 input current: "${pv1_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV1 input current;"${pv1_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV1_input_current>"${pv1_i_array[$c]}"<units>A</units></PV1_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV1 input current\": {\n		\"data\": \""${pv1_i_array[$c]}"\",\n		\"units\": \"A\"},\r");		
 		fi
+		
 		if [[ ! ${pv2_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV2 input current: "${pv2_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV2 input current: "${pv2_i_array[$c]}" A");			
+			else		
+				echo -e "	PV2 input current: "${pv2_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV2 input current;"${pv2_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV2_input_current>"${pv2_i_array[$c]}"<units>A</units></PV2_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV2 input current\": {\n		\"data\": \""${pv2_i_array[$c]}"\",\n		\"units\": \"A\"},\r");		
 		fi
+		
 		if [[ ! ${pv3_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV3 input current: "${pv3_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV3 input current: "${pv3_i_array[$c]}" A");			
+			else		
+				echo -e "	PV3 input current: "${pv3_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV3 input current;"${pv3_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV3_input_current>"${pv3_i_array[$c]}"<units>A</units></PV3_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV3 input current\": {\n		\"data\": \""${pv3_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv4_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV4 input current: "${pv4_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV4 input current: "${pv4_i_array[$c]}" A");			
+			else		
+				echo -e "	PV4 input current: "${pv4_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV4 input current;"${pv4_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV4_input_current>"${pv4_i_array[$c]}"<units>A</units></PV4_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV4 input current\": {\n		\"data\": \""${pv4_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv5_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV5 input current: "${pv5_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV5 input current: "${pv5_i_array[$c]}" A");			
+			else		
+				echo -e "	PV5 input current: "${pv5_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV5 input current;"${pv5_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV5_input_current>"${pv5_i_array[$c]}"<units>A</units></PV5_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV5 input current\": {\n		\"data\": \""${pv5_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv6_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV6 input current: "${pv6_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV6 input current: "${pv6_i_array[$c]}" A");			
+			else		
+				echo -e "	PV6 input current: "${pv6_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV6 input current;"${pv6_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV6_input_current>"${pv6_i_array[$c]}"<units>A</units></PV6_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV6 input current\": {\n		\"data\": \""${pv6_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${pv7_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV7 input current: "${pv7_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV7 input current: "${pv7_i_array[$c]}" A");			
+			else		
+				echo -e "	PV7 input current: "${pv7_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV7 input current;"${pv7_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV7_input_current>"${pv7_i_array[$c]}"<units>A</units></PV7_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV7 input current\": {\n		\"data\": \""${pv7_i_array[$c]}"\",\n		\"units\": \"A\"},\r");		
 		fi
+		
 		if [[ ! ${pv8_i_array[$c]} == null  ]];
 		then	
-			echo -e "	PV8 input current: "${pv8_i_array[$c]}" A"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV8 input current: "${pv8_i_array[$c]}" A");			
+			else		
+				echo -e "	PV8 input current: "${pv8_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV8 input current;"${pv8_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV8_input_current>"${pv8_i_array[$c]}"<units>A</units></PV8_input_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV8 input current\": {\n		\"data\": \""${pv8_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${total_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Total yield: "${total_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nTotal yield: "${total_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Total yield: "${total_cap_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nTotal yield;"${total_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Total_yield>"${total_cap_array[$c]}"<units>Kwh</units></Total_yield>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Total yield\": {\n		\"data\": \""${total_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");		
 		fi
+		
 		if [[ ! ${open_time_array[$c]} == null  ]];
 		then				
 			local startup_time=$(echo ${open_time_array[$c]::-3})
 			local startup_time=$(date -d @$startup_time)	
-			echo -e "	Inverter last startup time: "$startup_time					
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter last startup time: "$startup_time);			
+			else		
+				echo -e "	Inverter last startup time: "$startup_time
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nInverter last startup time;"$startup_time"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Inverter_last_startup_time>"$startup_time"</Inverter_last_startup_time>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter last startup time\": \""$startup_time"\",\r");														
 		fi
+		
 		if [[ ! ${close_time_array[$c]} == null  ]];
 		then	
 			local shutdown_time=$(echo ${close_time_array[$c]::-3})
 			local shutdown_time=$(date -d @$shutdown_time)
-			echo -e "	Inverter last shutdown time: "$shutdown_time		
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nInverter last shutdown time: "$shutdown_time);			
+			else		
+				echo -e "	Inverter last shutdown time: "$shutdown_time
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nInverter last shutdown time;"$shutdown_time"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Inverter_last_shutdown_time>"$shutdown_time"</Inverter_last_shutdown_time>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Inverter last shutdown time\": \""$shutdown_time"\",\r");				
 		fi
+		
 		if [[ ! ${mppt_total_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Total DC total yield: "${mppt_total_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nTotal DC input energy: "${mppt_total_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Total DC input energy: "${mppt_total_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nTotal DC input energy;"${mppt_total_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Total_DC_input_energy>"${mppt_total_cap_array[$c]}"<units>Kwh</units></Total_DC_input_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Total DC input energy\": {\n		\"data\": \""${mppt_total_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");			
 		fi
+		
 		if [[ ! ${mppt_1_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 1 DC total yield: "${mppt_1_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 1 DC total energy: "${mppt_1_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 1 DC total energy: "${mppt_1_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 1 DC total energy;"${mppt_1_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_1_DC_total_energy>"${mppt_1_cap_array[$c]}"<units>Kwh</units></MPPT_1_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 1 DC total energy\": {\n		\"data\": \""${mppt_1_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");			
 		fi
+		
 		if [[ ! ${mppt_2_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 2 DC total yield: "${mppt_2_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 2 DC total energy: "${mppt_2_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 2 DC total energy: "${mppt_2_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 2 DC total energy;"${mppt_2_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_2_DC_total_energy>"${mppt_2_cap_array[$c]}"<units>Kwh</units></MPPT_2_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 2 DC total energy\": {\n		\"data\": \""${mppt_2_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");		
 		fi
+		
 		if [[ ! ${mppt_3_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 3 DC total yield: "${mppt_3_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 3 DC total energy: "${mppt_3_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 3 DC total energy: "${mppt_3_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 3 DC total energy;"${mppt_3_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_3_DC_total_energy>"${mppt_3_cap_array[$c]}"<units>Kwh</units></MPPT_3_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 3 DC total energy\": {\n		\"data\": \""${mppt_3_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");			
 		fi
+		
 		if [[ ! ${mppt_4_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	MPPT 4 DC total yield: "${mppt_4_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMPPT 4 DC total energy: "${mppt_4_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	MPPT 4 DC total energy: "${mppt_4_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMPPT 4 DC total energy;"${mppt_4_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<MPPT_4_DC_total_energy>"${mppt_4_cap_array[$c]}"<units>Kwh</units></MPPT_4_DC_total_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"MPPT 4 DC total energy\": {\n		\"data\": \""${mppt_4_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");			
 		fi
+		
 		if [[ ! ${run_state_array[$c]} == null  ]];
 		then	
 			if [[ ${run_state_array[$c]} == 0  ]];
@@ -4343,61 +5610,169 @@ if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 			else
 			device_status="Unknow"
 			fi
-			echo -e "	Status: "$device_status			
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nStatus: "$device_status);			
+			else		
+				echo -e "	Status: "$device_status			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nStatus;"$device_status"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Status>"$device_status"</Status>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Status\": \""$device_status"\"\r");			
 		fi
-	fi
 	done
 fi
-
 
 
 # device is EMI
 if [[ $success == "true"  ]] && [[ $2 == 10  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}"\n"
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 	
 	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )); do
-		echo -e "\e[93m \c" 
+		
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$c]=$(printf "\n"
+			Device_type_ID ${devTypeId_array[$c]}
+			echo " ID: "${devId_array[$c]});
+
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$c]}
+			echo -e "\e[0m ID: "${devId_array[$c]}
+		fi
+		
+		csv[$c]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$c]}";\r");
+		
+		xml[$c]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$c]}"</Device_Number>\r"); 
+		
+		
+		josn[$c]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$c]}"\",\r");
 					
 		
 		if [[ ! ${temperature_array[$c]} == null  ]];
-		then	
-			echo -e "	Temperature: "${temperature_array[$c]}" °C"				
-		fi			
-		if [[ ! ${pv_temperature_array[$c]} == null  ]];
-		then	
-			echo -e "	PV temperature: "${pv_temperature_array[$c]}" °C"				
+		then		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nTemperature: "${temperature_array[$c]}" °C");			
+			else		
+				echo -e "	Temperature: "${temperature_array[$c]}" °C"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nTemperature;"${temperature_array[$c]}";°C\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Temperature>"${temperature_array[$c]}"<units>°C</units></Temperature>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Temperature\": {\n		\"data\": \""${temperature_array[$c]}"\",\n		\"units\": \"°C\"},\r");				
 		fi	
+				
+		if [[ ! ${pv_temperature_array[$c]} == null  ]];
+		then		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPV Temperature: "${temperature_array[$c]}" °C");			
+			else		
+				echo -e "	PV temperature: "${pv_temperature_array[$c]}" °C"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPV Temperature;"${temperature_array[$c]}";°C\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<PV_Temperature>"${temperature_array[$c]}"<units>°C</units></PV_Temperature>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"PV_Temperature\": {\n		\"data\": \""${temperature_array[$c]}"\",\n		\"units\": \"°C\"},\r");				
+		fi
+			
 		if [[ ! ${wind_speed_array[$c]} == null  ]];
 		then	
-			echo -e "	Wind speed: "${wind_speed_array[$c]}" m/s"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nWind speed: "${wind_speed_array[$c]}" m/s");			
+			else		
+				echo -e "	Wind speed: "${wind_speed_array[$c]}" m/s"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nWind speed;"${wind_speed_array[$c]}";m/s\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Wind_speed>"${wind_speed_array[$c]}"<units>m/s</units></Wind_speed>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Wind speed\": {\n		\"data\": \""${wind_speed_array[$c]}"\",\n		\"units\": \"m/s\"},\r");				
 		fi	
+		
 		if [[ ! ${wind_direction_array[$c]} == null  ]];
 		then	
-			echo -e "	Wind direction: "${wind_direction_array[$c]}				
-		fi	
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nWind speed: "${wind_direction_array[$c]});			
+			else		
+				echo -e "	Wind direction: "${wind_direction_array[$c]}	
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nWind speed;"${wind_direction_array[$c]});
+			xml[$c]=$( echo ${xml[$c]}"\n<Wind_speed>"${wind_direction_array[$c]}"</Wind_speed>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Wind speed\": \""${wind_direction_array[$c]}"\",\r");			
+		fi
+			
 		if [[ ! ${radiant_total_array[$c]} == null  ]];
 		then	
-			echo -e "	Daily irradiation: "${radiant_total_array[$c]}" MJ/m 2"				
-		fi	
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nDaily irradiation: "${radiant_total_array[$c]}" MJ/m 2");			
+			else		
+				echo -e "	Daily irradiation: "${radiant_total_array[$c]}" MJ/m 2"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nDaily irradiation;"${radiant_total_array[$c]}";MJ/m 2\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Daily_irradiation>"${radiant_total_array[$c]}"<units>MJ/m 2</units></Daily_irradiation>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Daily irradiation\": {\n		\"data\": \""${radiant_total_array[$c]}"\",\n		\"units\": \"MJ/m 2\"},\r");				
+		fi
+			
 		if [[ ! ${radiant_line_array[$c]} == null  ]];
 		then	
-			echo -e "	Irradiance: "${radiant_line_array[$c]}" W/m 2"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nIrradiance: "${radiant_line_array[$c]}" W/m 2");			
+			else		
+				echo -e "	Irradiance: "${radiant_line_array[$c]}" W/m 2"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nIrradiance;"${radiant_line_array[$c]}";W/m 2\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Irradiance>"${radiant_line_array[$c]}"<units>W/m 2</units></Irradiance>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Irradiance\": {\n		\"data\": \""${radiant_line_array[$c]}"\",\n		\"units\": \"W/m 2\"},\r");				
 		fi	
+		
 		if [[ ! ${horiz_radiant_line_array[$c]} == null  ]];
 		then	
-			echo -e "	Horizontal irradiance: "${horiz_radiant_line_array[$c]}" W/m 2"				
-		fi	
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nHorizontal irradiance: "${horiz_radiant_line_array[$c]}" W/m 2");			
+			else		
+				echo -e "	Horizontal irradiance: "${horiz_radiant_line_array[$c]}" W/m 2"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nHorizontal irradiance;"${horiz_radiant_line_array[$c]}";W/m 2\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Horizontal_irradiance>"${horiz_radiant_line_array[$c]}"<units>W/m 2</units></Horizontal_irradiance>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Horizontal irradiance\": {\n		\"data\": \""${horiz_radiant_line_array[$c]}"\",\n		\"units\": \"W/m 2\"},\r");	
+		fi
+		
 		if [[ ! ${horiz_radiant_total_array[$c]} == null  ]];
 		then	
-			echo -e "	Horizontal irradiation: "${horiz_radiant_total_array[$c]}" MJ/m 2"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nHorizontal irradiation: "${horiz_radiant_total_array[$c]}" MJ/m 2");			
+			else		
+				echo -e "	Horizontal irradiation: "${horiz_radiant_total_array[$c]}" MJ/m 2"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nHorizontal irradiation;"${horiz_radiant_total_array[$c]}";MJ/m 2\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Horizontal_irradiation>"${horiz_radiant_total_array[$c]}}"<units>MJ/m 2</units></Horizontal_irradiation>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Horizontal irradiation\": {\n		\"data\": \""${horiz_radiant_total_array[$c]}"\",\n		\"units\": \"MJ/m 2\"},\r");				
 		fi
+		
 		if [[ ! ${run_state_array[$c]} == null  ]];
 		then	
 			if [[ ${run_state_array[$c]} == 0  ]];
@@ -4409,188 +5784,594 @@ if [[ $success == "true"  ]] && [[ $2 == 10  ]];
 			else
 			device_status="Unknow"
 			fi
-			echo -e "	Status: "$device_status			
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nStatus: "$device_status);			
+			else		
+				echo -e "	Status: "$device_status			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nStatus;"$device_status"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Status>"$device_status"</Status>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Status\": \""$device_status"\"\r");
+							
 		fi
 
 	done
 fi
+
 
 
 # device is Meter (Grid meter)
 if [[ $success == "true"  ]] && [[ $2 == 17  ]];
 	then
 	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
-	
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}"\n"
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
+		
+			
 	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )); do
-		echo -e "\e[93m \c" 
+		
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$c]=$(printf "\n"
+			Device_type_ID ${devTypeId_array[$c]}
+			echo " ID: "${devId_array[$c]});
+
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$c]}
+			echo -e "\e[0m ID: "${devId_array[$c]}
+		fi
+		
+		csv[$c]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$c]}";\r");
+		
+		xml[$c]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$c]}"</Device_Number>\r"); 
+		
+		
+		josn[$c]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$c]}"\",\r");
 					
 		
 		if [[ ! ${ab_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid AB voltage: "${ab_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid AB voltage: "${ab_u_array[$c]}" V");
+			else
+				echo -e "	Grid AB voltage: "${ab_u_array[$c]}" V"
+			fi
+			
+			csv[$c]=$( echo ${csv[$c]}"\nGrid AB voltage;"${ab_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_AB_voltage>"${ab_u_array[$c]}"<units>V</units></Grid_AB_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid AB voltage\": {\n		\"data\": \""${ab_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${bc_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid BC voltage: "${bc_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid BC voltage: "${bc_u_array[$c]}" V");
+			else	
+				echo -e "	Grid BC voltage: "${bc_u_array[$c]}" V"
+			fi
+			
+			csv[$c]=$( echo ${csv[$c]}"\nGrid BC voltage;"${bc_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_BC_voltage>"${bc_u_array[$c]}"<units>V</units></Grid_BC_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid BC voltage\": {\n		\"data\": \""${bc_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${ca_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid CA voltage: "${ca_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid CA voltage: "${ca_u_array[$c]}" V");			
+			else
+				echo -e "	Grid CA voltage: "${ca_u_array[$c]}" V"
+			fi
+						
+			csv[$c]=$( echo ${csv[$c]}"\nGrid CA voltage;"${ca_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_CA_voltage>"${ca_u_array[$c]}"<units>V</units></Grid_CA_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid CA voltage\": {\n		\"data\": \""${ca_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${a_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Phase A voltage: "${a_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase A voltage: "${a_u_array[$c]}" V");			
+			else	
+				echo -e "	Phase A voltage: "${a_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase A voltage;"${a_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_A_voltage>"${a_u_array[$c]}"<units>V</units></Phase_A_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase A voltage\": {\n		\"data\": \""${a_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${b_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Phase B voltage: "${b_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase B voltage: "${b_u_array[$c]}" V");			
+			else		
+				echo -e "	Phase B voltage: "${b_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase B voltage;"${b_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_B_voltage>"${b_u_array[$c]}"<units>V</units></Phase_B_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase B voltage\": {\n		\"data\": \""${b_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${c_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Phase C voltage: "${c_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPhase C voltage: "${c_u_array[$c]}" V");			
+			else		
+				echo -e "	Phase C voltage: "${c_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPhase C voltage;"${c_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Phase_C_voltage>"${c_u_array[$c]}"<units>V</units></Phase_C_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Phase C voltage\": {\n		\"data\": \""${c_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${a_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid phase A current: "${a_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase A current: "${a_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase A current: "${a_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase A current;"${a_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_A_current>"${a_i_array[$c]}"<units>A</units></Grid_phase_A_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase A current\": {\n		\"data\": \""${a_i_array[$c]}"\",\n		\"units\": \"A\"},\r");			
 		fi
+		
 		if [[ ! ${b_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid phase B current: "${b_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase B current: "${b_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase B current: "${b_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase B current;"${b_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_B_current>"${a_i_array[$c]}"<units>A</units></Grid_phase_B_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase B current\": {\n		\"data\": \""${b_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${c_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid phase C current: "${c_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid phase C current: "${c_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid phase C current: "${c_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid phase C current;"${c_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_phase_C_current>"${c_i_array[$c]}"<units>A</units></Grid_phase_C_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid phase C current\": {\n		\"data\": \""${c_i_array[$c]}"\",\n		\"units\": \"A\"},\r");					
 		fi
+		
 		if [[ ! ${active_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power: "${active_power_array[$c]}" Kw"		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive power: "${active_power_array[$c]}" Kw");			
+			else		
+				echo -e "	Active power: "${active_power_array[$c]}" Kw"				
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive power;"${active_power_array[$c]}";Kw\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_power>"${active_power_array[$c]}"<units>Kw</units></Active_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active power\": {\n		\"data\": \""${active_power_array[$c]}"\",\n		\"units\": \"Kw\"},\r");	
 		fi
+		
 		if [[ ! ${power_factor_array[$c]} == null  ]];
 		then	
-			echo -e "	Power factor: "${power_factor_array[$c]}			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPower factor: "${power_factor_array[$c]});			
+			else		
+				echo -e "	Power factor: "${power_factor_array[$c]}
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPower factor;"${power_factor_array[$c]}";\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Power_factor>"${power_factor_array[$c]}"</Power_factor>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Power factor\": \""${power_factor_array[$c]}"\",\r");			
 		fi
+		
 		if [[ ! ${active_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Active energy (forward active energy): "${active_cap_array[$c]}" kWh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive energy (forward active energy): "${active_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Active energy (forward active energy): "${active_cap_array[$c]}" kWh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive energy (forward active energy);"${active_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_energy_forward_active_energy>"${active_cap_array[$c]}"<units>Kwh</units></Active_energy_forward_active_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active energy (forward active energy)\": {\n		\"data\": \""${active_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r" );
 		fi
+		
 		if [[ ! ${reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive power: "${reactive_power_array[$c]}" Kvar"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReactive power: "${reactive_power_array[$c]}" KVar");			
+			else		
+				echo -e "	Reactive power: "${reactive_power_array[$c]}" KVar"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReactive power;"${reactive_power_array[$c]}";KVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reactive_power>"${reactive_power_array[$c]}"<units>KVar</units></Reactive_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reactive power\": {\n		\"data\": \""${reactive_power_array[$c]}"\",\n		\"units\": \"KVar\"},\r");			
 		fi
+		
 		if [[ ! ${reverse_active_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Reverse active energy: "${reverse_active_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse active energy: "${reverse_active_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Reverse active energy: "${reverse_active_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse active energy;"${reverse_active_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_active_energy>"${reverse_active_cap_array[$c]}"<units>Kwh</units></Reverse_active_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse active energy\": {\n		\"data\": \""${reverse_active_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");				
 		fi
+		
 		if [[ ! ${forward_reactive_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Forward reactive energy: "${forward_reactive_cap_array[$c]}" Kwh"			
-		fi		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward reactive energy: "${forward_reactive_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Forward reactive energy: "${forward_reactive_cap_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward reactive energy;"${forward_reactive_cap_array[$c]}}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_reactive_energy>"${forward_reactive_cap_array[$c]}"<units>Kwh</units></Forward_reactive_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward reactive energy\": {\n		\"data\": \""${forward_reactive_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");						
+		fi	
+			
 		if [[ ! ${reverse_reactive_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Reverse reactive energy: "${reverse_reactive_cap_array[$c]}" Kwh"			
-		fi			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward reactive energy: "${forward_reactive_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Reverse reactive energy: "${reverse_reactive_cap_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward reactive energy;"${forward_reactive_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_reactive_energy>"${forward_reactive_cap_array[$c]}"<units>Kwh</units></Forward_reactive_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward reactive energy\": {\n		\"data\": \""${forward_reactive_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");				
+		fi
+					
 		if [[ ! ${active_power_a_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power PA: "${active_power_a_array[$c]}" Kw"			
-		fi		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive power PA: "${active_power_a_array[$c]}" Kw");			
+			else		
+				echo -e "	Active power PA: "${active_power_a_array[$c]}" Kw"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive power PA;"${active_power_a_array[$c]}";Kw\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_power_PA>"${active_power_a_array[$c]}"<units>Kw</units></Active_power_PA>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active power PA\": {\n		\"data\": \""${active_power_a_array[$c]}"\",\n		\"units\": \"Kw\"},\r");			
+		fi
+		
 		if [[ ! ${active_power_b_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power PB: "${active_power_b_array[$c]}" Kw"			
-		fi		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive power PB: "${active_power_b_array[$c]}" Kw");			
+			else		
+				echo -e "	Active power PB: "${active_power_b_array[$c]}" Kw"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive power PB;"${active_power_b_array[$c]}";Kw\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_power_PB>"${active_power_b_array[$c]}"<units>Kw</units></Active_power_PB>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active power PB\": {\n		\"data\": \""${active_power_b_array[$c]}"\",\n		\"units\": \"Kw\"},\r");			
+		fi
+				
 		if [[ ! ${active_power_c_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power PC: "${active_power_c_array[$c]}" Kw"			
-		fi		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive power PC: "${active_power_c_array[$c]}" Kw");			
+			else		
+				echo -e "	Active power PC: "${active_power_c_array[$c]}" Kw"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive power PC;"${active_power_c_array[$c]}";Kw\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_power_PC>"${active_power_c_array[$c]}"<units>Kw</units></Active_power_PC>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active power PC\": {\n		\"data\": \""${active_power_c_array[$c]}"\",\n		\"units\": \"Kw\"},\r");			
+		fi
+				
 		if [[ ! ${reactive_power_a_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive power QA: "${reactive_power_a_array[$c]}" kVar"			
-		fi	
-		if [[ ! ${reactive_power_b_array[$c]} == null  ]];
-		then	
-			echo -e "	Reactive power QB: "${reactive_power_ab_array[$c]}" kVar"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReactive power QA: "${reactive_power_a_array[$c]}" KVar");			
+			else		
+				echo -e "	Reactive power QA: "${reactive_power_a_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReactive power QA;"${reactive_power_a_array[$c]}";KVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reactive_power_QA>"${reactive_power_a_array[$c]}"<units>KVar</units></Reactive_power_QA>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reactive power QA\": {\n		\"data\": \""${reactive_power_a_array[$c]}"\",\n		\"units\": \"KVar\"},\r");			
 		fi
+			
+		if [[ ! ${reactive_power_b_array[$c]} == null  ]];
+		then		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReactive power QB: "${reactive_power_b_array[$c]}" KVar");			
+			else		
+				echo -e "	Reactive power QB: "${reactive_power_b_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReactive power QB;"${reactive_power_b_array[$c]}";KVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reactive_power_QB>"${reactive_power_b_array[$c]}"<units>KVar</units></Reactive_power_QB>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reactive power QB\": {\n		\"data\": \""${reactive_power_b_array[$c]}"\",\n		\"units\": \"KVar\"},\r");			
+		fi
+		
 		if [[ ! ${reactive_power_c_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive power QC: "${reactive_power_c_array[$c]}" kVar"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReactive power QC: "${reactive_power_c_array[$c]}" KVar");			
+			else		
+				echo -e "	Reactive power QC: "${reactive_power_c_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReactive power QC;"${reactive_power_c_array[$c]}";KVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reactive_power_QC>"${reactive_power_c_array[$c]}"<units>KVar</units></Reactive_power_QC>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reactive power QC\": {\n		\"data\": \""${reactive_power_b_array[$c]}"\",\n		\"units\": \"KVar\"},\r");					
 		fi
+		
 		if [[ ! ${total_apparent_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Total apparent power: "${total_apparent_power_array[$c]}" kVA"			
-		fi
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nTotal apparent power: "${total_apparent_power_array[$c]}" kVA");			
+			else		
+				echo -e "	Total apparent power: "${total_apparent_power_array[$c]}" kVA"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nTotal apparent power;"${total_apparent_power_array[$c]}";kVA\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Total apparent power>"${total_apparent_power_array[$c]}"<units>kVA</units></Reactive_power_QC>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Total apparent power\": {\n		\"data\": \""${total_apparent_power_array[$c]}"\",\n		\"units\": \"kVA\"},\r");					
+		fi			
+		
 		if [[ ! ${grid_frequency_array[$c]} == null  ]];
-		then	
-			echo -e "	Grid frequency: "${grid_frequency_array[$c]}" Hz"			
+		then			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid frequency: "${grid_frequency_array[$c]}" Hz");			
+			else		
+				echo -e "	Grid frequency: "${grid_frequency_array[$c]}" Hz"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid frequency;"${grid_frequency_array[$c]}";Hz\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_frequency>"${grid_frequency_array[$c]}"<units>Hz</units></Grid_frequency>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid frequency\": {\n		\"data\": \""${grid_frequency_array[$c]}"\",\n		\"units\": \"Hz\"},\r");					
 		fi
+		
 		if [[ ! ${reverse_active_peak_array[$c]} == null  ]];
-		then	
-			echo -e "	Reverse active energy (peak): "${reverse_active_peak_array[$c]}" Kwh"			
+		then					
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse active energy (peak): "${reverse_active_peak_array[$c]}" Kwh");			
+			else		
+				echo -e "	Reverse active energy (peak): "${reverse_active_peak_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse active energy (peak);"${reverse_active_peak_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_active_energy_(peak)>"${reverse_active_peak_array[$c]}"<units>Kwh</units></Reverse_active_energy_(peak)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse active energy (peak)\": {\n		\"data\": \""${reverse_active_peak_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");		
 		fi
+		
 		if [[ ! ${reverse_active_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Reverse active energy (shoulder): "${reverse_active_power_array[$c]}" Kwh"			
+		then				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse active energy (shoulder): "${reverse_active_power_array[$c]}" Kwh");			
+			else		
+				echo -e "	Reverse active energy (shoulder): "${reverse_active_power_array[$c]}" Kwh"			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse active energy (shoulder);"${reverse_active_power_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_active_energy_(shoulder)>"${reverse_active_power_array[$c]}"<units>Kwh</units></Reverse_active_energy_(shoulder)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse active energy (shoulder)\": {\n		\"data\": \""${reverse_active_power_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");
 		fi
+		
 		if [[ ! ${reverse_active_valley_array[$c]} == null  ]];
-		then	
-			echo -e "	Reverse active energy (off-peak): "${reverse_active_valley_array[$c]}" Kwh"			
+		then				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse active energy (off-peak): "${reverse_active_valley_array[$c]}" Kwh");			
+			else		
+				echo -e "	Reverse active energy (off-peak): "${reverse_active_valley_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse active energy (off-peak);"${reverse_active_valley_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_active_energy_(off-peak)>"${reverse_active_valley_array[$c]}"<units>Kwh</units></Reverse_active_energy_(off-peak)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse active energy (off-peak)\": {\n		\"data\": \""${reverse_active_valley_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");
 		fi
+			
 		if [[ ! ${reverse_active_top_array[$c]} == null  ]];
 		then	
-			echo -e "	Reverse active energy (sharp): "${reverse_active_top_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse active energy (sharp): "${reverse_active_top_array[$c]}" Kwh");			
+			else		
+				echo -e "	Reverse active energy (sharp): "${reverse_active_top_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse active energy (sharp);"${reverse_active_top_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_active_energy_(sharp)>"${reverse_active_top_array[$c]}"<units>Kwh</units></Reverse_active_energy_(sharp)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse active energy (sharp)\": {\n		\"data\": \""${reverse_active_top_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");	
 		fi
+		
 		if [[ ! ${positive_active_peak_array[$c]} == null  ]];
-		then	
-			echo -e "	Forward active energy (peak): "${positive_active_peak_array[$c]}" Kwh"			
+		then				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward active energy (peak): "${positive_active_peak_array[$c]}" Kwh");			
+			else		
+				echo -e "	Forward active energy (peak): "${positive_active_peak_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward active energy (peak);"${positive_active_peak_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_active_energy_(peak)>"${positive_active_peak_array[$c]}"<units>Kwh</units></Forward_active_energy_(peak)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward active energy (peak)\": {\n		\"data\": \""${positive_active_peak_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");	
 		fi
+		
 		if [[ ! ${positive_active_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Forward active energy (shoulder): "${positive_active_power_array[$c]}" Kwh"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward active energy (shoulder): "${positive_active_power_array[$c]}" Kwh");			
+			else		
+				echo -e "	Forward active energy (shoulder): "${positive_active_power_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward active energy (shoulder);"${positive_active_power_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_active_energy_(shoulder)>"${positive_active_power_array[$c]}"<units>Kwh</units></Forward_active_energy_(shoulder)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward active energy (shoulder)\": {\n		\"data\": \""${positive_active_power_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");
 		fi
+		
 		if [[ ! ${positive_active_valley_array[$c]} == null  ]];
 		then	
-			echo -e "	Forward active energy (off-peak): "${positive_active_valley_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward active energy (off-peak): "${positive_active_valley_array[$c]}" Kwh");			
+			else		
+				echo -e "	Forward active energy (off-peak): "${positive_active_valley_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward active energy (off-peak);"${positive_active_valley_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_active_energy_(off-peak)>"${positive_active_valley_array[$c]}"<units>Kwh</units></Forward_active_energy_(off-peak)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward active energy (off-peak)\": {\n		\"data\": \""${positive_active_valley_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");
 		fi
+		
 		if [[ ! ${positive_active_top_array[$c]} == null  ]];
-		then	
-			echo -e "	Forward active energy (sharp): "${positive_active_top_array[$c]}" Kwh"			
-		fi	
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward active energy (sharp): "${positive_active_top_array[$c]}" Kwh");			
+			else		
+				echo -e "	Forward active energy (sharp): "${positive_active_top_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward active energy (sharp);"${positive_active_top_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_active_energy_(sharp)>"${positive_active_top_array[$c]}"<units>Kwh</units></Forward_active_energy_(sharp)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward active energy (sharp)\": {\n		\"data\": \""${positive_active_top_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");					
+		fi
+			
 		if [[ ! ${reverse_reactive_peak_array[$c]} == null  ]];
-		then	
-			echo -e "	Reverse reactive energy (peak): "${reverse_reactive_peak_array[$c]}" kVar"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse reactive energy (peak): "${reverse_reactive_peak_array[$c]}" kVar");			
+			else		
+				echo -e "	Reverse reactive energy (peak): "${reverse_reactive_peak_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse reactive energy (peak);"${reverse_reactive_peak_array[$c]}";kVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_reactive_energy_(peak)>"${reverse_reactive_peak_array[$c]}"<units>kVar</units></Reverse_reactive_energy_(peak)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse reactive energy (peak)\": {\n		\"data\": \""${reverse_reactive_peak_array[$c]}"\",\n		\"units\": \"kVar\"},\r");
 		fi
+		
 		if [[ ! ${reverse_reactive_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Reverse reactive energy (shoulder): "${reverse_reactive_power_array[$c]}" kVar"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse reactive energy (shoulder): "${reverse_reactive_power_array[$c]}" kVar");			
+			else		
+				echo -e "	Reverse reactive energy (shoulder): "${reverse_reactive_power_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse reactive energy (shoulder);"${reverse_reactive_power_array[$c]}";kVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_reactive_energy_(shoulder)>"${reverse_reactive_power_array[$c]}"<units>kVar</units></Reverse_reactive_energy_(shoulder)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse reactive energy (shoulder)\": {\n		\"data\": \""${reverse_reactive_power_array[$c]}"\",\n		\"units\": \"kVar\"},\r");				
 		fi
+		
 		if [[ ! ${reverse_reactive_valley_array[$c]} == null  ]];
-		then	
-			echo -e "	Reverse reactive energy (off-peak): "${reverse_reactive_valley_array[$c]}" kVar"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse reactive energy (off-peak): "${reverse_reactive_valley_array[$c]}" kVar");			
+			else		
+				echo -e "	Reverse reactive energy (off-peak): "${reverse_reactive_valley_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse reactive energy (off-peak);"${reverse_reactive_valley_array[$c]}";kVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_reactive_energy_(off-peak)>"${reverse_reactive_valley_array[$c]}"<units>kVar</units></Reverse_reactive_energy_(off-peak)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse reactive energy (off-peak)\": {\n		\"data\": \""${reverse_reactive_valley_array[$c]}"\",\n		\"units\": \"kVar\"},\r");
 		fi
+		
 		if [[ ! ${reverse_reactive_top_array[$c]} == null  ]];
-		then	
-			echo -e "	Reverse reactive energy (sharp): "${reverse_reactive_top_array[$c]}" kVar"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse reactive energy (sharp): "${reverse_reactive_top_array[$c]}" kVar");			
+			else		
+				echo -e "	Reverse reactive energy (sharp): "${reverse_reactive_top_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse reactive energy (sharp);"${reverse_reactive_top_array[$c]}";kVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_reactive_energy_(sharp)>"${reverse_reactive_top_array[$c]}"<units>kVar</units></Reverse_reactive_energy_(sharp)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse reactive energy (sharp)\": {\n		\"data\": \""${reverse_reactive_top_array[$c]}"\",\n		\"units\": \"kVar\"},\r");
 		fi
+		
 		if [[ ! ${positive_reactive_peak_array[$c]} == null  ]];
-		then	
-			echo -e "	Forward reactive energy (peak): "${positive_reactive_peak_array[$c]}" kVar"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward reactive energy (peak): "${positive_reactive_peak_array[$c]}" kVar");			
+			else		
+				echo -e "	Forward reactive energy (peak): "${positive_reactive_peak_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward reactive energy (peak);"${positive_reactive_peak_array[$c]}";kVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_reactive_energy_(peak)>"${positive_reactive_peak_array[$c]}"<units>kVar</units></Forward_reactive_energy_(peak)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward reactive energy (peak)\": {\n		\"data\": \""${positive_reactive_peak_array[$c]}"\",\n		\"units\": \"kVar\"},\r");			
 		fi
+		
 		if [[ ! ${positive_reactive_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Forward reactive energy (shoulder): "${positive_reactive_power_array[$c]}" kVar"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward reactive energy (shoulder): "${positive_reactive_power_array[$c]}" kVar");			
+			else		
+				echo -e "	Forward reactive energy (shoulder): "${positive_reactive_power_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward reactive energy (shoulder);"${positive_reactive_power_array[$c]}";kVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_reactive_energy_(shoulder)>"${positive_reactive_power_array[$c]}"<units>kVar</units></Forward_reactive_energy_(shoulder)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward reactive energy (shoulder)\": {\n		\"data\": \""${positive_reactive_power_array[$c]}"\",\n		\"units\": \"kVar\"},\r");		
 		fi
+		
 		if [[ ! ${positive_reactive_valley_array[$c]} == null  ]];
-		then	
-			echo -e "	Forward reactive energy (off-peak): "${positive_reactive_valley_array[$c]}" kVar"			
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward reactive energy (off-peak): "${positive_reactive_valley_array[$c]}" kVar");			
+			else		
+				echo -e "	Forward reactive energy (off-peak): "${positive_reactive_valley_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward reactive energy (off-peak);"${positive_reactive_valley_array[$c]}";kVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_reactive_energy_(off-peak)>"${positive_reactive_valley_array[$c]}"<units>kVar</units></Forward_reactive_energy_(off-peak)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward reactive energy (off-peak)\": {\n		\"data\": \""${positive_reactive_valley_array[$c]}"\",\n		\"units\": \"kVar\"},\r");
 		fi
+		
 		if [[ ! ${positive_reactive_top_array[$c]} == null  ]];
 		then	
-			echo -e "	Forward reactive energy (sharp): "${positive_reactive_top_array[$c]}" kVar"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nForward reactive energy (sharp): "${positive_reactive_top_array[$c]}" kVar");			
+			else		
+				echo -e "	Forward reactive energy (sharp): "${positive_reactive_top_array[$c]}" kVar"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nForward reactive energy (sharp);"${positive_reactive_top_array[$c]}";kVar\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Forward_reactive_energy_(sharp)>"${positive_reactive_top_array[$c]}"<units>kVar</units></Forward_reactive_energy_(sharp)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Forward reactive energy (sharp)\": {\n		\"data\": \""${positive_reactive_top_array[$c]}"\",\n		\"units\": \"kVar\"},\r");				
 		fi
+		
 
 	done
 fi
@@ -4598,16 +6379,45 @@ fi
 # device is Power Sensor
 if [[ $success == "true"  ]] && [[ $2 == 47  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}"\n"
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 	
 	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )); do
-		echo -e "\e[93m \c" 
+	
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$c]=$(printf "\n"
+			Device_type_ID ${devTypeId_array[$c]}
+			echo " ID: "${devId_array[$c]});
+
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$c]}
+			echo -e "\e[0m ID: "${devId_array[$c]}
+		fi
+		
+		csv[$c]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$c]}";\r");
+		
+		xml[$c]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$c]}"</Device_Number>\r"); 
+		
+		
+		josn[$c]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$c]}"\",\r");
 					
 		if [[ ! ${meter_status_array[$c]} == null  ]];
 		then	
@@ -4620,40 +6430,122 @@ if [[ $success == "true"  ]] && [[ $2 == 47  ]];
 			else
 			meter_status="Unknow"
 			fi
-			echo -e "	Meter status: "$meter_status
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMeter status: "$meter_status);			
+			else		
+				echo -e "	Meter status: "$meter_status			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMeter status;"$meter_status"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Meter_status>"$meter_status"</Meter_status>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Meter status\": \""$meter_status"\"\r");
 		fi
+		
 		if [[ ! ${meter_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid voltage: "${meter_u_array[$c]}" V"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid voltage: "${meter_u_array[$c]}" V");			
+			else		
+				echo -e "	Grid voltage: "${meter_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid voltage;"${meter_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_voltage>"${meter_u_array[$c]}"<units>V</units></Grid_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid voltage\": {\n		\"data\": \""${meter_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
 		fi
+		
 		if [[ ! ${meter_i_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid current: "${meter_i_array[$c]}" A"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid current: "${meter_i_array[$c]}" A");			
+			else		
+				echo -e "	Grid current: "${meter_i_array[$c]}" A"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid current;"${meter_i_array[$c]}";A\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_current>"${meter_i_array[$c]}"<units>A</units></Grid_current>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid current\": {\n		\"data\": \""${meter_i_array[$c]}"\",\n		\"units\": \"A\"},\r");				
 		fi
+		
 		if [[ ! ${active_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Active power: "${active_power_array[$c]}" W"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive power: "${active_power_array[$c]}" W");			
+			else		
+				echo -e "	Active power: "${active_power_array[$c]}" W"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive power;"${active_power_array[$c]}";W\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_power>"${active_power_array[$c]}"<units>W</units></Active_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active power\": {\n		\"data\": \""${active_power_array[$c]}"\",\n		\"units\": \"W\"},\r");				
 		fi
+		
 		if [[ ! ${reactive_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Reactive power: "${reactive_power_array[$c]}" Var"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReactive power: "${reactive_power_array[$c]}" Var");			
+			else		
+				echo -e "	Reactive power: "${reactive_power_array[$c]}" Var"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReactive power;"${reactive_power_array[$c]}";Var\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reactive_power>"${reactive_power_array[$c]}"<units>Var</units></Reactive_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reactive power\": {\n		\"data\": \""${reactive_power_array[$c]}"\",\n		\"units\": \"Var\"},\r");					
 		fi
+		
 		if [[ ! ${power_factor_array[$c]} == null  ]];
 		then	
-			echo -e "	Power factor: "${power_factor_array[$c]}				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nPower factor: "${power_factor_array[$c]});			
+			else		
+				echo -e "	Power factor: "${power_factor_array[$c]}
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nPower factor;"${power_factor_array[$c]}";\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Power_factor>"${power_factor_array[$c]}"</Power_factor>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Power factor\": \""${power_factor_array[$c]}"\",\r");
 		fi
+			
 		if [[ ! ${grid_frequency_array[$c]} == null  ]];
 		then	
-			echo -e "	Grid frequency: "${grid_frequency_array[$c]}" Hz"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nGrid frequency: "${grid_frequency_array[$c]}" Hz");			
+			else		
+				echo -e "	Grid frequency: "${grid_frequency_array[$c]}" Hz"				
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nGrid frequency;"${grid_frequency_array[$c]}";Hz\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Grid_frequency>"${grid_frequency_array[$c]}"<units>Hz</units></Grid_frequency>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Grid frequency\": {\n		\"data\": \""${grid_frequency_array[$c]}"\",\n		\"units\": \"Hz\"},\r");				
 		fi
+		
 		if [[ ! ${active_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Active energy (forward active energy): "${active_cap_array[$c]}" kWh"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nActive energy (forward active energy): "${active_cap_array[$c]}" kWh");			
+			else		
+				echo -e "	Active energy (forward active energy): "${active_cap_array[$c]}" kWh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nActive energy (forward active energy);"${active_cap_array[$c]}";kWh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Active_energy_(forward_active_energy)>"${active_cap_array[$c]}"<units>kWh</units></Active_energy_(forward_active_energy)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Active energy (forward active energy)\": {\n		\"data\": \""${active_cap_array[$c]}"\",\n		\"units\": \"kWh\"},\r");		
 		fi
+		
 		if [[ ! ${reverse_active_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Reverse active energy: "${reverse_active_cap_array[$c]}" kWh"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nReverse active energy: "${reverse_active_cap_array[$c]}" kWh");			
+			else		
+				echo -e "	Reverse active energy: "${reverse_active_cap_array[$c]}" kWh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nReverse active energy;"${reverse_active_cap_array[$c]}";kWh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Reverse_active_energy>"${reverse_active_cap_array[$c]}"<units>kWh</units></Reverse_active_energy>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Reverse active energy\": {\n		\"data\": \""${reverse_active_cap_array[$c]}"\",\n		\"units\": \"kWh\"},\r");
 		fi
+		
 		if [[ ! ${run_state_array[$c]} == null  ]];
 		then	
 			if [[ ${run_state_array[$c]} == 0  ]];
@@ -4665,7 +6557,17 @@ if [[ $success == "true"  ]] && [[ $2 == 47  ]];
 			else
 			device_status="Unknow"
 			fi
-			echo -e "	Status: "$device_status			
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nStatus: "$device_status);			
+			else		
+				echo -e "	Status: "$device_status			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nStatus;"$device_status"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Status>"$device_status"</Status>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Status\": \""$device_status"\"\r");
+						
 		fi
 
 
@@ -4676,16 +6578,45 @@ fi
 # device is Battery (only LG batteries are supported)
 if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-	echo ""
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}"\n"
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 	
 	for (( c=0; c<=((${#devIds_array[@]}-1)); c++ )); do
-		echo -e "\e[93m \c" 
+		
+		if [ ! -z "$DIALOG" ];
+		then
+			results_for_dialog_screen[$c]=$(printf "\n"
+			Device_type_ID ${devTypeId_array[$c]}
+			echo " ID: "${devId_array[$c]});
+
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$c]}
+			echo -e "\e[0m ID: "${devId_array[$c]}
+		fi
+		
+		csv[$c]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$c]}
-		echo -e "\e[0m ID: "${devId_array[$c]}
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$c]}";\r");
+		
+		xml[$c]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$c]}"</Device_Number>\r"); 
+		
+		
+		josn[$c]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$c]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$c]}"\",\r");
 		
 		if [[ ! ${battery_status_array[$c]} == null  ]];
 		then	
@@ -4707,32 +6638,96 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 			else
 			Battery_status="unknow"
 			fi
-			echo -e "	Battery running status: "$Battery_status			
-		fi
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nBattery running status: "$Battery_status);			
+			else		
+				echo -e "	Battery running status: "$Battery_status			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nBattery running status;"$Battery_status"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Battery_running_status>"$Battery_status"</Battery_running_status>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Battery running status\": \""$Battery_status"\"\r");	
+			fi
+		
 		if [[ ! ${max_charge_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Maximum charging power: "${max_charge_power_array[$c]}" W"				
-		fi		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMaximum charging power: "${max_charge_power_array[$c]}" W");			
+			else		
+				echo -e "	Maximum charging power: "${max_charge_power_array[$c]}" W"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMaximum charging power;"${max_charge_power_array[$c]}";W\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Maximum_charging_power>"${max_charge_power_array[$c]}"<units>W</units></Maximum_charging_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Maximum_charging_power\": {\n		\"data\": \""${max_charge_power_array[$c]}"\",\n		\"units\": \"W\"},\r");				
+		fi
+				
 		if [[ ! ${max_discharge_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Maximum discharging power: "${max_discharge_power_array[$c]}" W"				
-		fi		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nMaximum discharging power: "${max_discharge_power_array[$c]}" W");			
+			else		
+				echo -e "	Maximum discharging power: "${max_discharge_power_array[$c]}" W"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nMaximum discharging power;"${max_discharge_power_array[$c]}";W\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Maximum_discharging_power>"${max_discharge_power_array[$c]}"<units>W</units></Maximum_discharging_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Maximum_discharging_power\": {\n		\"data\": \""${max_discharge_power_array[$c]}"\",\n		\"units\": \"W\"},\r");
+		fi	
+			
 		if [[ ! ${ch_discharge_power_array[$c]} == null  ]];
 		then	
-			echo -e "	Charging/Discharging power: "${ch_discharge_power_array[$c]}" W"				
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nCharging/Discharging power: "${ch_discharge_power_array[$c]}" W");			
+			else		
+				echo -e "	Charging/Discharging power: "${ch_discharge_power_array[$c]}" W"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nCharging/Discharging power;"${ch_discharge_power_array[$c]}";W\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Charging_Discharging_power>"${ch_discharge_power_array[$c]}"<units>W</units></Charging_Discharging_power>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Charging/Discharging power\": {\n		\"data\": \""${ch_discharge_power_array[$c]}"\",\n		\"units\": \"W\"},\r");
 		fi
+		
 		if [[ ! ${busbar_u_array[$c]} == null  ]];
 		then	
-			echo -e "	Battery voltage: "${busbar_u_array[$c]}" V"				
-		fi	
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nBattery voltage: "${busbar_u_array[$c]}" V");			
+			else		
+				echo -e "	Battery voltage: "${busbar_u_array[$c]}" V"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nBattery voltage;"${busbar_u_array[$c]}";V\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Battery_voltage>"${busbar_u_array[$c]}"<units>V</units></Battery_voltage>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Battery voltage\": {\n		\"data\": \""${busbar_u_array[$c]}"\",\n		\"units\": \"V\"},\r");				
+		fi
+			
 		if [[ ! ${battery_soc_array[$c]} == null  ]];
-		then	
-			echo -e "	Battery state of charge (SOC): "${battery_soc_array[$c]}" %"				
-		fi		
+		then		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nBattery state of charge (SOC): "${battery_soc_array[$c]}" %");			
+			else		
+				echo -e "	Battery state of charge (SOC): "${battery_soc_array[$c]}" %"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nBattery state of charge (SOC);"${battery_soc_array[$c]}";%\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Battery_state_of_charge_(SOC)>"${battery_soc_array[$c]}"<units>%</units></Battery_state_of_charge_(SOC)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Battery state of charge (SOC)\": {\n		\"data\": \""${battery_soc_array[$c]}"\",\n		\"units\": \"%\"},\r");			
+		fi	
+			
 		if [[ ! ${battery_soh_array[$c]} == null  ]];
 		then	
-			echo -e "	Battery state of health (SOH): "${battery_soh_array[$c]}				
-		fi		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nBattery state of health (SOH): "${battery_soh_array[$c]});			
+			else		
+				echo -e "	Battery state of health (SOH): "${battery_soh_array[$c]}			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nBattery state of health (SOH);"${battery_soh_array[$c]}"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Battery_state_of_health_(SOH)>"${battery_soh_array[$c]}"</Battery_state_of_health_(SOH)>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Battery state of health (SOH)\": \""${battery_soh_array[$c]}"\"\r");				
+		fi
+				
 		if [[ ! ${ch_discharge_model_array[$c]} == null  ]];
 		then	
 			if [[ ${ch_discharge_model_array[$c]} == 0  ]];
@@ -4753,16 +6748,44 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 			else
 			Charging_discharging_model="Unknow"
 			fi
-			echo -e "	Charging & discharging mode: "$Charging_discharging_model				
-		fi
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nCharging & discharging mode: "$Charging_discharging_model);			
+			else		
+				echo -e "	Charging & discharging mode: "$Charging_discharging_model			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nCharging & discharging mode;"$Charging_discharging_model"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Charging_and_discharging_mode>"$Charging_discharging_model"</Charging_and_discharging_mode>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Charging & discharging mode\": \""$Charging_discharging_model"\"\r");				
+		fi				
+		
 		if [[ ! ${charge_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Charging capacity: "${charge_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nCharging capacity: "${charge_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Charging capacity: "${charge_cap_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nCharging capacity;"${charge_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Charging_capacity>"${charge_cap_array[$c]}"<units>Kwh</units></Charging_capacity>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Charging capacity\": {\n		\"data\": \""${charge_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");			
 		fi
+		
 		if [[ ! ${discharge_cap_array[$c]} == null  ]];
 		then	
-			echo -e "	Discharging capacity: "${discharge_cap_array[$c]}" Kwh"			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nDischarging capacity: "${discharge_cap_array[$c]}" Kwh");			
+			else		
+				echo -e "	Discharging capacity: "${discharge_cap_array[$c]}" Kwh"
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nDischarging capacity;"${discharge_cap_array[$c]}";Kwh\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Discharging_capacity>"${discharge_cap_array[$c]}"<units>Kwh</units></Discharging_capacity>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Discharging capacity\": {\n		\"data\": \""${discharge_cap_array[$c]}"\",\n		\"units\": \"Kwh\"},\r");			
 		fi
+		
 		if [[ ! ${run_state_array[$c]} == null  ]];
 		then	
 			if [[ ${run_state_array[$c]} == 0  ]];
@@ -4774,14 +6797,24 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 			else
 			device_status="Unknow"
 			fi
-			echo -e "	Status: "$device_status			
+			
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$c]=$( echo ${results_for_dialog_screen[$c]}"\nStatus: "$device_status);			
+			else		
+				echo -e "	Status: "$device_status			
+			fi
+			csv[$c]=$( echo ${csv[$c]}"\nStatus;"$device_status"\r" );
+			xml[$c]=$( echo ${xml[$c]}"\n<Status>"$device_status"</Status>\r" ); 
+			josn[$c]=$( echo ${josn[$c]}"\n		\"Status\": \""$device_status"\"\r");			
 		fi
 
 
 	done
 fi
 
-
+# end of loop if sucess=true
+fi
 
 # in case of error
 if [[ $success == "false"  ]];
