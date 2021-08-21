@@ -498,7 +498,7 @@ Devices_list_menu() {
 
 getDeviceKPI_menu() {
 
-if [ $3 == "String_Inverter" ] || [ $3 == "Residential_inverter" ] || [ $3 == "Battery" ];
+if [ "$3" == "String_Inverter" ] || [ "$3" == "Residential_inverter" ] || [ "$3"== "Battery" ];
 then
 	Our_menu_getDeviceKPI=$($DIALOG  --ok-label "Browse" --extra-button --extra-label "Back" --cancel-label "Logout" 		 --title "Device $1: $2" \
 	 --backtitle "Device $1: $2" \
@@ -552,7 +552,7 @@ then
 	fi 
 
 
-elif [ $3 == "EMI" ] || [ $3 == "Grid_meter" ] || [ $3 == "Power_Sensor" ];
+elif [ "$3" == "EMI" ] || [ "$3" == "Grid_meter" ] || [ "$3" == "Power_Sensor" ];
 then
 	Our_menu_getDeviceKPI=$($DIALOG  --ok-label "Browse" --extra-button --extra-label "Back" --cancel-label "Logout" 		 --title "Device $1: $2" \
 	 --backtitle "Device $1: $2" \
