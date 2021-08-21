@@ -25,6 +25,14 @@
 source config.conf
 source functions.sh
 
+#  Take as argument a desired date for $curent_date variable 
+#  If provided needs to be provided as 8-digit number yyyymmdd
+#      !! Format is not checked !!
+if test x${1} = x; then
+   mydate=0
+else
+   mydate=$1
+fi
 
 : <<'END_COMMENT'
 
@@ -173,16 +181,30 @@ then
 			# We start function to get list of devices inside one particular plant this fuction is necessary to work if you d'like use functions getDevReal*
 			getDevList ${stations_Code_array[0]} $number_of_plants
 			
-						
-			# Statistical data about whole Power Plant
-			#curent_time=1621981136530
-			#getStationRealKpi ${stations_Code_array[0]}	
+			# Define current date variable based on command-line input or default 2021-05-25
+			if test "$mydate" != "0"; then
+                          #echo Extracting hourly data for date=$mydate
+                          curent_time=$(date -d$mydate +%s)000
+                          #echo corresponding to $curent_time s since 1970 01 01
+                        else
+                          curent_time=1621981136530
+                          mydate=$(date -d@${curent_time} +%Y%m%d)
+                        fi
+
+			#     Statistical data about first Power Plant
+			#getStationRealKpi ${stations_Code_array[0]}
 			#getKpiStationHour ${stations_Code_array[0]} $curent_time
 			#getKpiStationDay ${stations_Code_array[0]} $curent_time
 			#getKpiStationMonth ${stations_Code_array[0]} $curent_time
 			#getKpiStationYear ${stations_Code_array[0]} $curent_time
 			
-			
+			#     Statistical data about a second Power Plant (if more than on registered in API account)
+			#getStationRealKpi ${stations_Code_array[1]}
+			#getKpiStationHour ${stations_Code_array[1]} $curent_time
+			#getKpiStationDay ${stations_Code_array[1]} $curent_time
+			#getKpiStationMonth ${stations_Code_array[1]} $curent_time
+			#getKpiStationYear ${stations_Code_array[1]} $curent_time
+
 			# Statistical data about particular device/devices inside Power Plant
 			
 			# Devices data precisious all voltages etc real-time
