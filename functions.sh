@@ -2327,35 +2327,35 @@ echo "Response time: "$difference_in_secounds" s"
 if [[ $success == "true"  ]];
 	then
 	
-	echo ""
-	echo "Numbers of plants to check: "${#stationCodes_array[@]}
-	echo ""
-	echo -e "\e[93m"$(date "+%d %B %Y" -d @${hour_of_the_day_array[$c]})"\e[0m"
-	echo ""
+	echo "Calling getKpiStationHour with time mark" >> ${logfile}
+	echo "Numbers of plants to check: "${#stationCodes_array[@]} >> ${logfile}
+	echo "" >> ${logfile}
+	echo -e "\e[93m"$(date "+%d %B %Y" -d @${hour_of_the_day_array[$c]})"\e[0m" >> ${logfile}
+	echo "" >> ${logfile}
 	
 	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
-			echo -e "\e[1m	"$(date "+%X %Z" -d @${hour_of_the_day_array[$c]})" \e[0m"${number_plant_array[$c]}" "${stationCode_array[$c]}
+			echo -e "\e[1m	"$(date "+%X %Z" -d @${hour_of_the_day_array[$c]})" \e[0m"${number_plant_array[$c]}" "${stationCode_array[$c]} >> ${logfile}
 			if [[ ! ${radiation_intensity_array[$c]} == null  ]];
 			then	
-				echo -e "	Global irradiation: "${radiation_intensity_array[$c]}" kWh/m2"
+				echo -e "	Global irradiation: "${radiation_intensity_array[$c]}" kWh/m2" >> ${logfile}
 			fi
 			if [[ ! ${theory_power_array[$c]} == null  ]];
 			then	
-				echo -e "	Theoretical yield: "${theory_power_array[$c]}" kWh"
+				echo -e "	Theoretical yield: "${theory_power_array[$c]}" kWh" >> ${logfile}
 			fi
 			if [[ ! ${power_inverted_array[$c]} == null  ]];
 			then	
-				echo -e "	Inverter yield: "${power_inverted_array[$c]}" kWh"
+				echo -e "	Inverter yield: "${power_inverted_array[$c]}" kWh" >> ${logfile}
 			fi
 			if [[ ! ${ongrid_power_array[$c]} == null  ]];
 			then	
-				echo -e "	Grid feed-in: "${ongrid_power_array[$c]}" kWh"
+				echo -e "	Grid feed-in: "${ongrid_power_array[$c]}" kWh" >> ${logfile}
 			fi
 			if [[ ! ${power_profit_array[$c]} == null  ]];
 			then	
-				echo -e "	Revenue: "${power_profit_array[$c]}" ¥"
+				echo -e "	Revenue: "${power_profit_array[$c]}" ¥" >> ${logfile}
 			fi
-			echo ""
+			echo "" >> ${logfile}
 	done
 
 fi
@@ -2464,17 +2464,17 @@ eval "reduction_total_tree_whole_day_array=(${reduction_total_tree_whole_day})"
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
 	then	
-		echo ""
-		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[42mOK\e[0m"
-		getKpiStationDay_connection=true
+		echo "" >> ${logfile}
+		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[42mOK\e[0m" >> ${logfile}
+		getKpiStationDay_connection=true >> ${logfile}
 elif [[ $success == "false" ]];
 	then
-		echo ""
-		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[41mError\e[0m"
-		getKpiStationDay_connection=false
+		echo "" >> ${logfile}
+		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[41mError\e[0m" >> ${logfile} >> ${logfile} >> ${logfile}
+		getKpiStationDay_connection=false >> ${logfile} >> ${logfile}
 else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
+	echo "" >> ${logfile}
+	echo -e "\e[41mNetwork Error :(\e[0m"  >> ${logfile}
 	#program stops
 	exit
 fi
@@ -2492,7 +2492,7 @@ then
 			then
 				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
 			else		
-				echo "Optional message: " $message
+				echo "Optional message: " $message >> ${logfile}
 		fi
 	fi
 fi
@@ -2502,20 +2502,20 @@ local curent_time_of_request=$(echo ${collectTime::-3})
 local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
 
 local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request
+echo "Time of your Request to API: "$curent_time_of_request >> ${logfile}
 
-echo "Response time: "$difference_in_secounds" s"
+echo "Response time: "$difference_in_secounds" s" >> ${logfile}
 #local curent_time_actually=$(date -d @$curent_time_actually)
 #echo "Actuall time: "$curent_time_actually
 		
 if [[ $success == "true"  ]];
 	then
 	
+	echo "" >> ${logfile}
+	echo "Numbers of plants to check: "${#stationCodes_array[@]} >> ${logfile} >> ${logfile}
 	echo ""
-	echo "Numbers of plants to check: "${#stationCodes_array[@]}
-	echo ""
-	echo -e "\e[93m"$(date "+%B %Y" -d @${day_array[$c]})"\e[0m"
-	echo ""
+	echo -e "\e[93m"$(date "+%B %Y" -d @${day_array[$c]})"\e[0m" >> ${logfile} >> ${logfile}
+	echo "" >> ${logfile}
 	
 	
 	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
