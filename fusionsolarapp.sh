@@ -213,6 +213,16 @@ then
 			#getKpiStationMonth ${stations_Code_array[1]} $curent_time
 			#getKpiStationYear ${stations_Code_array[1]} $curent_time
 
+			#  Creation of a formatted output file of hourly production for a given date:
+			getKpiStationHour ${stations_Code_array[0]} $curent_time > ${out}_1.json
+			less ${out}_1.json | jq '.data[].dataItemMap.inverterPower' > ${out}_1.power
+                        less ${out}_1.json | jq '.data[].collectTime' > ${out}_1.time
+                        while read d; do
+                            d3=$(echo ${d::-3})
+                            date -d@${d3} +%Y-%m-%dT%H:%M:%S >> ${out}_1.dates
+                        done < ${out}_1.time
+                        paste -d'|' ${out}_1.dates ${out}_1.power > device1_${mydate}.production
+
 			# Statistical data about particular device/devices inside Power Plant
 			
 			# Devices data precisious all voltages etc real-time
