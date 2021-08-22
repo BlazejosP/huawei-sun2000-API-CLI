@@ -220,7 +220,7 @@ then
                         less ${out}.json | jq '.data[].collectTime' > ${out}.time
                         while read d; do
                             d3=$(echo ${d::-3})
-                            date -d@${d3} +%Y-%m-%dT%H:%M:%S >> ${out}.dates
+                            date -d@${d3} +%Y-%m-%dT%H:%M:%S%z >> ${out}.dates
                         done < ${out}.time
                         paste -d'|' ${out}.dates ${out}.power > device1_${mydate}.production
 
