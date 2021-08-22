@@ -25,6 +25,13 @@
 source config.conf
 source functions.sh
 
+: <<'END_COMMENT'
+
+#   Define root name of a temporary output file
+#    All data stored in files ${out}XXXXX will be deleted once script finishes
+out=`mktemp tempXXXXXX` || exit 1
+trap "rm -f $out*" 0 1 2 3 5
+
 #  Take as argument a desired date for $curent_date variable 
 #  If provided needs to be provided as 8-digit number yyyymmdd
 #      !! Format is not checked !!
@@ -34,8 +41,9 @@ else
    mydate=$1
 fi
 
-: <<'END_COMMENT'
-
+# Define name of global variable for master log file
+#   Used to record output of functions
+export logfile=$(date +%Y_%m_%d).log
 
 # Sending data to influxDB
 
