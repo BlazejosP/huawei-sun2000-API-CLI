@@ -2201,6 +2201,7 @@ function getKpiStationHour {
 # Request to API getKpiStationHour
 local getKpiStationHour=$(printf '{"stationCodes": "'$1'", "collectTime": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
+
 echo $2
 echo $getKpiStationHour | jq
 #echo $getKpiStationHour | jq '.data[]'
