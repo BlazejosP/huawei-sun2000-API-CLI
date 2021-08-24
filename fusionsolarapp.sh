@@ -200,20 +200,19 @@ then
                           mydate=$(date -d@${curent_time} +%Y%m%d)
                         fi
 
-			#     Statistical data about first Power Plant
+			# Statistical data about first Power Plant
+			#---------
 			#getStationRealKpi ${stations_Code_array[0]}
 			#getKpiStationHour ${stations_Code_array[0]} $curent_time
 			#getKpiStationDay ${stations_Code_array[0]} $curent_time
 			#getKpiStationMonth ${stations_Code_array[0]} $curent_time
 			#getKpiStationYear ${stations_Code_array[0]} $curent_time
 			
-			#     Statistical data about a second Power Plant (if more than on registered in API account)
+			# Statistical data about a second Power Plant (if more than on registered in API account)
+			#---------
 			#getStationRealKpi ${stations_Code_array[1]}
 			#getKpiStationHour ${stations_Code_array[1]} $curent_time
-			#getKpiStationDay ${stations_Code_array[1]} $curent_time
-			#getKpiStationMonth ${stations_Code_array[1]} $curent_time
-			#getKpiStationYear ${stations_Code_array[1]} $curent_time
-
+			
 			#  Creation of a formatted output file of hourly production for a given date:
 			getKpiStationHour ${stations_Code_array[0]} $curent_time
 			less ${out}.json | jq '.data[].dataItemMap.inverterPower' > ${out}.power
@@ -223,8 +222,15 @@ then
                             date -d@${d3} +%Y-%m-%dT%H:%M:%S%z >> ${out}.dates
                         done < ${out}.time
                         paste -d'|' ${out}.dates ${out}.power > device1_${mydate}.production
+			
+			#getKpiStationDay ${stations_Code_array[1]} $curent_time
+			#getKpiStationMonth ${stations_Code_array[1]} $curent_time
+			#getKpiStationYear ${stations_Code_array[1]} $curent_time
+
+
 
 			# Statistical data about particular device/devices inside Power Plant
+			#---------
 			
 			# Devices data precisious all voltages etc real-time
 			getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
