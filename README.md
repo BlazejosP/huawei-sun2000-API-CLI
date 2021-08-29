@@ -39,7 +39,22 @@ Plant Name: <--here data-->
 SN Inverter: <--here data-->
 ```
 
-Device Sun2000-(from 3KTL to 10KTL meaby also others)-M0
+## Device Sun2000-(from 3KTL to 10KTL meaby also others)-M0
+
+ Confirmed working with the following devices
+
+- [x] String inverter
+  - [X] SUN2000-5KTL-M0
+  - [X] SUN2000-30KTL-M3
+- [x] Dongle
+  - [x] SDongleA-05
+- [ ] Residential inverter
+- [x] Smart Logger
+- [ ] EMI
+- [x] Meter (Grid meter)
+- [ ] Power Sensor
+- [ ] Battery (only LG batteries are supported)
+
 -
 Device itself must be equipped with Smart Dongle existing two types: 
 
