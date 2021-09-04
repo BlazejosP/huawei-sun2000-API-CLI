@@ -453,7 +453,7 @@ Error_Codes_List () {
 
 #Errors which are possible during login and connection to Huawei SolarFussion API based on documentation SmartPVMS V500R007C00 Northbound Interface Reference.pdf pages 100-101 and own observations and tests.
   
-if [ $1 == "0"  ];
+if [ "$1" == "0"  ];
 then
 	if [ ! -z "$DIALOG" ];
 	then
@@ -461,7 +461,7 @@ then
 	else		
 		echo "Normal Status"
 	fi
-elif [ $1 == "20001"  ];
+elif [ "$1" == "20001"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -469,7 +469,7 @@ then
 	else		
 		echo "The third-party system ID does not exist."
 	fi	
-elif [ $1 == "305"  ] || [ $1 = "306" ];
+elif [ "$1" == "305"  ] || [ "$1" = "306" ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -478,7 +478,7 @@ then
 		echo "You are not in the login state. You need to log in again."
 	fi
 	
-elif [ $1 == "401"  ];
+elif [ "$1" == "401"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -487,7 +487,7 @@ then
 		echo "You do not have the permission on the related data interface."
 	fi
 	
-elif [ $1 == "407"  ];
+elif [ "$1" == "407"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -496,7 +496,7 @@ then
 		echo "The interface access frequency is too high."
 	fi
 	
-elif [ $1 == "413"  ];
+elif [ "$1" == "413"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -505,7 +505,7 @@ then
 		echo "Your IP is locked."
 	fi
 	
-elif [ $1 == "20002"  ];
+elif [ "$1" == "20002"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -514,7 +514,7 @@ then
 		echo "The third-party system has been disabled."
 	fi
 	
-elif [ $1 == "20003"  ];
+elif [ "$1" == "20003"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -523,7 +523,7 @@ then
 		echo "The third-party system has expired."
 	fi
 	
-elif [ $1 == "20004"  ];
+elif [ "$1" == "20004"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -532,7 +532,7 @@ then
 		echo "The server is faulty."
 	fi
 	
-elif [ $1 == "20005"  ];
+elif [ "$1" == "20005"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -541,7 +541,7 @@ then
 		echo "The device ID cannot be empty."
 	fi
 	
-elif [ $1 == "20006"  ];
+elif [ "$1" == "20006"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -550,7 +550,7 @@ then
 		echo "Some devices do not match the device type."
 	fi
 	
-elif [ $1 == "20007"  ];
+elif [ "$1" == "20007"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -559,7 +559,7 @@ then
 		echo "The system does not have the related power plant resources."
 	fi
 	
-elif [ $1 == "20008"  ];
+elif [ "$1" == "20008"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -568,7 +568,7 @@ then
 		echo "The system does not have the related device resources."
 	fi
 	
-elif [ $1 == "20009"  ];
+elif [ "$1" == "20009"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -577,7 +577,7 @@ then
 		echo "The system does not have the permission to query related interfaces. Contact the system administrator to configure the permission."
 	fi
 	
-elif [ $1 == "20010"  ];
+elif [ "$1" == "20010"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -586,7 +586,7 @@ then
 		echo "The plant list cannot be empty."
 	fi
 	
-elif [ $1 == "20011"  ];
+elif [ "$1" == "20011"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -595,7 +595,7 @@ then
 		echo "The device list cannot be empty."
 	fi
 	
-elif [ $1 == "20012"  ];
+elif [ "$1" == "20012"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -604,7 +604,7 @@ then
 		echo "The query time cannot be empty."
 	fi
 	
-elif [ $1 == "20013"  ];
+elif [ "$1" == "20013"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -613,7 +613,7 @@ then
 		echo "The device type is incorrect. The interface does not support operations on the devices."
 	fi
 	
-elif [ $1 == "20014" ] || [ $1 = "20015" ];
+elif [ "$1" == "20014" ] || [ "$1" = "20015" ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -622,7 +622,7 @@ then
 		echo "A maximum of 100 plants can be queried at a time."
 	fi
 	
-elif [ $1 == "20016" ] || [ $1 = "20017" ];
+elif [ "$1" == "20016" ] || [ "$1" = "20017" ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -631,7 +631,7 @@ then
 		echo "A maximum of 100 devices can be queried at a time."
 	fi
 	
-elif [ $1 == "20018"  ];
+elif [ "$1" == "20018"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -640,7 +640,7 @@ then
 		echo "A maximum of 10 devices can be manipulated at a time."
 	fi
 	
-elif [ $1 == "20019"  ];
+elif [ "$1" == "20019"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -649,7 +649,7 @@ then
 		echo "The switch type is incorrect. (1: switch-on; 2: switch-off)"
 	fi
 	
-elif [ $1 == "20020"  ];
+elif [ "$1" == "20020"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -658,7 +658,7 @@ then
 		echo "The upgrade package corresponding to the device version cannot be found."
 	fi
 	
-elif [ $1 == "20021"  ];
+elif [ "$1" == "20021"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -667,7 +667,7 @@ then
 		echo "The upgrade file does not exist."
 	fi
 	
-elif [ $1 == "20022"  ];
+elif [ "$1" == "20022"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -676,7 +676,7 @@ then
 		echo "No upgrade record of the related device is found."
 	fi
 	
-elif [ $1 == "20023"  ];
+elif [ "$1" == "20023"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -685,7 +685,7 @@ then
 		echo "The query start time cannot be later than the query end time."
 	fi
 	
-elif [ $1 == "20024"  ];
+elif [ "$1" == "20024"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -694,7 +694,7 @@ then
 		echo "The language cannot be empty."
 	fi
 	
-elif [ $1 == "20025"  ];
+elif [ "$1" == "20025"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -703,7 +703,7 @@ then
 		echo "The value of the language parameter is incorrect."
 	fi
 	
-elif [ $1 == "20026"  ];
+elif [ "$1" == "20026"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -712,7 +712,7 @@ then
 		echo "Only data of the latest 365 days can be queried."
 	fi
 	
-elif [ $1 == "20027"  ];
+elif [ "$1" == "20027"  ];
 then	
 	if [ ! -z "$DIALOG" ];
 	then
