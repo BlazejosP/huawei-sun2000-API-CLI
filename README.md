@@ -48,13 +48,14 @@ SN Inverter: <--here data-->
   - [X] SUN2000-30KTL-M3
 - [x] Dongle
   - [x] SDongleA-05
-- [ ] Residential inverter
+- [X] Residential inverter
+ - [X] SUN2000-4.6KTL-L1
 - [x] Smart Logger
 - [ ] EMI
 - [x] Meter (Grid meter)
-- [ ] Power Sensor
-- [ ] Battery (only LG batteries are supported)
-
+- [X] Power Sensor
+- [ ] Battery (only LG batteries are supported propably not true)
+- [ ] Battery Huawei Luna2000 (we working on this)
 -
 Device itself must be equipped with Smart Dongle existing two types: 
 
