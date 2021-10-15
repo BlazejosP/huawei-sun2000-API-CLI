@@ -49,14 +49,14 @@ SN Inverter: <--here data-->
 - [x] Dongle
   - [x] SDongleA-05
 - [X] Residential inverter
- - [X] SUN2000-4.6KTL-L1
+  - [X] SUN2000-4.6KTL-L1
 - [x] Smart Logger
 - [ ] EMI
 - [x] Meter (Grid meter)
 - [X] Power Sensor
 - [ ] Battery (only LG batteries are supported propably not true)
 - [ ] Battery Huawei Luna2000 (we working on this)
--
+
 Device itself must be equipped with Smart Dongle existing two types: 
 
 Smart Dongle-4G (sends data through cellular network -> to internet -> and then stright to cloud service)
