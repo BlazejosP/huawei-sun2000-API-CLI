@@ -53,7 +53,7 @@ SN Inverter: <--here data-->
 - [x] Smart Logger
 - [ ] EMI
 - [x] Meter (Grid meter)
-- [X] Power Sensor
+- [ ] Power Sensor
 - [ ] Battery (only LG batteries are supported propably not true)
 - [ ] Battery Huawei Luna2000 (we working on this)
 
