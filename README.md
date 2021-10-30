@@ -19,11 +19,12 @@ they collecting now until 22 November 2021 they have now half of the sum around 
 
 Linux Command line tool for acess Huawei FusionSolarApp API
 -
-Huawei sun2000-(3KTL-10KTL)-M0 all models comand line bash API for download data from their FusionSolarApp web service. To use this tool you need an acount in their service and then request developer account. That all means that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
+Huawei sun2000-(3KTL-10KTL)-M0 all models comand line bash API for download data from their FusionSolarApp web service. To use this tool you may need kioskmode link as a minimum. But to fully use this tool you need an acount in their service and then request developer account. That all means that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
 
-To use this script you need account on Huawei FusionSolar https://eu5.fusionsolar.huawei.com and developer privilege.
+To use this script you must have as a minimum kioskmode link given to you by someone else who has Huawei account. But to fully use this software
+you need account on Huawei FusionSolar https://eu5.fusionsolar.huawei.com and developer privilege.
 
-Contact service team at eu_inverter_support@huawei.com to create an openAPI account for your plant. in email like this:
+Contact service team at eu_inverter_support@huawei.com to create an openAPI account for your plant. Inside email like this:
 
 Email Template
 -
@@ -91,11 +92,43 @@ On other linux distributions check used package system but that are standard lin
 
 Configuration&Usage
 -
-<b>fusionsolarapp.sh</b> - which is using official Huawei API called OpenAPI by Huawei. Now this script can pull and show on the screen data Real-time(actually), every 5min , daily, monthly, yearly for Plants (which may include many inverters+any other devices data together) and Individual Devices (like every one inverter, battery etc.) This script is now under development and for now can only grab all the data from your devices and show them on screen. In not so long time will be able also send this data to InfluxDB(grafana), Domoticz, MQTT. This script need individual configuration inside if you need data tailored to your needs. How do this is described here https://github.com/BlazejosP/huawei-sun2000-API-CLI/issues/12
+<b>config.conf</b> - this file is needed by both fusionsolarapp.sh & fusionsolarapp_interface.sh and have inside stored your Usernames & Passwords and also links to kioskmodes which you have or have acess to them. You must edit this file first to made this software working. Now you can use this software even without huawei account if you can paste kioskmode given to you by someone else.
+
+<b>fusionsolarapp.sh</b> - which is using official Huawei API called OpenAPI by Huawei. Now this script can pull and show on the screen data Real-time(actually), every 5min , daily, monthly, yearly for Plants (which may include many inverters+any other devices data together) and Individual Devices (like every one inverter, battery etc.) This script is now under development and for now can only grab all the data from your devices and show them on screen & if you choose option save to file. In not so long time will be able also send this data to InfluxDB(grafana), Domoticz, MQTT. This script need individual configuration inside if you need data tailored to your needs. How do this is described here https://github.com/BlazejosP/huawei-sun2000-API-CLI/issues/12
+
+Then inside you can extract this data:
+- [x] Plant data
+  - [x] realtime plant performace
+  - [x] actually and historical plant performace resolution every 5 minutes inside day
+  - [x] actually and historical plant performace resolution 30 days
+  - [x] actually and historical plant performace resolution 12 month
+  - [x] actually and historical plant performace resolution all years
+- [x] individual device data
+  - [x] realtime device performace
+  - [x] actually and historical data device performance resolution every 5 minutes inside day
+  - [x] actually and historical data device performace resolution 30 days
+  - [x] actually and historical data device performace resolution 12 month
+  - [x] actually and historical data device performace resolution all years
 
 ![FusionSolarApp](pictures/fusionsolarappnew.png)
 
-<b>fusionsolarapp_interface.sh</b>  - this is the same program but with TUI graphical interface you must install additionally dialog. As for now you can login inside software will ask you about Login and Password if this data are not provided by config.conf. Then inside you can check realtime plant performace and devices which are inside plant together with their performance. Also is possible save data's to a file. This program is now partialy working so not every functionality is already implemented about you will be advised if you chose not working yet part. When will be finished will have the same usability as text version.
+<b>fusionsolarapp_interface.sh</b> - this is the same program but with TUI graphical interface you must install additionally dialog. As for now you can login inside software will ask you about Login and Password if this data are not provided by config.conf. And check this properties inside checked below.
+
+Then inside you can check:
+- [x] Plant data
+  - [x] realtime plant performace
+  - [ ] actually and historical plant performace resolution every 5 minutes inside day
+  - [ ] actually and historical plant performace resolution 30 days
+  - [ ] actually and historical plant performace resolution 12 month
+  - [ ] actually and historical plant performace resolution all years
+- [x] individual device data
+  - [x] realtime device performace
+  - [x] actually and historical data device performance resolution every 5 minutes inside day
+  - [ ] actually and historical data device performace resolution 30 days
+  - [ ] actually and historical data device performace resolution 12 month
+  - [ ] actually and historical data device performace resolution all years
+ 
+Also list of devices which are inside plant together with their performance. Also is possible save data's to a file TXT CSV XML JOSN are suported. This program is now partialy working so not every functionality is already implemented as you can see above. You will be advised if you chose not working yet part. When will be finished will have the same usability as text version.
 
 ![TUI1](pictures/fusionsolarapp_interface1.png)
 
