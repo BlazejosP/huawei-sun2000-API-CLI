@@ -46,6 +46,7 @@ export logfile=$(date +%Y_%m_%d).log
 
 : <<'END_COMMENT'
 
+
 # Sending data to influxDB
 
 # alarms
@@ -174,22 +175,21 @@ done
 
 END_COMMENT
 
-
 # All the functions 
-# Function to login to API
-login_to_API
+
+# kioskmode do not need any form of authentication so can be used indenpedently from rest of the functions in this program before use is only necessary provide link which is given to function from associative array from config.conf look there for kiosk_mode_url_array and check if you provide some correct link then give index name of this element with link which you d'like to check as a first argument for function kioskmode example: kioskmode kioskmode0
+#kioskmode kioskmode0
+
+
+# Function to login to API is necessary to be first need this arguments  syntax like "login_to_API login0 password0" or with different number if you use different login&password instad
+login_to_API login0 password0
+
 
 if [[ $login_status == true  ]];
 then	
-		# We start function to get list of plants
+		# We start with function to get list of plants is necessary to be secound
 		getStationList
 		
-		
-		if [[ $getStationList_connection == true  ]];
-		then	
-			# We start function to get list of devices inside one particular plant this fuction is necessary to work if you d'like use functions getDevReal*
-			getDevList ${stations_Code_array[0]} $number_of_plants
-			
 			# Define current date variable based on command-line input or default 2021-05-25
 			if test "$mydate" != "0"; then
                           #echo Extracting hourly data for date=$mydate
@@ -199,19 +199,16 @@ then
                           curent_time=1621981136530
                           mydate=$(date -d@${curent_time} +%Y%m%d)
                         fi
-
-			# Statistical data about first Power Plant
-			#---------
-			#getStationRealKpi ${stations_Code_array[0]}
+		
+		
+		if [[ $getStationList_connection == true  ]];
+		then	
+			echo "Activated functions for Station: "${stations_Code_array[0]}			
+			# Statistical data about whole Power Plant
+			#curent_time=1621981136530
+			#getStationRealKpi ${stations_Code_array[0]}	
 			#getKpiStationHour ${stations_Code_array[0]} $curent_time
-			#getKpiStationDay ${stations_Code_array[0]} $curent_time
-			#getKpiStationMonth ${stations_Code_array[0]} $curent_time
-			#getKpiStationYear ${stations_Code_array[0]} $curent_time
-			
-			# Statistical data about a second Power Plant (if more than on registered in API account)
-			#---------
-			#getStationRealKpi ${stations_Code_array[1]}
-			#getKpiStationHour ${stations_Code_array[1]} $curent_time
+			#getKpiStationHour ${stations_Code_array[0]} 1630328098623
 			
 			#  Creation of a formatted output file of hourly production for a given date:
 			getKpiStationHour ${stations_Code_array[0]} $curent_time
@@ -223,17 +220,20 @@ then
                         done < ${out}.time
                         paste -d'|' ${out}.dates ${out}.power > device1_${mydate}.production
 			
-			#getKpiStationDay ${stations_Code_array[1]} $curent_time
-			#getKpiStationMonth ${stations_Code_array[1]} $curent_time
-			#getKpiStationYear ${stations_Code_array[1]} $curent_time
-
-
-
-			# Statistical data about particular device/devices inside Power Plant
-			#---------
+			#getKpiStationDay ${stations_Code_array[0]} $curent_time
+			#getKpiStationMonth ${stations_Code_array[0]} $curent_time
+			#getKpiStationYear ${stations_Code_array[0]} $curent_time
 			
+			
+			# Statistical data about particular device/devices inside Power Plant
+			# We start function to get list of devices inside one particular plant this fuction is necessary to work if you d'like use other functions from getDev*
+			getDevList ${stations_Code_array[0]} $number_of_plants
+			
+			if [[ $getDevList_connection == true  ]];
+			then
+			echo "Activated functions for Device: "${device_Id_array[0]}
 			# Devices data precisious all voltages etc real-time
-			getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
+			#getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
 			#getDevFiveMinutes ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
 			#getDevKpiDay ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
 			#getDevKpiMonth ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
@@ -242,11 +242,21 @@ then
 			#getDevKpiYear ${device_Id_array[0]} ${device_TypeId_array[0]} $(expr $curent_time - 31622399000) # minus one year
 			#getDevKpiYear ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time #actually year
 			
+			elif [[ $getDevList_connection == false ]];
+			then
+				#logout from API with unregistration of Xsrf token is good practise to have this function as the last
+				logout_from_API
+				exit
+			else
+				#logout from API with unregistration of Xsrf token is good practise to have this function as the last
+				logout_from_API
+				exit
+			fi
 			
 			#Error comunicates
 			#---------
 			
-			# we cover one month before chosen date that is as far as API allows
+			# we cover one month before chosen date that is as far as API allows 2629743000 is exactly one mont in secounds
 			Begining_time=$(expr $curent_time - 2629743000)			
 			#Languages. The value must be zh_CN, en_UK, ja_JP, it_IT, nl_NL, pt_BR, de_DE, fr_FR, es_ES, or po_PO.
 			language="en_UK"
@@ -264,7 +274,7 @@ then
 			
 			#---------
 			
-			#logout from API with unregistration of Xsrf token
+			#logout from API with unregistration of Xsrf token is good practise to have this function as the last
 			logout_from_API
 			
 
@@ -283,17 +293,30 @@ then
 				
 		elif [[ $getStationList_connection == false ]];
 		then
+			#logout from API with unregistration of Xsrf token is good practise to have this function as the last
+			logout_from_API
 			exit
 		else
+			#logout from API with unregistration of Xsrf token is good practise to have this function as the last
+			logout_from_API
 			exit
 		fi
 		
+		
 elif [[ $login_status == false ]];
 then	
-		exit
+	echo ""
+	echo -e "There is some problem with \e[4mlogin_to_API\e[0m function"
+	echo ""
+	exit
 else
+	echo ""
+	echo -e "Login option function \e[4mlogin_to_API\e[0m is off"
+	echo ""
 	exit
 fi
+
+
 
 
 
