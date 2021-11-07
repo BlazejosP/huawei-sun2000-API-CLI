@@ -124,7 +124,7 @@ Then inside you can check:
 - [x] individual device data
   - [x] realtime device performace
   - [x] actually and historical data device performance resolution every 5 minutes inside day
-  - [ ] actually and historical data device performace resolution 30 days
+  - [x] actually and historical data device performace resolution 30 days
   - [ ] actually and historical data device performace resolution 12 month
   - [ ] actually and historical data device performace resolution all years
  
