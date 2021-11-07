@@ -2389,9 +2389,8 @@ function getKpiStationHour {
 # Request to API getKpiStationHour
 local getKpiStationHour=$(printf '{"stationCodes": "'$1'", "collectTime": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
-
-echo $2 >> ${logfile}
-echo $getKpiStationHour | jq > ${out}.json
+echo $2
+echo $getKpiStationHour | jq
 #echo $getKpiStationHour | jq '.data[]'
 #echo $getKpiStationHour | jq '.data[].collectTime, .data[].dataItemMap.inverter_power'
 
@@ -2516,35 +2515,35 @@ echo "Response time: "$difference_in_secounds" s"
 if [[ $success == "true"  ]];
 	then
 	
-	echo "Calling getKpiStationHour with time mark" >> ${logfile}
-	echo "Numbers of plants to check: "${#stationCodes_array[@]} >> ${logfile}
-	echo "" >> ${logfile}
-	echo -e "\e[93m"$(date "+%d %B %Y" -d @${hour_of_the_day_array[$c]})"\e[0m" >> ${logfile}
-	echo "" >> ${logfile}
+	echo ""
+	echo "Numbers of plants to check: "${#stationCodes_array[@]}
+	echo ""
+	echo -e "\e[93m"$(date "+%d %B %Y" -d @${hour_of_the_day_array[$c]})"\e[0m"
+	echo ""
 	
 	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
-			echo -e "\e[1m	"$(date "+%X %Z" -d @${hour_of_the_day_array[$c]})" \e[0m"${number_plant_array[$c]}" "${stationCode_array[$c]} >> ${logfile}
+			echo -e "\e[1m	"$(date "+%X %Z" -d @${hour_of_the_day_array[$c]})" \e[0m"${number_plant_array[$c]}" "${stationCode_array[$c]}
 			if [[ ! ${radiation_intensity_array[$c]} == null  ]];
 			then	
-				echo -e "	Global irradiation: "${radiation_intensity_array[$c]}" kWh/m2" >> ${logfile}
+				echo -e "	Global irradiation: "${radiation_intensity_array[$c]}" kWh/m2"
 			fi
 			if [[ ! ${theory_power_array[$c]} == null  ]];
 			then	
-				echo -e "	Theoretical yield: "${theory_power_array[$c]}" kWh" >> ${logfile}
+				echo -e "	Theoretical yield: "${theory_power_array[$c]}" kWh"
 			fi
 			if [[ ! ${power_inverted_array[$c]} == null  ]];
 			then	
-				echo -e "	Inverter yield: "${power_inverted_array[$c]}" kWh" >> ${logfile}
+				echo -e "	Inverter yield: "${power_inverted_array[$c]}" kWh"
 			fi
 			if [[ ! ${ongrid_power_array[$c]} == null  ]];
 			then	
-				echo -e "	Grid feed-in: "${ongrid_power_array[$c]}" kWh" >> ${logfile}
+				echo -e "	Grid feed-in: "${ongrid_power_array[$c]}" kWh"
 			fi
 			if [[ ! ${power_profit_array[$c]} == null  ]];
 			then	
-				echo -e "	Revenue: "${power_profit_array[$c]}" ¥" >> ${logfile}
+				echo -e "	Revenue: "${power_profit_array[$c]}" ¥"
 			fi
-			echo "" >> ${logfile}
+			echo ""
 	done
 
 fi
@@ -2653,17 +2652,17 @@ eval "reduction_total_tree_whole_day_array=(${reduction_total_tree_whole_day})"
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
 	then	
-		echo "" >> ${logfile}
-		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[42mOK\e[0m" >> ${logfile}
-		getKpiStationDay_connection=true >> ${logfile}
+		echo ""
+		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[42mOK\e[0m"
+		getKpiStationDay_connection=true
 elif [[ $success == "false" ]];
 	then
-		echo "" >> ${logfile}
-		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[41mError\e[0m" >> ${logfile} >> ${logfile} >> ${logfile}
-		getKpiStationDay_connection=false >> ${logfile} >> ${logfile}
+		echo ""
+		echo -e "API \e[4mgetKpiStationDay\e[0m connection \e[41mError\e[0m"
+		getKpiStationDay_connection=false
 else
-	echo "" >> ${logfile}
-	echo -e "\e[41mNetwork Error :(\e[0m"  >> ${logfile}
+	echo ""
+	echo -e "\e[41mNetwork Error :(\e[0m" 
 	#program stops
 	exit
 fi
@@ -2681,7 +2680,7 @@ then
 			then
 				info_for_dialog_screen=$info_for_dialog_screen"\nOptional message: " $message
 			else		
-				echo "Optional message: " $message >> ${logfile}
+				echo "Optional message: " $message
 		fi
 	fi
 fi
@@ -2691,20 +2690,20 @@ local curent_time_of_request=$(echo ${collectTime::-3})
 local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
 
 local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request >> ${logfile}
+echo "Time of your Request to API: "$curent_time_of_request
 
-echo "Response time: "$difference_in_secounds" s" >> ${logfile}
+echo "Response time: "$difference_in_secounds" s"
 #local curent_time_actually=$(date -d @$curent_time_actually)
 #echo "Actuall time: "$curent_time_actually
 		
 if [[ $success == "true"  ]];
 	then
 	
-	echo "" >> ${logfile}
-	echo "Numbers of plants to check: "${#stationCodes_array[@]} >> ${logfile} >> ${logfile}
 	echo ""
-	echo -e "\e[93m"$(date "+%B %Y" -d @${day_array[$c]})"\e[0m" >> ${logfile} >> ${logfile}
-	echo "" >> ${logfile}
+	echo "Numbers of plants to check: "${#stationCodes_array[@]}
+	echo ""
+	echo -e "\e[93m"$(date "+%B %Y" -d @${day_array[$c]})"\e[0m"
+	echo ""
 	
 	
 	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
@@ -8208,7 +8207,7 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 			fi
 			csv_pv16[$c]="\nPV16 input voltage;"${pv16_u_array[$c]}";V\r";
 			xml_pv16[$c]="\n<PV16_input_voltage>"${pv16_u_array[$c]}"<units>V</units></PV16_input_voltage>\r"; 
-			josn_pv16[$c]="\n		\"PV16 input voltage\": {\n		\"data\": \""${pv16_u_array[$c]}"\",\n		\"units\": \"V\"},\r";
+			josn_pv16[$c]="\n		\"PV16 input voltage\": {\n		\"data\": \""${pv16_u_array[$c]}"\",\n		\"units\": \"V\"},\r";					
 		fi
 		
 		if [[ ! ${pv17_u_array[$c]} == null  ]];
@@ -10812,6 +10811,21 @@ echo ""
 
 function getDevKpiDay {
 
+# window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
+if [ ! -z "$DIALOG" ];
+	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title "Please wait connecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetDevKpiDay" 10 30  		
+			else
+			$DIALOG --title "Please wait connecting!" \
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetDevKpiDay" 10 30
+       		fi
+	
+fi
 
 # Request to API getKpiStationYear
 local getDevKpiDay=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiDay  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
@@ -10821,6 +10835,10 @@ local getDevKpiDay=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTim
 local success=$(echo ''$getDevKpiDay''  | jq '.success' )
 local failCode=$(echo ''$getDevKpiDay''  | jq '.failCode' )
 local message=$(echo ''$getDevKpiDay''  | jq '.message' )
+
+# two variables which are needed by getDevKpiDay_results() function in TUI interface
+question_is_sucessful=$success
+device_type=$2
 
 #we have String inverter
 if [[ $2 == 1  ]];
@@ -10909,24 +10927,40 @@ fi
 IFS="," read -a devIds_array <<< $devIds
 IFS="," read -a devTypeId_array <<< $devTypeId
 
-
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
 	then	
-		echo ""
-		echo -e "API \e[4mgetDevKpiDay\e[0m connection \e[42mOK\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevKpiDay connection OK"
+		else
+			echo ""
+			echo -e "API \e[4mgetDevKpiDay\e[0m connection \e[42mOK\e[0m"
+		fi
 		getDevKpiDay_connection=true
 elif [[ $success == "false" ]];
 	then
-		echo ""
-		echo -e "API \e[4mgetDevKpiDay\e[0m connection \e[41mError\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevKpiDay connection Error"
+		else
+			echo ""
+			echo -e "API \e[4mgetDevKpiDay\e[0m connection \e[41mError\e[0m"
+		fi
 		getDevKpiDay_connection=false
 else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="Undefined Error "
+		else
+				echo ""
+				echo -e "\e[41Undefined Error\e[0m" 
+				echo "\nReturned data: "$data
+		fi
 	#program stops
 	exit
 fi
+
 
 #echo "Error code: " $failCode " (0: Normal)"
 # we call to function with errors list
@@ -10946,66 +10980,159 @@ then
 	fi
 fi
 
-
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(echo ${collectTime::-3})
-local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
-
-local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request
-
-echo "Response time: "$difference_in_secounds" s"
-#local curent_time_actually=$(date -d @$curent_time_actually)
-#echo "Actuall time: "$curent_time_actually
+#echo "Current Time: "$currentTime
+#shorter time for read in unix
+if [[ $success == "true"  ]];
+	then	
+		local curent_time_actually=$(echo ${currentTime::-3})
+		local curent_time_of_request=$(echo ${collectTime::-3})
+		local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
+		local curent_time_of_request=$(date -d @$curent_time_actually)
+		#local curent_time_of_request=$(date -d @$curent_time_of_request)
+		
+		if [ ! -z "$DIALOG" ];
+		then
+				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_of_request"\nResponse time of API: "$difference_in_secounds" s"
+		else
+				echo "Time of your Request to API: "$curent_time_of_request
+				echo "Response time: "$difference_in_secounds" s"
+				#local curent_time_actually=$(date -d @$curent_time_actually)
+				#echo "Actuall time: "$curent_time_actually
+		fi
+fi
 
 
 # if we have String inverter
 if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}""
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 	
 	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
-	do
-	
-		echo -e "\e[93m \c" 
+	do		
+		if [ ! -z "$DIALOG" ];
+		then
+			#checking if we have deviceID from question if not results_for_dialog_screen[$a] became empty
+			if [ ! -z "${devId_array[0]}" ];
+			then
+			
+			results_for_dialog_screen[$a]=$(printf ""
+			Device_type_ID ${devTypeId_array[$a]}
+			echo " ID: "${devId_array[$a]}
+			echo "\n\n"
+			echo "Data from the month: "$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))
+			echo "\n\n");
+			month_is_valid_filed_with_data=true			
+			else
+			month_is_valid_filed_with_data=false
+			fi			
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$a]}
+			echo -e "\e[0m ID: "${devId_array[$a]}
+			echo ""
+			echo -e "	Data from the month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+			echo ""
+		fi
+		
+		csv[$a]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$a]}
-		echo -e "\e[0m ID: "${devId_array[$a]}
-		echo ""
-		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
-		echo ""
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$a]}";\n\r");
+			
+		xml[$a]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$a]}"</Device_Number>\r"
+		echo "<production_in_"$(date +"%B" -d @$(echo ${collectTime_array[$a]::-3}))"_every_day_interval>"); 
+	
+		josn[$a]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$a]}"\",\r");
+		
 		
 		#loop for every day
 		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
 		do
 		
-
 		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
-		echo -e "	\e[1m"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
-		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nDay: "$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3})));
+			else
+				echo -e "	\e[1m"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+			fi
+			
+			csv[$a]=$( echo ${csv[$a]}"\n\nDay;"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))";\r" );
+			xml[$a]=$( echo ${xml[$a]}"\n<"$(date +"%A" -d @$(echo ${collectTime_array[$c]::-3}))">\n<Day>"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"</Day>\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n		\"Day $(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))\" : {\r");
+						
 		
 		#special loop  for checking if inverter is disconnected
 		#if [[ ! $hex == "0"  ]];
 		#then
 		
 				
-		if [[ ! ${installed_capacity_array[$c]} == null  ]];
-		then	
-			echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
-		fi
-	 	if [[ ! ${product_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Yield: "${product_power_array[$c]}" kWh"				
-		fi	
-		if [[ ! ${perpower_ratio_array[$c]} == null  ]];
-		then	
-			echo -e "	Specific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h"				
-		fi
-
-		echo ""
+			if [[ ! ${installed_capacity_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nInstalled capacity: "${installed_capacity_array[$c]}" kWp");
+				else
+					echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nInstalled capacity;"${installed_capacity_array[$c]}";kWp\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Installed_capacity>"${installed_capacity_array[$c]}"<units>kWp</units></Installed_capacity>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Installed capacity\": {\n		\t\t\"data\": \""${installed_capacity_array[$c]}"\",\n		\t\t\"units\": \"kWp\"},\r");
+			fi
+	 		
+	 		if [[ ! ${product_power_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYield: "${product_power_array[$c]}" kWh");
+				else
+					echo -e "	Yield: "${product_power_array[$c]}" kWh"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nYield;"${product_power_array[$c]}";kWh\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Yield>"${product_power_array[$c]}"<units>kWh</units></Yield>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Yield\": {\n		\t\t\"data\": \""${product_power_array[$c]}"\",\n		\t\t\"units\": \"kWh\"},\r");				
+			fi	
+		
+			if [[ ! ${perpower_ratio_array[$c]} == null  ]];
+			then		
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nSpecific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h");
+				else
+					echo -e "	Specific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nSpecific energy (kWh/kWp);"${perpower_ratio_array[$c]}";h\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Specific_energy>"${perpower_ratio_array[$c]}"<units>h</units></Specific_energy>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Specific energy (kWh/kWp)\": {\n		\t\t\"data\": \""${perpower_ratio_array[$c]}"\",\n		\t\t\"units\": \"h\"}");			
+			fi
+			
+			# adding empty line after each day
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\n");
+			else	
+				echo ""
+			fi
+			
+			xml[$a]=$( echo ${xml[$a]}"\n</"$(date +"%A" -d @$(echo ${collectTime_array[$c]::-3}))">\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n\t\t},\r");
 		
 		#special for checking if inverter is diconected 
 		#else
@@ -11016,6 +11143,10 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 		
 		#end of for loop for presentation data every 5minutes
 		done
+		
+		xml[$a]=$( echo ${xml[$a]}"\n</production_in_"$(date +"%B" -d @$(echo ${collectTime_array[$a]::-3}))"_every_day_interval>");
+		# we remove last two characters from long string to cut last ,
+		josn[$a]=${josn[$a]::-3}
 
 	done
 
@@ -11025,62 +11156,153 @@ fi
 if [[ $success == "true"  ]] && [[  $2 == 39  ]];
 	then
 	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}""
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 
 	
 	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
-	do
-	
-		echo -e "\e[93m \c" 
+	do	
+		if [ ! -z "$DIALOG" ];
+		then
+			#checking if we have deviceID from question if not results_for_dialog_screen[$a] became empty
+			if [ ! -z "${devId_array[0]}" ];
+			then
+			
+			results_for_dialog_screen[$a]=$(printf ""
+			Device_type_ID ${devTypeId_array[$a]}
+			echo " ID: "${devId_array[$a]}
+			echo "\n\n"
+			echo "Data from the month: "$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))
+			echo "\n\n");
+			month_is_valid_filed_with_data=true			
+			else
+			month_is_valid_filed_with_data=false
+			fi			
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$a]}
+			echo -e "\e[0m ID: "${devId_array[$a]}
+			echo ""
+			echo -e "	Data from the month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+			echo ""
+		fi
+		
+		csv[$a]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$a]}
-		echo -e "\e[0m ID: "${devId_array[$a]}
-		echo ""
-		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
-		echo ""
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$a]}";\n\r");
+			
+		xml[$a]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$a]}"</Device_Number>\r"
+		echo "<production_in_"$(date +"%B" -d @$(echo ${collectTime_array[$a]::-3}))"_every_day_interval>"); 
+	
+		josn[$a]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$a]}"\",\r");
 		
 		#loop for every day
 		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
 		do
 		
-
-		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
-		echo -e "	\e[1m"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
-		
-		
 		#special loop  for checking if inverter is disconnected
 		#if [[ ! $hex == "0"  ]];
-		#then	
+		#then
+		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nDay: "$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3})));
+			else
+				echo -e "	\e[1m"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+			fi
+			
+			csv[$a]=$( echo ${csv[$a]}"\n\nDay;"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))";\r" );
+			xml[$a]=$( echo ${xml[$a]}"\n<"$(date +"%A" -d @$(echo ${collectTime_array[$c]::-3}))">\n<Day>"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"</Day>\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n		\"Day $(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))\" : {\r");	
 			
 				
-		if [[ ! ${charge_cap_array[$c]} == null  ]];
-		then	
-			echo -e "	Charging capacity: "${charge_cap_array[$c]}" kWh"				
-		fi
-	 	if [[ ! ${discharge_cap_array[$c]} == null  ]];
-		then	
-			echo -e "	Discharging capacity: "${discharge_cap_array[$c]}" kWh"				
-		fi	
-		if [[ ! ${charge_time_array[$c]} == null  ]];
-		then	
-			echo -e "	Charging duration: "${charge_time_array[$c]}" h"				
-		fi
-		if [[ ! ${discharge_time_array[$c]} == null  ]];
-		then	
-			echo -e "	Discharge duration: "${discharge_time_array[$c]}" h"				
-		fi
-		echo ""
+			if [[ ! ${charge_cap_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nCharging capacity: "${charge_cap_array[$c]}" kWh");
+				else
+					echo -e "	Charging capacity: "${charge_cap_array[$c]}" kWh"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nCharging capacity;"${charge_cap_array[$c]}";kWh\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Charging_capacity>"${charge_cap_array[$c]}"<units>kWh</units></Charging_capacity>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Charging capacity\": {\n		\t\t\"data\": \""${charge_cap_array[$c]}"\",\n		\t\t\"units\": \"kWh\"},\r");			
+			fi
 		
-		#special for checking if inverter is diconected 
-		#else
-		#	echo -e "	No any Real-time data when device is disconected!"
+	 		if [[ ! ${discharge_cap_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nDischarging capacity: "${discharge_cap_array[$c]}" kWh");
+				else
+					echo -e "	Discharging capacity: "${discharge_cap_array[$c]}" kWh"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nDischarging capacity;"${discharge_cap_array[$c]}";kWh\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Discharging_capacity>"${discharge_cap_array[$c]}"<units>kWh</units></Discharging_capacity>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Discharging capacity\": {\n		\t\t\"data\": \""${discharge_cap_array[$c]}"\",\n		\t\t\"units\": \"kWh\"},\r");					
+			fi	
+			
+			if [[ ! ${charge_time_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nCharging duration: "${charge_time_array[$c]}" h");
+				else
+					echo -e "	Charging duration: "${charge_time_array[$c]}" h"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nCharging duration;"${charge_time_array[$c]}";h\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Charging_duration>"${charge_time_array[$c]}"<units>h</units></Charging_duration>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Charging duration\": {\n		\t\t\"data\": \""${charge_time_array[$c]}"\",\n		\t\t\"units\": \"h\"},\r");					
+			fi
+			
+			if [[ ! ${discharge_time_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nDischarge duration: "${discharge_time_array[$c]}" h");
+				else
+					echo -e "	Discharge duration: "${discharge_time_array[$c]}" h"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nDischarge duration;"${discharge_time_array[$c]}";h\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Discharge_duration>"${discharge_time_array[$c]}"<units>h</units></Discharge_duration>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Discharge duration\": {\n		\t\t\"data\": \""${discharge_time_array[$c]}"\",\n		\t\t\"units\": \"h\"},\r");						
+			fi
 		
-		#special loop finish for checking if inverter is diconected 
-		#fi
+			# adding empty line after each day
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\n");
+			else	
+				echo ""
+			fi
+			
+			xml[$a]=$( echo ${xml[$a]}"\n</"$(date +"%A" -d @$(echo ${collectTime_array[$c]::-3}))">\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n\t\t},\r");
 		
-		#end of for loop for presentation data every 5minutes
+		
 		done
+		
+		xml[$a]=$( echo ${xml[$a]}"\n</production_in_"$(date +"%B" -d @$(echo ${collectTime_array[$a]::-3}))"_every_day_interval>");
+		# we remove last two characters from long string to cut last ,
+		josn[$a]=${josn[$a]::-3}
 
 	done
 
@@ -11089,63 +11311,144 @@ fi
 #if we have Residential inverter
 if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}""
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 	
 	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
-	do
-	
-		echo -e "\e[93m \c" 
+	do		
+		if [ ! -z "$DIALOG" ];
+		then
+			#checking if we have deviceID from question if not results_for_dialog_screen[$a] became empty
+			if [ ! -z "${devId_array[0]}" ];
+			then
+			
+			results_for_dialog_screen[$a]=$(printf ""
+			Device_type_ID ${devTypeId_array[$a]}
+			echo " ID: "${devId_array[$a]}
+			echo "\n\n"
+			echo "Data from the month: "$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))
+			echo "\n\n");
+			month_is_valid_filed_with_data=true			
+			else
+			month_is_valid_filed_with_data=false
+			fi			
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$a]}
+			echo -e "\e[0m ID: "${devId_array[$a]}
+			echo ""
+			echo -e "	Data from the month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+			echo ""
+		fi
+		
+		csv[$a]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$a]}
-		echo -e "\e[0m ID: "${devId_array[$a]}
-		echo ""
-		echo -e "	Every Day data from month: \e[1m"$(date +"%B %Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
-		echo ""
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$a]}";\n\r");
+			
+		xml[$a]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$a]}"</Device_Number>\r"
+		echo "<production_in_"$(date +"%B" -d @$(echo ${collectTime_array[$a]::-3}))"_every_day_interval>"); 
+	
+		josn[$a]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$a]}"\",\r");
 		
 		#loop for every day
 		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
 		do
 		
 
-		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
-		echo -e "	\e[1m"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})		
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nDay: "$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3})));
+			else
+				echo -e "	\e[1m"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+			fi
+			
+			csv[$a]=$( echo ${csv[$a]}"\n\nDay;"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))";\r" );
+			xml[$a]=$( echo ${xml[$a]}"\n<"$(date +"%A" -d @$(echo ${collectTime_array[$c]::-3}))">\n<Day>"$(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))"</Day>\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n		\"Day $(date +"%d %B %Y" -d @$(echo ${collectTime_array[$c]::-3}))\" : {\r");
 		
 		
 		#special loop  for checking if inverter is disconnected
 		#if [[ ! $hex == "0"  ]];
 		#then
-		
 				
-		if [[ ! ${installed_capacity_array[$c]} == null  ]];
-		then	
-			echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
-		fi
-	 	if [[ ! ${product_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Yield: "${product_power_array[$c]}" kWh"				
-		fi	
-		if [[ ! ${perpower_ratio_array[$c]} == null  ]];
-		then	
-			echo -e "	Specific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h"				
-		fi
-		echo ""
+			if [[ ! ${installed_capacity_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nInstalled capacity: "${installed_capacity_array[$c]}" kWp");
+				else
+					echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nInstalled capacity;"${installed_capacity_array[$c]}";kWp\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Installed_capacity>"${installed_capacity_array[$c]}"<units>kWp</units></Installed_capacity>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Installed capacity\": {\n		\t\t\"data\": \""${installed_capacity_array[$c]}"\",\n		\t\t\"units\": \"kWp\"},\r");
+			fi
+	 		
+	 		if [[ ! ${product_power_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYield: "${product_power_array[$c]}" kWh");
+				else
+					echo -e "	Yield: "${product_power_array[$c]}" kWh"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nYield;"${product_power_array[$c]}";kWh\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Yield>"${product_power_array[$c]}"<units>kWh</units></Yield>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Yield\": {\n		\t\t\"data\": \""${product_power_array[$c]}"\",\n		\t\t\"units\": \"kWh\"},\r");				
+			fi	
 		
-		#special for checking if inverter is diconected 
-		#else
-		#	echo -e "	No any Real-time data when device is disconected!"
+			if [[ ! ${perpower_ratio_array[$c]} == null  ]];
+			then		
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nSpecific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h");
+				else
+					echo -e "	Specific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nSpecific energy (kWh/kWp);"${perpower_ratio_array[$c]}";h\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Specific_energy>"${perpower_ratio_array[$c]}"<units>h</units></Specific_energy>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Specific energy (kWh/kWp)\": {\n		\t\t\"data\": \""${perpower_ratio_array[$c]}"\",\n		\t\t\"units\": \"h\"}");			
+			fi
 		
-		#special loop finish for checking if inverter is diconected 
-		#fi
+			# adding empty line after each day
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\n");
+			else	
+				echo ""
+			fi
+			
+			xml[$a]=$( echo ${xml[$a]}"\n</"$(date +"%A" -d @$(echo ${collectTime_array[$c]::-3}))">\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n\t\t},\r");
 		
-		#end of for loop for presentation data every 5minutes
 		done
+		
+		xml[$a]=$( echo ${xml[$a]}"\n</production_in_"$(date +"%B" -d @$(echo ${collectTime_array[$a]::-3}))"_every_day_interval>");
+		# we remove last two characters from long string to cut last ,
+		josn[$a]=${josn[$a]::-3}
 
 	done
 
 fi
+
 # in case of error
 if [[ $success == "false"  ]];
 	then

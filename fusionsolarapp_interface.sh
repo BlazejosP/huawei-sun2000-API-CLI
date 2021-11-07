@@ -601,7 +601,7 @@ then
 	 --menu "Which data want to see?" 15 60 10 \
 	 1 "REAL-TIME data" \
 	 2 "Every HOUR of particular day" \
-	 3 "Every DAY of particular month (not implemented)" \
+	 3 "Every DAY of particular month" \
 	 4 "Every MONTH of particular year (not implemented)" \
 	 5 "Every YEAR of particular century (not implemented)" \
 	 --output-fd 1)
@@ -619,6 +619,9 @@ then
         			;;
 			 2)	# Every five minutes data from Device	for particular day			
 				getDevFiveMinutes_entry				
+        			;;
+        		 3)	# Every day data from Device for particular moth			
+				getDevKpiDay_entry				
         			;;
         			 	      					
  			 *) 	$DIALOG --title "Device $1: $2" \
@@ -829,7 +832,7 @@ choose_date_for_getDevFiveMinutes=$($DIALOG --title "Device ${devices_list_array
        		then	
 				$DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
  			 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
-				--msgbox  "Day $(date +"%d %B %Y" -d @$(echo ${choose_date_for_getDevFiveMinutes})) is invalid! Huawei  ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} was not build yet at that time." 10 50
+				--msgbox  "Day $(date +"%d %B %Y" -d @$(echo ${choose_date_for_getDevFiveMinutes})) is invalid! Huawei  ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} was not even build at that time." 10 50
 
 				#go back to menu of devices
 				Devices_list_menu 
@@ -1308,6 +1311,263 @@ save_to_file_for_getDevFiveMinutes() {
 	fi
 
 }
+
+getDevKpiDay_entry() {
+
+# we shows dialog with Calendar 
+choose_date_for_getDevKpiDay_entry
+
+# testing dates which comes back from function choose_date_for_getDevKpiDay_entry
+#local date_choosen_within_dialog2=$(echo ${date_choosen_within_dialog::-3})
+#echo $date_choosen_within_dialog2
+#echo $(date +"%d %B %Y" -d @$(echo ${date_choosen_within_dialog2}))
+#echo $(date +"%H %M %S  -  %d %B %Y" -d @$(echo ${date_choosen_within_dialog2}))
+
+# we send inside this function our device ID, type number and Date for month which we d'like to check 
+getDevKpiDay ${device_Id_array[$count]} ${device_TypeId_array[$count]} $date_choosen_within_dialog # data device number and device type question about every day in specific month data from particular device
+
+#call to next function to shows results in TUI interface
+getDevKpiDay_results
+
+
+}
+
+choose_date_for_getDevKpiDay_entry(){
+
+choose_date_for_getDevKpiDay=$($DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" --ok-label "Browse" --cancel-label "Back"\
+ 		--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 		--date-format %s \
+		--calendar "Choose month which you do like to check?" 0 0 \
+		--output-fd 1)
+		
+		exitstatus=$?
+        	#echo $exitstatus
+        	
+        	if [ $exitstatus = 0 ];
+       	then 
+        		
+        		# here we multiply choosen days by day in secounds in one day 86400s and take out one day thanks for that whatever day we choose inide month we always have 01 of the month day.
+        		local actually_day_secound_format=$(expr $(date +"%d" -d@$( echo ${choose_date_for_getDevKpiDay})) \* 86400 - 86400)  
+        		local actually_time_today_hours_minutes_secounds_secound_format=$actually_day_secound_format
+        		
+        		#here w substract our hours,minutes,secounds to have choosen date in midnight at 00:00:00
+        		local choose_date_for_getDevKpiDay_with_actually_time_secounds_format=$(expr $choose_date_for_getDevKpiDay - $actually_time_today_hours_minutes_secounds_secound_format)
+			
+			# we add to unix time milisecound to made this compatibile with API which accept unix times in milisecounds format that is why we add "000" to time string
+        		local date_choosen_in_dialog=$choose_date_for_getDevKpiDay_with_actually_time_secounds_format"000" 
+       	
+       		if (( date_choosen_in_dialog > $curent_time  ));
+       		then
+       			$DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+ 			 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+				--msgbox  "Month $(date +"%B %Y" -d @$(echo ${choose_date_for_getDevKpiDay})) is invalid! You can not choose date from future not alowed on Huawei server." 10 50
+				
+				#go back to Calendar
+				#getDevFiveMinutes_entry
+				#go back to menu of devices
+				Devices_list_menu 
+				
+			# we check dat choosen date is from before 01/01/2010 in that case Hauwei devices from Sun2000 were certain not build yet 	
+			elif (( date_choosen_in_dialog < 1262304000000  ));
+       		then	
+				$DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+ 			 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+				--msgbox  "Month $(date +"%B %Y" -d @$(echo ${choose_date_for_getDevKpiDay})) is invalid! Huawei  ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} was not even build at that time." 10 50
+
+				#go back to menu of devices
+				Devices_list_menu 
+				
+			else
+				# we add to unix time milisecound to made this compatibile with API which accept unix times in milisecounds format that is why we add "000" to time string
+				date_choosen_within_dialog=$choose_date_for_getDevKpiDay_with_actually_time_secounds_format"000"
+				# testing what we sending outside function
+				#echo $date_choosen_within_dialog
+				
+				#we return to getDevKpiDay_entry and proceed with getDevKpiDay function 
+				return	
+        		fi
+        		
+        	elif [ $exitstatus = 1 ]; 
+    		then
+    			#go back to menu of devices
+			Devices_list_menu 
+			
+    		else
+    			#go back to menu of devices
+			#Devices_list_menu
+			
+			#echo $exitstatus
+			exit
+			
+    		fi
+		
+}
+
+getDevKpiDay_results() {
+
+# if month is empty and are no data
+if [[ "$month_is_valid_filed_with_data" == false ]];
+then
+
+       $DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+ 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+	--msgbox  "There is no data on Huawei server from $(date +"%B %Y" -d @$(echo ${date_choosen_within_dialog::-3}))\n\n ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} was not commisioned at that time / switch off or device were without connection to Internet at that time." 10 50
+				
+	#go back to Calendar
+	getDevKpiDay_entry
+
+else
+
+    		$DIALOG --extra-button --extra-label "Save to file" \
+    		--title "Device: ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 		--backtitle "Device: ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 		--output-fd 1 \
+		--msgbox  "$info_for_dialog_screen ${summary_for_dialog_screen[$count]}\n${results_for_dialog_screen[$count]}" 15 50
+		
+		exitstatus=$?
+        	#echo $exitstatus
+        	
+        	if [ $exitstatus = 0 ];
+       	then 
+       		# get back to manu of Devices list
+       		Devices_list
+       		
+       	elif [ $exitstatus = 3 ];
+       	then 
+       		#save to different files csv/txt/xml/josn		
+			getDevKpiDay_save_to_file
+        	else
+    		
+    			#clear #clears the terminal screen
+    			exit
+    			  		
+		fi
+
+fi
+		
+}
+
+getDevKpiDay_save_to_file() {
+
+	Our_menu_save_to_file=$($DIALOG  --ok-label "Save" --extra-button --extra-label "Back" --cancel-label "Logout" --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 --backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 --menu "Choose format?" 15 60 10 \
+	 1 "TXT" \
+	 2 "CSV" \
+	 3 "XML" \
+	 4 "JOSN" \
+	 --output-fd 1)
+
+	exitstatus=$?
+        #echo $exitstatus
+        if [ $exitstatus = 0 ];
+        then 
+		
+	case "$Our_menu_save_to_file" in
+	
+			# Options for save files from API
+			 1)	# getDevKpiDay data for device save
+			 	#Save as TXT
+			 	echo -e "${results_for_dialog_screen[$count]}" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".txt
+			 	
+			 	$DIALOG  \
+	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.txt" 15 50
+			 	
+			 	getDevKpiDay_results			
+        			;; 
+			 
+			 2)	# getDevKpiDay data for device save
+				#Save as CSV
+       			echo -e "Description;Value;Units" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".csv
+				echo -e "${csv[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".csv
+				
+				$DIALOG  \
+	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.csv" 15 50
+				
+				getDevKpiDay_results			
+        			;; 
+				
+			 3)	# getDevKpiDay data for Plant save
+				#Save as XML
+			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<Device>\r" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
+				echo -e "${xml[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
+				echo -e "</Device>" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
+				
+				$DIALOG  \
+	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.xml" 15 50
+				
+				getDevKpiDay_results			
+        			;; 
+        			
+        		4)	# getDevKpiDaydata for Plant save
+				#Save as XML
+			 	echo -e "{\r	\"Device\": {\r" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
+				echo -e "${josn[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
+				echo -e "	}\r}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
+				
+				$DIALOG  \
+	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 			--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.josn" 15 50
+				
+				getDevKpiDay_results			
+        			;; 
+        				      					
+ 			 *) 	$DIALOG  --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 			--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+				--msgbox  "Nothing chosen" 10 50
+				
+				getDevKpiDay_save_to_file
+				
+		esac	
+		
+    	elif [ $exitstatus = 1 ]; 
+    	then		
+		#logout from account
+    		logout_from_API
+    		
+    		$DIALOG --ok-label "List of Login's" --extra-button --extra-label "Exit" --default-button "extra" --title "List of Power Stations" \
+ 		--backtitle "Logout from API" \
+		--msgbox  "$info_for_dialog_screen" 10 50
+    		
+    		exitstatus=$?
+			if [ $exitstatus = 0 ];
+        	 	then
+        	 		#we chosen List of Login's button
+        	 		# go back to menu of accounts and URL's
+    				main_function			
+        	 	elif [ $exitstatus = 3 ];
+        	 	then
+        	 		#We chosen extra Exit button
+        	 		#clear #clears the terminal screen
+				exit 
+        	 	else
+        	 		#clear #clears the terminal screen
+				exit 
+        	 	fi		
+		
+	elif [ $exitstatus = 3 ]; 
+    	then	
+	        #go back to menu of Devices
+		Devices_list	
+	else
+    		
+    		#clear #clears the terminal screen
+    		exit
+	fi
+
+}
+
 
 
 kioskmode_entry() {
