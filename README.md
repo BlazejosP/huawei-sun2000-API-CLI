@@ -15,7 +15,7 @@ If you found this software usefully and do like to say thank you!
 You can donate for charity and support small <B>Maria</B> in her fight against SMA 1 her parents try collect $2.1 million for gene therapy
 there is a link and full desciption
 <a href="https://www.siepomaga.pl/en/maria#wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Small%20Maria%20versus%20SMA%20type%201&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaria%23wplaty"></a>
-they collecting now until 22 November 2021 they have now 95% of the sum.
+they collecting now until 22 November 2021 they have now full funding thank you too.
 
 Linux Command line tool for acess Huawei FusionSolarApp API
 -
