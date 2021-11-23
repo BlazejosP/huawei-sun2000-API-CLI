@@ -56,8 +56,8 @@ SN Inverter: <--here data-->
 - [ ] EMI
 - [x] Meter (Grid meter)
 - [ ] Power Sensor
-- [ ] Battery (only LG batteries are supported propably not true)
-- [ ] Battery Huawei Luna2000 (we working on this)
+- [x] Battery (LG batteries)
+- [x] Battery (Huawei Luna2000)
 
 Device itself must be equipped with Smart Dongle existing two types: 
 
