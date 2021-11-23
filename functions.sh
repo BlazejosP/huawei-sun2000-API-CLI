@@ -12140,7 +12140,7 @@ fi
 # Request to API getKpiStationYear
 local getDevKpiYear=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
-echo $getDevKpiYear| jq
+#echo $getDevKpiYear| jq
 
 local success=$(echo ''$getDevKpiYear''  | jq '.success' )
 local failCode=$(echo ''$getDevKpiYear''  | jq '.failCode' )
