@@ -1858,6 +1858,7 @@ local data=$(echo ''$getDevList''  | jq '.data[]' )
 	local inverter_Type=$(echo ''$data''  | jq '.invType' )
 	local latitude=$(echo ''$data''  | jq '.latitude' )
 	local longitude=$(echo ''$data''  | jq '.longitude' )
+	local optimizer_Number=$(echo ''$data''  | jq '.optimizerNumber' )
 	local software_Version=$(echo ''$data''  | jq '.softwareVersion' )
 	local stationCode=$(echo ''$data''  | jq '.stationCode' )
 
@@ -1877,6 +1878,7 @@ eval "device_Id_array=(${Id})"
 eval "device_inverter_Type_array=(${inverter_Type})"
 eval "device_latitude_array=(${latitude})"
 eval "device_longitude_array=(${longitude})"
+eval "device_optimizer_Number_array=(${optimizer_Number})"
 eval "device_software_Version_array=(${software_Version})"
 eval "device_stationCode_array=(${stationCode})"
 
@@ -2071,7 +2073,6 @@ for s in "${device_Name_array[@]}"; do
 					results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nlatitude: Not existing"
 				else
 					echo "	latitude: Not existing"
-					echo ""
 				fi
 			else
 				if [ ! -z "$DIALOG" ];
@@ -2079,12 +2080,30 @@ for s in "${device_Name_array[@]}"; do
 					results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nlatitude: "${device_latitude_array[$count]}
 				else
 					echo "	latitude: "${device_latitude_array[$count]}
-					echo ""
 				fi
+			fi
+		fi	
+	fi
+	
+	if [[ ! $1 == ${device_optimizer_Number_array[$count]}  ]];
+	then	
+		if [[ ! ${device_optimizer_Number_array[$count]} == null  ]];
+		then
+			if [ ! -z "$DIALOG" ];
+			then
+			results_for_dialog_screen[$count]=${results_for_dialog_screen[$count]}"\nOptimizer Number: "${device_optimizer_Number_array[$count]}
+			else
+				echo "	Optimizer Number: "${device_optimizer_Number_array[$count]}
 			fi
 		fi
 	fi
-
+	
+	if [ -z "$DIALOG" ];
+	then
+		#after each device must exist one empty line in terminal
+		echo ""
+	fi
+	
     (( count++ ))
 done
 
@@ -6762,7 +6781,7 @@ if [[ $success == "true"  ]] && [[ $2 == 47  ]];
 	done
 fi
 
-# device is Battery (only LG batteries are supported)
+# device is Battery
 if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 	then
 		if [ ! -z "$DIALOG" ];
@@ -6807,19 +6826,19 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 		
 		if [[ ! ${battery_status_array[$c]} == null  ]];
 		then	
-			if [[ ${battery_status_array[$c]} == 0  ]];
+			if [[ ${battery_status_array[$c]} == 0  ]] || [[ ${battery_status_array[$c]} == "0.0" ]];
 			then
 			Battery_status="offline"
-			elif [[ ${battery_status_array[$c]} == 1  ]];
+			elif [[ ${battery_status_array[$c]} == 1  ]] || [[ ${battery_status_array[$c]} == "1.0" ]];
 			then
 			Battery_status="standby"
-			elif [[ ${battery_status_array[$c]} == 2  ]];
+			elif [[ ${battery_status_array[$c]} == 2  ]] || [[ ${battery_status_array[$c]} == "2.0" ]];
 			then
 			Battery_status="running"
-			elif [[ ${battery_status_array[$c]} == 3  ]];
+			elif [[ ${battery_status_array[$c]} == 3  ]] || [[ ${battery_status_array[$c]} == "3.0" ]];
 			then
 			Battery_status="faulty"
-			elif [[ ${battery_status_array[$c]} == 4  ]];
+			elif [[ ${battery_status_array[$c]} == 4  ]] || [[ ${battery_status_array[$c]} == "4.0" ]];
 			then
 			Battery_status="hibernation"
 			else
@@ -6917,19 +6936,19 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 				
 		if [[ ! ${ch_discharge_model_array[$c]} == null  ]];
 		then	
-			if [[ ${ch_discharge_model_array[$c]} == 0  ]];
+			if [[ ${ch_discharge_model_array[$c]} == 0  ]] || [[ ${ch_discharge_model_array[$c]} == "0.0" ]];
 			then
 			Charging_discharging_model="None"
-			elif [[ ${ch_discharge_model_array[$c]} == 1  ]];
+			elif [[ ${ch_discharge_model_array[$c]} == 1  ]] || [[ ${ch_discharge_model_array[$c]} == "1.0" ]];
 			then
 			Charging_discharging_model="Forced discharging/charging"
-			elif [[ ${ch_discharge_model_array[$c]} == 2  ]];
+			elif [[ ${ch_discharge_model_array[$c]} == 2  ]] || [[ ${ch_discharge_model_array[$c]} == "2.0" ]];
 			then
 			Charging_discharging_model="Time of use electricity price"
-			elif [[ ${ch_discharge_model_array[$c]} == 3  ]];
+			elif [[ ${ch_discharge_model_array[$c]} == 3  ]] || [[ ${ch_discharge_model_array[$c]} == "3.0" ]];
 			then
 			Charging_discharging_model="Fixed discharging/charging"
-			elif [[ ${ch_discharge_model_array[$c]} == 4  ]];
+			elif [[ ${ch_discharge_model_array[$c]} == 4  ]] || [[ ${ch_discharge_model_array[$c]} == "4.0" ]];
 			then
 			Charging_discharging_model="Automatic charge/discharge"
 			else
@@ -7520,7 +7539,7 @@ local devIds="$(echo "$devIds" | tr -d '"')"
 		eval "active_cap_array=(${active_cap})"
 		eval "reverse_active_cap_array=(${reverse_active_cap})"
 
-# device is Battery (only LG batteries are supported)
+# device is Battery
 elif [[ $2 == 39  ]];
 then
 local devId=$(echo ''$getDevFiveMinutes''  | jq '.data[].devId' )
@@ -7532,7 +7551,7 @@ local devId=$(echo ''$getDevFiveMinutes''  | jq '.data[].devId' )
 		local busbar_u=$(echo ''$getDevFiveMinutes''  | jq '.data[].dataItemMap.busbar_u' )		
 		local battery_soc=$(echo ''$getDevFiveMinutes''  | jq '.data[].dataItemMap.battery_soc' )
 		local battery_soh=$(echo ''$getDevFiveMinutes''  | jq '.data[].dataItemMap.battery_soh' )		
-		local ch_discharge_model=$(echo ''$getDevFiveMinutes''  | jq '.data[].dataItemMap. ch_discharge_model' )
+		local ch_discharge_model=$(echo ''$getDevFiveMinutes''  | jq '.data[].dataItemMap.ch_discharge_model' )
 		local charge_cap=$(echo ''$getDevFiveMinutes''  | jq '.data[].dataItemMap.charge_cap' )
 		local discharge_cap=$(echo ''$getDevFiveMinutes''  | jq '.data[].dataItemMap.discharge_cap' )
 	
@@ -10539,7 +10558,7 @@ if [[ $success == "true"  ]] && [[ $2 == 47  ]];
 fi
 
 
-# device is Battery (only LG batteries are supported in that case)
+# device is Battery
 if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 	then
 		if [ ! -z "$DIALOG" ];
@@ -10614,19 +10633,19 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 		
 			if [[ ! ${battery_status_array[$c]} == null  ]];
 			then		
-				if [[ ${battery_status_array[$c]} == 0  ]];
+				if [[ ${battery_status_array[$c]} == 0  ]] || [[ ${battery_status_array[$c]} == "0.0" ]];
 				then
 					battery_status="Offline"
-				elif [[ ${battery_status_array[$c]} == 1  ]];
+				elif [[ ${battery_status_array[$c]} == 1  ]] || [[ ${battery_status_array[$c]} == "1.0" ]];
 				then
 					battery_status="Standby"
-				elif [[ ${battery_status_array[$c]} == 2  ]];
+				elif [[ ${battery_status_array[$c]} == 2  ]] || [[ ${battery_status_array[$c]} == "2.0" ]];
 				then
 					battery_status="Running"
-				elif [[ ${battery_status_array[$c]} == 3  ]];
+				elif [[ ${battery_status_array[$c]} == 3  ]] || [[ ${battery_status_array[$c]} == "3.0" ]];
 				then
 					battery_status="Faulty"
-				elif [[ ${battery_status_array[$c]} == 4  ]];
+				elif [[ ${battery_status_array[$c]} == 4  ]] || [[ ${battery_status_array[$c]} == "4.0" ]];
 				then
 					battery_status="Hibernation"
 				else
@@ -10727,19 +10746,19 @@ if [[ $success == "true"  ]] && [[ $2 == 39  ]];
 		
 			if [[ ! ${ch_discharge_model_array[$c]} == null  ]];
 			then	
-				if [[ ${ch_discharge_model_array[$c]} == 0  ]];
+				if [[ ${ch_discharge_model_array[$c]} == 0  ]] || [[ ${ch_discharge_model_array[$c]} == "0.0" ]];
 				then
 					ch_discharge_model="None"
-				elif [[ ${ch_discharge_model_array[$c]} == 1  ]];
+				elif [[ ${ch_discharge_model_array[$c]} == 1  ]] || [[ ${ch_discharge_model_array[$c]} == "1.0" ]];
 				then
 					ch_discharge_model="Forced charge/discharge"
-				elif [[ ${ch_discharge_model_array[$c]} == 2  ]];
+				elif [[ ${ch_discharge_model_array[$c]} == 2  ]] || [[ ${ch_discharge_model_array[$c]} == "2.0" ]];
 				then
 					ch_discharge_model="time-of-use price"
-				elif [[ ${ch_discharge_model_array[$c]} == 3  ]];
+				elif [[ ${ch_discharge_model_array[$c]} == 3  ]] || [[ ${ch_discharge_model_array[$c]} == "3.0" ]];
 				then
 					ch_discharge_model="Fixed charge/discharge"
-				elif [[ ${ch_discharge_model_array[$c]} == 4  ]];
+				elif [[ ${ch_discharge_model_array[$c]} == 4  ]] || [[ ${ch_discharge_model_array[$c]} == "4.0" ]];
 				then
 					ch_discharge_model="Automatic charge/discharge"
 				else
@@ -10859,7 +10878,7 @@ local devIds="$(echo "$devIds" | tr -d '"')"
 		eval "perpower_ratio_array=(${perpower_ratio})"
 
 
-#Battery (only LG batteries are supported)
+#we have Battery
 elif [[ $2 == 39  ]];
 then
 local devId=$(echo ''$getDevKpiDay''  | jq '.data[].devId' )
@@ -11144,7 +11163,7 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 
 fi
 
-# if we have Battery (only LG batteries are supported)
+# if we have Battery
 if [[ $success == "true"  ]] && [[  $2 == 39  ]];
 	then
 	
@@ -11506,7 +11525,7 @@ local devIds="$(echo "$devIds" | tr -d '"')"
 		eval "product_power_array=(${product_power})"
 		eval "perpower_ratio_array=(${perpower_ratio})"
 
-#we have Battery (only LG batteries are supported)
+#we have Battery
 elif [[ $2 == 39  ]];
 then
 
@@ -11792,7 +11811,7 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 
 fi
 
-# if we have Battery (only LG batteries are supported)
+# if we have Battery
 if [[ $success == "true"  ]] && [[  $2 == 39  ]];
 	then
 	
@@ -12097,16 +12116,31 @@ if [[ $success == "false"  ]];
 		
 fi
 
-
 }
+
 
 function getDevKpiYear {
 
+# window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
+if [ ! -z "$DIALOG" ];
+	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title "Please wait connecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetDevKpiYear" 10 30  		
+			else
+			$DIALOG --title "Please wait connecting!" \
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetDevKpiYear" 10 30
+       		fi
+	
+fi
 
 # Request to API getKpiStationYear
 local getDevKpiYear=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
 
-#echo $getDevKpiYear| jq
+echo $getDevKpiYear| jq
 
 local success=$(echo ''$getDevKpiYear''  | jq '.success' )
 local failCode=$(echo ''$getDevKpiYear''  | jq '.failCode' )
@@ -12147,7 +12181,7 @@ local devIds="$(echo "$devIds" | tr -d '"')"
 		eval "product_power_array=(${product_power})"
 		eval "perpower_ratio_array=(${perpower_ratio})"
 
-#we have Battery (only LG batteries are supported)
+#we have Battery
 elif [[ $2 == 39  ]];
 then
 local devId=$(echo ''$getDevKpiYear''  | jq '.data[].devId' )
@@ -12209,23 +12243,36 @@ fi
 IFS="," read -a devIds_array <<< $devIds
 IFS="," read -a devTypeId_array <<< $devTypeId
 
-
-
-
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
 	then	
-		echo ""
-		echo -e "API \e[4mgetDevKpiYear\e[0m connection \e[42mOK\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevKpiYear connection OK"
+		else
+			echo ""
+			echo -e "API \e[4mgetDevKpiYear\e[0m connection \e[42mOK\e[0m"
+		fi
 		getDevKpiYear_connection=true
 elif [[ $success == "false" ]];
 	then
-		echo ""
-		echo -e "API \e[4mgetDevKpiYear\e[0m connection \e[41mError\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getDevKpiYear connection Error"
+		else
+			echo ""
+			echo -e "API \e[4mgetDevKpiYear\e[0m connection \e[41mError\e[0m"
+		fi
 		getDevKpiYear_connection=false
 else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="Undefined Error "
+		else
+				echo ""
+				echo -e "\e[41Undefined Error\e[0m" 
+				echo "\nReturned data: "$data
+		fi
 	#program stops
 	exit
 fi
@@ -12248,68 +12295,164 @@ then
 	fi
 fi
 
-
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(echo ${collectTime::-3})
-local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
-
-local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request
-
-echo "Response time: "$difference_in_secounds" s"
-#local curent_time_actually=$(date -d @$curent_time_actually)
-#echo "Actuall time: "$curent_time_actually
-
+#echo "Current Time: "$currentTime
+#shorter time for read in unix
+if [[ $success == "true"  ]];
+	then	
+		local curent_time_actually=$(echo ${currentTime::-3})
+		local curent_time_of_request=$(echo ${collectTime::-3})
+		local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
+		local curent_time_of_request=$(date -d @$curent_time_actually)
+		#local curent_time_of_request=$(date -d @$curent_time_of_request)
+		
+		if [ ! -z "$DIALOG" ];
+		then
+				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_of_request"\nResponse time of API: "$difference_in_secounds" s"
+		else
+				echo "Time of your Request to API: "$curent_time_of_request
+				echo "Response time: "$difference_in_secounds" s"
+				#local curent_time_actually=$(date -d @$curent_time_actually)
+				#echo "Actuall time: "$curent_time_actually
+		fi
+fi
 
 # if we have String inverter
 if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}""
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 	
 	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
-	do
-	
-		echo -e "\e[93m \c" 
+	do		
+		if [ ! -z "$DIALOG" ];
+		then
+			#checking if we have deviceID from question if not results_for_dialog_screen[$a] became empty
+			if [ ! -z "${devId_array[0]}" ];
+			then
+			
+			results_for_dialog_screen[$a]=$(printf "");
+			#Device_type_ID ${devTypeId_array[$a]}
+			#echo " ID: "${devId_array[$a]}
+			#echo "\n\n"
+			#echo "Data from the years: "$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))
+			#echo "\n\n");
+			epoch_is_valid_filed_with_data=true			
+			else
+			epoch_is_valid_filed_with_data=false
+			fi			
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$a]}
+			echo -e "\e[0m ID: "${devId_array[$a]}
+			echo ""
+			echo -e "	Data from the years: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+			echo ""
+		fi
+		
+		csv[$a]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$a]}
-		echo -e "\e[0m ID: "${devId_array[$a]}
-		echo ""
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$a]}";\n\r");
+			
+		xml[$a]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$a]}"</Device_Number>\r"
+		echo "<production_in_particular_year>"); 
+	
+		josn[$a]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$a]}"\",\r");
+		
 		
 		#loop for every year
 		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
-		do
-		
-
-		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
-		if [[ ${collectTime_array[$c]} == "0"  ]];
-		then	
-			echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime::-3}))"\e[0m"
-		else
-			echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
-		fi
+		do			
+			#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
+			if [ ! -z "$DIALOG" ];
+			then
+				if [[ ${collectTime_array[$c]} == "0"  ]];
+				then	
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYear: "$(date +"%Y" -d @$(echo ${collectTime[$c]::-3})));
+				else
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYear: "$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3})));
+				fi
+			else
+				if [[ ${collectTime_array[$c]} == "0"  ]];
+				then	
+					echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime::-3}))"\e[0m"
+				else
+					echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+				fi
+			fi
+			
+			csv[$a]=$( echo ${csv[$a]}"\n\nYear;"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))";\r" );
+			xml[$a]=$( echo ${xml[$a]}"\n<_"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))">\n<Year>"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"</Year>\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n		\"Year $(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))\" : {\r");
 		
 		#special loop  for checking if inverter is disconnected
 		#if [[ ! $hex == "0"  ]];
 		#then
+			if [[ ! ${installed_capacity_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nInstalled capacity: "${installed_capacity_array[$c]}" kWp");
+				else
+					echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nInstalled capacity;"${installed_capacity_array[$c]}";kWp\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Installed_capacity>"${installed_capacity_array[$c]}"<units>kWp</units></Installed_capacity>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Installed capacity\": {\n		\t\t\"data\": \""${installed_capacity_array[$c]}"\",\n		\t\t\"units\": \"kWp\"},\r");
+			fi
 		
-				
-		if [[ ! ${installed_capacity_array[$c]} == null  ]];
-		then	
-			echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
-		fi
-	 	if [[ ! ${product_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Yield: "${product_power_array[$c]}" kWh"				
-		fi	
-		if [[ ! ${perpower_ratio_array[$c]} == null  ]];
-		then	
-			echo -e "	Specific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h"				
-		fi
+			if [[ ! ${product_power_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYield: "${product_power_array[$c]}" kWh");
+				else
+					echo -e "	Yield: "${product_power_array[$c]}" kWh"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nYield;"${product_power_array[$c]}";kWh\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Yield>"${product_power_array[$c]}"<units>kWh</units></Yield>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Yield\": {\n		\t\t\"data\": \""${product_power_array[$c]}"\",\n		\t\t\"units\": \"kWh\"},\r");				
+			fi
 
-		echo ""
+			if [[ ! ${perpower_ratio_array[$c]} == null  ]];
+			then		
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nSpecific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h");
+				else
+					echo -e "	Specific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nSpecific energy (kWh/kWp);"${perpower_ratio_array[$c]}";h\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Specific_energy>"${perpower_ratio_array[$c]}"<units>h</units></Specific_energy>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Specific energy (kWh/kWp)\": {\n		\t\t\"data\": \""${perpower_ratio_array[$c]}"\",\n		\t\t\"units\": \"h\"}");			
+			fi
+	
+			# adding empty line after each day
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\n");
+			else	
+				echo ""
+			fi
+			
+			xml[$a]=$( echo ${xml[$a]}"\n</_"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))">\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n\t\t},\r");
 		
 		#special for checking if inverter is diconected 
 		#else
@@ -12320,73 +12463,184 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 		
 		#end of for loop for presentation data every 5minutes
 		done
+
+		xml[$a]=$( echo ${xml[$a]}"\n</production_in_particular_year>" );
+		# we remove last two characters from long string to cut last ,
+		josn[$a]=${josn[$a]::-3}
 
 	done
 	
 fi
 
-# if we Battery (only LG batteries are supported)
+# if we have Battery
 if [[ $success == "true"  ]] && [[  $2 == 39  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}""
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 	
 	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
 	do
-	
-		echo -e "\e[93m \c" 
+		if [ ! -z "$DIALOG" ];
+		then
+			#checking if we have deviceID from question if not results_for_dialog_screen[$a] became empty
+			if [ ! -z "${devId_array[0]}" ];
+			then
+			
+			results_for_dialog_screen[$a]=$(printf ""
+			Device_type_ID ${devTypeId_array[$a]}
+			echo " ID: "${devId_array[$a]}
+			echo "\n\n"
+			echo "Data from the year: "$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))
+			echo "\n\n");
+			year_is_valid_filed_with_data=true			
+			else
+			year_is_valid_filed_with_data=false
+			fi			
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$a]}
+			echo -e "\e[0m ID: "${devId_array[$a]}
+			echo ""
+			echo -e "	Data from the year: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+			echo ""
+		fi
+		
+		csv[$a]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$a]}
-		echo -e "\e[0m ID: "${devId_array[$a]}
-		echo ""
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$a]}";\n\r");
+			
+		xml[$a]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$a]}"</Device_Number>\r"
+		echo "<production_in_particular_year>"); 
+	
+		josn[$a]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$a]}"\",\r");
+		
 		
 		#loop for every year
 		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
 		do
-		
-
-		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
-		if [[ ${collectTime_array[$c]} == "0"  ]];
-		then	
-			echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime::-3}))"\e[0m"
-		else
-			echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
-		fi
-		
-		#special loop  for checking if inverter is disconnected
-		#if [[ ! $hex == "0"  ]];
-		#then
-		
-				
-		if [[ ! ${charge_cap_array[$c]} == null  ]];
-		then	
-			echo -e "	Charging capacity: "${charge_cap_array[$c]}" kWh"				
-		fi
-	 	if [[ ! ${discharge_cap_array[$c]} == null  ]];
-		then	
-			echo -e "	Discharging capacity: "${discharge_cap_array[$c]}" kWh"				
-		fi	
-		if [[ ! ${charge_time_array[$c]} == null  ]];
-		then	
-			echo -e "	Charging duration: "${charge_time_array[$c]}" h"				
-		fi
-		if [[ ! ${discharge_time_array[$c]} == null  ]];
-		then	
-			echo -e "	Discharging duration: "${discharge_time_array[$c]}" h"				
-		fi
-		echo ""
-		
-		#special for checking if inverter is diconected 
-		#else
-		#	echo -e "	No any Real-time data when device is disconected!"
-		
-		#special loop finish for checking if inverter is diconected 
-		#fi
+			if [ ! -z "$DIALOG" ];
+			then
+				if [[ ${collectTime_array[$c]} == "0"  ]];
+				then	
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYear: "$(date +"%Y" -d @$(echo ${collectTime[$c]::-3})));
+				else
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYear: "$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3})));
+				fi
+			else
+				if [[ ${collectTime_array[$c]} == "0"  ]];
+				then	
+					echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime::-3}))"\e[0m"
+				else
+					echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+				fi
+			fi
 			
-		#end of for loop for presentation data every 5minutes
+			csv[$a]=$( echo ${csv[$a]}"\n\nYear;"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))";\r" );
+			xml[$a]=$( echo ${xml[$a]}"\n<_"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))">\n<Year>"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"</Year>\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n		\"Year $(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))\" : {\r");	
+			
+			#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
+
+		
+			#special loop  for checking if inverter is disconnected
+			#if [[ ! $hex == "0"  ]];
+			#then
+		
+			if [[ ! ${charge_cap_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nCharging capacity: "${charge_cap_array[$c]}" kWh");
+				else
+					echo -e "	Charging capacity: "${charge_cap_array[$c]}" kWh"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nCharging capacity;"${charge_cap_array[$c]}";kWh\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Charging_capacity>"${charge_cap_array[$c]}"<units>kWh</units></Charging_capacity>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Charging capacity\": {\n		\t\t\"data\": \""${charge_cap_array[$c]}"\",\n		\t\t\"units\": \"kWh\"},\r");			
+			fi
+			
+			if [[ ! ${discharge_cap_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nDischarging capacity: "${discharge_cap_array[$c]}" kWh");
+				else
+					echo -e "	Discharging capacity: "${discharge_cap_array[$c]}" kWh"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nDischarging capacity;"${discharge_cap_array[$c]}";kWh\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Discharging_capacity>"${discharge_cap_array[$c]}"<units>kWh</units></Discharging_capacity>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Discharging capacity\": {\n		\t\t\"data\": \""${discharge_cap_array[$c]}"\",\n		\t\t\"units\": \"kWh\"},\r");					
+			fi	
+							
+			if [[ ! ${charge_time_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nCharging duration: "${charge_time_array[$c]}" h");
+				else
+					echo -e "	Charging duration: "${charge_time_array[$c]}" h"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nCharging duration;"${charge_time_array[$c]}";h\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Charging_duration>"${charge_time_array[$c]}"<units>h</units></Charging_duration>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Charging duration\": {\n		\t\t\"data\": \""${charge_time_array[$c]}"\",\n		\t\t\"units\": \"h\"},\r");					
+			fi
+
+			if [[ ! ${discharge_time_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nDischarge duration: "${discharge_time_array[$c]}" h");
+				else
+					echo -e "	Discharge duration: "${discharge_time_array[$c]}" h"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nDischarge duration;"${discharge_time_array[$c]}";h\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Discharge_duration>"${discharge_time_array[$c]}"<units>h</units></Discharge_duration>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Discharge duration\": {\n		\t\t\"data\": \""${discharge_time_array[$c]}"\",\n		\t\t\"units\": \"h\"},\r");						
+			fi
+			
+			# adding empty line after each day
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\n");
+			else	
+				echo ""
+			fi
+			
+			xml[$a]=$( echo ${xml[$a]}"\n</_"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))">\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n\t\t},\r");
+			
+		
+			#special for checking if inverter is diconected 
+			#else
+			#	echo -e "	No any Real-time data when device is disconected!"
+		
+			#special loop finish for checking if inverter is diconected 
+			#fi
+			
+		#end of for loop for presentation data every year
 		done
+		
+		xml[$a]=$( echo ${xml[$a]}"\n</production_in_particular_year>" );
+		# we remove last two characters from long string to cut last ,
+		josn[$a]=${josn[$a]::-3}
 
 	done
 	
@@ -12395,62 +12649,156 @@ fi
 # if we have Residential inverter
 if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 	then
-	
-	echo ""
-	echo "Numbers of Devices to check: "${#devIds_array[@]}
-	echo ""
-
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen[$count]="\nNumbers of Devices to check: "${#devIds_array[@]}""
+		else
+			echo ""
+			echo "Numbers of Devices to check: "${#devIds_array[@]}
+			echo ""
+			echo ""
+		fi
 	
 	for (( a=0; a<=((${#devIds_array[@]}-1)); a++ )) 
 	do
-	
-		echo -e "\e[93m \c" 
+		if [ ! -z "$DIALOG" ];
+		then
+			#checking if we have deviceID from question if not results_for_dialog_screen[$a] became empty
+			if [ ! -z "${devId_array[0]}" ];
+			then
+			
+			results_for_dialog_screen[$a]=$(printf "");
+			#Device_type_ID ${devTypeId_array[$a]}
+			#echo " ID: "${devId_array[$a]}
+			#echo "\n\n"
+			#echo "Data from the years: "$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))
+			#echo "\n\n");
+			epoch_is_valid_filed_with_data=true			
+			else
+			epoch_is_valid_filed_with_data=false
+			fi			
+		else
+			echo -e "\e[93m \c" 
+			Device_type_ID ${devTypeId_array[$a]}
+			echo -e "\e[0m ID: "${devId_array[$a]}
+			echo ""
+			echo -e "	Data from the years: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+			echo ""
+		fi
+		
+		csv[$a]=$(printf "\nDevice Type;"
 		Device_type_ID ${devTypeId_array[$a]}
-		echo -e "\e[0m ID: "${devId_array[$a]}
-		echo ""
+		printf ";\r"		
+		echo "\nDevice Number;"${devId_array[$a]}";\n\r");
+			
+		xml[$a]=$(printf "<Device_Type>"
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "</Device_Type>\r"
+		echo "\n<Device_Number>"${devId_array[$a]}"</Device_Number>\r"
+		echo "<production_in_particular_year>"); 
+	
+		josn[$a]=$(printf "		\"Device Type\": \""
+		Device_type_ID ${devTypeId_array[$a]}
+		printf "\",\r"
+		echo "\n		\"Device Number\": \""${devId_array[$a]}"\",\r");
 		
 		#loop for every year
 		for (( c=0; c<=((${#collectTime_array[@]}-1)); c++ )) 
 		do
 		
-
 		#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
-		if [[ ${collectTime_array[$c]} == "0"  ]];
-		then	
-			echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime::-3}))"\e[0m"
-		else
-			echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
-		fi
+	
+			#local collectTimeActually=$(echo ${collectTime_array[$c]::-3})
+			if [ ! -z "$DIALOG" ];
+			then
+				if [[ ${collectTime_array[$c]} == "0"  ]];
+				then	
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYear: "$(date +"%Y" -d @$(echo ${collectTime[$c]::-3})));
+				else
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYear: "$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3})));
+				fi
+			else
+				if [[ ${collectTime_array[$c]} == "0"  ]];
+				then	
+					echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime::-3}))"\e[0m"
+				else
+					echo -e "	\e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"\e[0m"
+				fi
+			fi
+			
+			csv[$a]=$( echo ${csv[$a]}"\n\nYear;"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))";\r" );
+			xml[$a]=$( echo ${xml[$a]}"\n<_"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))">\n<Year>"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))"</Year>\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n		\"Year $(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))\" : {\r");
 		
 		#special loop  for checking if inverter is disconnected
 		#if [[ ! $hex == "0"  ]];
 		#then
-		
-				
-		if [[ ! ${installed_capacity_array[$c]} == null  ]];
-		then	
-			echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"				
-		fi
-	 	if [[ ! ${product_power_array[$c]} == null  ]];
-		then	
-			echo -e "	Yield: "${product_power_array[$c]}" kWh"				
-		fi	
-		if [[ ! ${perpower_ratio_array[$c]} == null  ]];
-		then	
-			echo -e "	Specific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h"				
-		fi
-
-		echo ""
+			if [[ ! ${installed_capacity_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nInstalled capacity: "${installed_capacity_array[$c]}" kWp");
+				else
+					echo -e "	Installed capacity: "${installed_capacity_array[$c]}" kWp"
+				fi
 			
-		#special for checking if inverter is diconected 
-		#else
-		#	echo -e "	No any Real-time data when device is disconected!"
+				csv[$a]=$( echo ${csv[$a]}"\nInstalled capacity;"${installed_capacity_array[$c]}";kWp\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Installed_capacity>"${installed_capacity_array[$c]}"<units>kWp</units></Installed_capacity>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Installed capacity\": {\n		\t\t\"data\": \""${installed_capacity_array[$c]}"\",\n		\t\t\"units\": \"kWp\"},\r");
+			fi
+
+			if [[ ! ${product_power_array[$c]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nYield: "${product_power_array[$c]}" kWh");
+				else
+					echo -e "	Yield: "${product_power_array[$c]}" kWh"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nYield;"${product_power_array[$c]}";kWh\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Yield>"${product_power_array[$c]}"<units>kWh</units></Yield>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Yield\": {\n		\t\t\"data\": \""${product_power_array[$c]}"\",\n		\t\t\"units\": \"kWh\"},\r");				
+			fi
+			
+			if [[ ! ${perpower_ratio_array[$c]} == null  ]];
+			then		
+				if [ ! -z "$DIALOG" ];
+				then
+					results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\nSpecific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h");
+				else
+					echo -e "	Specific energy (kWh/kWp): "${perpower_ratio_array[$c]}" h"
+				fi
+			
+				csv[$a]=$( echo ${csv[$a]}"\nSpecific energy (kWh/kWp);"${perpower_ratio_array[$c]}";h\r" );
+				xml[$a]=$( echo ${xml[$a]}"\n<Specific_energy>"${perpower_ratio_array[$c]}"<units>h</units></Specific_energy>\r" ); 
+				josn[$a]=$( echo ${josn[$a]}"\n		\t\"Specific energy (kWh/kWp)\": {\n		\t\t\"data\": \""${perpower_ratio_array[$c]}"\",\n		\t\t\"units\": \"h\"}");			
+			fi
+			
+			# adding empty line after each year
+			if [ ! -z "$DIALOG" ];
+			then
+				results_for_dialog_screen[$a]=$( echo ${results_for_dialog_screen[$a]}"\n");
+			else	
+				echo ""
+			fi
+			
+			xml[$a]=$( echo ${xml[$a]}"\n</_"$(date +"%Y" -d @$(echo ${collectTime_array[$c]::-3}))">\r" ); 
+			josn[$a]=$( echo ${josn[$a]}"\n\t\t},\r");
+			
+			#special for checking if inverter is diconected 
+			#else
+			#	echo -e "	No any Real-time data when device is disconected!"
 		
-		#special loop finish for checking if inverter is diconected 
-		#fi
+			#special loop finish for checking if inverter is diconected 
+			#fi
 		
-		#end of for loop for presentation data every 5minutes
+		#end of for loop for presentation data yearly
 		done
+		
+		xml[$a]=$( echo ${xml[$a]}"\n</production_in_particular_year>" );
+		# we remove last two characters from long string to cut last ,
+		josn[$a]=${josn[$a]::-3}
 
 	done
 	

@@ -603,7 +603,7 @@ then
 	 2 "Every HOUR of particular day" \
 	 3 "Every DAY of particular month" \
 	 4 "Every MONTH of particular year" \
-	 5 "Every YEAR of particular century (not implemented)" \
+	 5 "Every YEAR of particular century" \
 	 --output-fd 1)
 
 	exitstatus=$?
@@ -623,8 +623,11 @@ then
         		 3)	# Every day data from Device for particular month			
 				getDevKpiDay_entry				
         			;;
-        		 4)	# Every day data from Device for particular month			
+        		 4)	# Every month data from Device for particular year			
 				getDevKpiMonth_entry				
+        			;;
+        		 5)	# Yearly data from Device for particular year			
+				getDevKpiYear_entry				
         			;;
         			 	      					
  			 *) 	$DIALOG --title "Device $1: $2" \
@@ -943,7 +946,7 @@ local device_type_and_number=${devices_list_array_for_dialog[$(( $Our_menu_devic
 				then
 					answer_for_dialog_getDevFiveMinutes_results_every_interval=${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}"\n\n"${results_for_dialog_screen_time[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_meter_status[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_meter_u_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_meter_i_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_active_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_reactive_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_power_factor_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_grid_frequency_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_reverse_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
 					
-				# device is Battery (only LG batteries are supported in that case)
+				# device is Battery
 				elif [[ $question_is_sucessful == "true"  ]] && [[ $device_type == 39  ]];
 				then
 					answer_for_dialog_getDevFiveMinutes_results_every_interval=${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}"\n\n"${results_for_dialog_screen_battery_status[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_max_charge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_max_charge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_max_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_ch_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_busbar_u_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_battery_soc_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_battery_soh_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_ch_discharge_model[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_charge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_discharge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
@@ -1088,7 +1091,7 @@ save_to_file_for_getDevFiveMinutes() {
 				then
 					answer_for_txt=${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}"\r\n\n"${results_for_dialog_screen_meter_status[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_meter_u_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_meter_i_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_active_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_reactive_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_power_factor_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_grid_frequency_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_reverse_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
 					
-				# device is Battery (only LG batteries are supported in that case)
+				# device is Battery
 				elif [[ $question_is_sucessful == "true"  ]] && [[ $device_type == 39  ]];
 				then
 					answer_for_txt=${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}"\r\n\n"${results_for_dialog_screen_battery_status[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_max_charge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_max_charge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_max_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_ch_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_busbar_u_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_battery_soc_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_battery_soh_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_ch_discharge_model[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_charge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${results_for_dialog_screen_discharge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
@@ -1143,7 +1146,7 @@ save_to_file_for_getDevFiveMinutes() {
 				then
 					answer_for_csv=${csv_times[$(( $getDevFiveMinutes_results-1 ))]}${csv_meter_status[$(( $getDevFiveMinutes_results-1 ))]}${csv_meter_u_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_meter_i_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_active_power_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_reactive_power_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_power_factor_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_grid_frequency_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_reverse_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
 					
-				# device is Battery (only LG batteries are supported in that case)
+				# device is Battery
 				elif [[ $question_is_sucessful == "true"  ]] && [[ $device_type == 39  ]];
 				then
 					answer_for_csv=${csv_times[$(( $getDevFiveMinutes_results-1 ))]}${csv_battery_status[$(( $getDevFiveMinutes_results-1 ))]}${csv_max_charge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_max_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_ch_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_busbar_u_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_battery_soc_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_battery_soh_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_ch_discharge_model[$(( $getDevFiveMinutes_results-1 ))]}${csv_charge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${csv_discharge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
@@ -1199,7 +1202,7 @@ save_to_file_for_getDevFiveMinutes() {
 				then
 					answer_for_xml=${xml_times[$(( $getDevFiveMinutes_results-1 ))]}${xml_meter_status[$(( $getDevFiveMinutes_results-1 ))]}${xml_meter_u_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_meter_i_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_active_power_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_reactive_power_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_power_factor_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_grid_frequency_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_reverse_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
 					
-				# device is Battery (only LG batteries are supported in that case)
+				# device is Battery
 				elif [[ $question_is_sucessful == "true"  ]] && [[ $device_type == 39  ]];
 				then
 					answer_for_xml=${xml_times[$(( $getDevFiveMinutes_results-1 ))]}${xml_battery_status[$(( $getDevFiveMinutes_results-1 ))]}${xml_max_charge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_max_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_ch_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_busbar_u_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_battery_soc_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_battery_soh_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_ch_discharge_model[$(( $getDevFiveMinutes_results-1 ))]}${xml_charge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${xml_discharge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
@@ -1249,7 +1252,7 @@ save_to_file_for_getDevFiveMinutes() {
 				then
 					answer_for_josn=${josn_times[$(( $getDevFiveMinutes_results-1 ))]}${josn_meter_status[$(( $getDevFiveMinutes_results-1 ))]}${josn_meter_u_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_meter_i_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_active_power_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_reactive_power_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_power_factor_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_grid_frequency_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_reverse_active_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
 					
-				# device is Battery (only LG batteries are supported in that case)
+				# device is Battery
 				elif [[ $question_is_sucessful == "true"  ]] && [[ $device_type == 39  ]];
 				then
 					answer_for_josn=${josn_times[$(( $getDevFiveMinutes_results-1 ))]}${josn_battery_status[$(( $getDevFiveMinutes_results-1 ))]}${josn_max_charge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_max_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_ch_discharge_power_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_busbar_u_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_battery_soc_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_battery_soh_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_ch_discharge_model[$(( $getDevFiveMinutes_results-1 ))]}${josn_charge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}${josn_discharge_cap_array[$(( $getDevFiveMinutes_results-1 ))]}
@@ -1696,7 +1699,7 @@ else
        	then 
        		#save to different files csv/txt/xml/josn		
 			getDevKpiMonth_save_to_file
-			exit
+			#exit
         	else
     		
     			#clear #clears the terminal screen
@@ -1729,57 +1732,57 @@ getDevKpiMonth_save_to_file() {
 			# Options for save files from API
 			 1)	# getDevKpiMonth data for device save
 			 	#Save as TXT
-			 	echo -e "${results_for_dialog_screen[$count]}" > Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".txt
+			 	echo -e "${results_for_dialog_screen[$count]}" > Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".txt
 			 	
 			 	$DIALOG  \
 	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nEvery_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.txt" 15 50
+				--msgbox  "Data saved in file \nEvery_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_from_plant_${stations_Code_array[$count]}.txt" 15 50
 			 	
 			 	getDevKpiMonth_results			
         			;; 
 			 
 			 2)	# getDevKpiMonth data for device save
 				#Save as CSV
-       			echo -e "Description;Value;Units" > Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".csv
-				echo -e "${csv[$count]}" >> Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".csv
+       			echo -e "Description;Value;Units" > Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".csv
+				echo -e "${csv[$count]}" >> Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".csv
 				
 				$DIALOG  \
 	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nEvery_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.csv" 15 50
+				--msgbox  "Data saved in file \nEvery_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_from_plant_${stations_Code_array[$count]}.csv" 15 50
 				
 				getDevKpiMonth_results			
         			;; 
 				
 			 3)	# getDevKpiMonth data for device save
 				#Save as XML
-			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<Device>\r" > Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
-				echo -e "${xml[$count]}" >> Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
-				echo -e "</Device>" >> Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
+			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<Device>\r" > Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".xml
+				echo -e "${xml[$count]}" >> Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".xml
+				echo -e "</Device>" >> Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".xml
 				
 				$DIALOG  \
 	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nEvery_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.xml" 15 50
+				--msgbox  "Data saved in file \nEvery_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_from_plant_${stations_Code_array[$count]}.xml" 15 50
 				
 				getDevKpiMonth_results			
         			;; 
         			
         		4)	# getDevKpiMonth data for device save
 				#Save as XML
-			 	echo -e "{\r	\"Device\": {\r" > Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
-				echo -e "${josn[$count]}" >> Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
-				echo -e "	}\r}" >> Every_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
+			 	echo -e "{\r	\"Device\": {\r" > Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".josn
+				echo -e "${josn[$count]}" >> Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".josn
+				echo -e "	}\r}" >> Every_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".josn
 				
 				$DIALOG  \
 	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
 	 			--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nEvery_month_inside_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.josn" 15 50
+				--msgbox  "Data saved in file \nEvery_month_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_from_plant_${stations_Code_array[$count]}}.josn" 15 50
 				
 				getDevKpiMonth_results			
         			;; 
@@ -1828,6 +1831,271 @@ getDevKpiMonth_save_to_file() {
 	fi
 
 }
+
+getDevKpiYear_entry() {
+
+# we shows dialog with Calendar 
+choose_date_for_getDevKpiYear_entry
+
+# testing dates which comes back from function choose_date_for_getDevKpiDay_entry
+#local date_choosen_within_dialog2=$(echo ${date_choosen_within_dialog::-3})
+#echo $date_choosen_within_dialog2
+#echo $(date +"%d %B %Y" -d @$(echo ${date_choosen_within_dialog2}))
+#echo $(date +"%H %M %S  -  %d %B %Y" -d @$(echo ${date_choosen_within_dialog2}))
+
+# we send inside this function our device ID, type number and Date for year which we d'like to check 
+getDevKpiYear ${device_Id_array[$count]} ${device_TypeId_array[$count]} $date_choosen_within_dialog #$curent_time 
+#year2021=${results_for_dialog_screen[0]}
+
+#getDevKpiYear ${device_Id_array[$count]} ${device_TypeId_array[$count]} $(expr $curent_time - 31622399000)
+#year2020=${results_for_dialog_screen[0]}
+# data device number and device type question about every day in specific month data from particular device
+
+#call to next function to shows results in TUI interface
+getDevKpiYear_results
+#echo $(date +"%Y" -d @${curent_time::-3})
+#exit
+
+}
+
+choose_date_for_getDevKpiYear_entry(){
+
+choose_date_for_getDevKpiYear=$($DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" --ok-label "Browse" --cancel-label "Back"\
+ 		--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 		--date-format %s \
+		--calendar "Choose year which you do like to check?" 0 0 \
+		--output-fd 1)
+		
+		exitstatus=$?
+        	#echo $exitstatus
+        	
+        	if [ $exitstatus = 0 ];
+       	then 
+        		
+        		# here we multiply choosen days by day in secounds in one day 86400s and take out one day thanks for that whatever day we choose inide month we always have 01 of the month day.
+        		local actually_day_secound_format=$(expr $(date +"%j" -d@$( echo ${choose_date_for_getDevKpiYear})) \* 86400 - 86400)  
+        		local actually_time_today_hours_minutes_secounds_secound_format=$actually_day_secound_format
+        		
+        		#here w substract our hours,minutes,secounds to have choosen date in midnight at 00:00:00
+        		local choose_date_for_getDevKpiYear_with_actually_time_secounds_format=$(expr $choose_date_for_getDevKpiYear - $actually_time_today_hours_minutes_secounds_secound_format)
+			
+			# we add to unix time milisecound to made this compatibile with API which accept unix times in milisecounds format that is why we add "000" to time string
+        		local date_choosen_in_dialog=$choose_date_for_getDevKpiYear_with_actually_time_secounds_format"000" 
+       	
+       		if (( date_choosen_in_dialog > $curent_time  ));
+       		then
+       			$DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+ 			 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+				--msgbox  "Year $(date +"%Y" -d @$(echo ${choose_date_for_getDevKpiYear})) is invalid! You can not choose date from future not alowed on Huawei server." 10 50
+				
+				#go back to Calendar
+				#getDevFiveMinutes_entry
+				#go back to menu of devices
+				Devices_list_menu 
+				
+			# we check date choosen. Date is from before 01/01/2010 in that case Hauwei devices from Sun2000 were certain not even build yet 	
+			elif (( date_choosen_in_dialog < 1262304000000  ));
+       		then	
+				$DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+ 			 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+				--msgbox  "Year $(date +"%Y" -d @$(echo ${choose_date_for_getDevKpiYear})) is invalid! Huawei  ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} was not even build at that time." 10 50
+
+				#go back to menu of devices
+				Devices_list_menu 
+				
+			else
+				# we add to unix time milisecound to made this compatibile with API which accept unix times in milisecounds format that is why we add "000" to time string
+			date_choosen_within_dialog=$choose_date_for_getDevKpiYear_with_actually_time_secounds_format"000"
+				# testing what we sending outside function
+				#echo $date_choosen_within_dialog
+				
+				#we return to getDevKpiDay_entry and proceed with getDevKpiDay function 
+				return	
+        		fi
+        		
+        	elif [ $exitstatus = 1 ]; 
+    		then
+    			#go back to menu of devices
+			Devices_list_menu 
+			
+    		else
+    			#go back to menu of devices
+			#Devices_list_menu
+			
+			#echo $exitstatus
+			exit
+			
+    		fi
+		
+}
+
+getDevKpiYear_results() {
+
+# if month is empty and are no data
+if [[ "$epoch_is_valid_filed_with_data" == false ]];
+then
+
+       $DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+ 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
+	--msgbox  "There is no data on Huawei server from $(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))\n\n ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} was not commisioned at that time / switch off or device were without connection to Internet at that time." 10 50
+				
+	#go back to Calendar
+	getDevKpiYear_entry
+
+else
+
+    		$DIALOG --extra-button --extra-label "Save to file" \
+    		--title "Device: ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 		--backtitle "Device: ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 		--output-fd 1 \
+		--msgbox  "$info_for_dialog_screen ${summary_for_dialog_screen[$count]}\n${results_for_dialog_screen[$count]}" 15 50
+		
+		exitstatus=$?
+        	#echo $exitstatus
+        	
+        	if [ $exitstatus = 0 ];
+       	then 
+       		# get back to manu of Devices list
+       		Devices_list
+       		
+       	elif [ $exitstatus = 3 ];
+       	then 
+       		#save to different files csv/txt/xml/josn		
+			getDevKpiYear_save_to_file
+			#exit
+        	else
+    		
+    			#clear #clears the terminal screen
+    			exit
+    			  		
+		fi
+
+fi
+		
+}
+
+getDevKpiYear_save_to_file() {
+
+	Our_menu_save_to_file=$($DIALOG  --ok-label "Save" --extra-button --extra-label "Back" --cancel-label "Logout" --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 --backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 --menu "Choose format?" 15 60 10 \
+	 1 "TXT" \
+	 2 "CSV" \
+	 3 "XML" \
+	 4 "JOSN" \
+	 --output-fd 1)
+
+	exitstatus=$?
+        #echo $exitstatus
+        if [ $exitstatus = 0 ];
+        then 
+		
+	case "$Our_menu_save_to_file" in
+	
+			# Options for save files from API
+			 1)	# getDevKpiYear data for device save
+			 	#Save as TXT	
+			 	echo -e "${results_for_dialog_screen[$count]}" > Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".txt
+			 	
+			 	$DIALOG  \
+	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nYears_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_from_plant_${stations_Code_array[$count]}.txt" 15 50
+			 	
+			 	getDevKpiYear_results			
+        			;; 
+			 
+			 2)	# getDevKpiYear data for device save
+				#Save as CSV
+       			echo -e "Description;Value;Units" > Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".csv
+				echo -e "${csv[$count]}" >> Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".csv
+				
+				$DIALOG  \
+	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nYears_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_from_plant_${stations_Code_array[$count]}.csv" 15 50
+				
+				getDevKpiYear_results			
+        			;; 
+				
+			 3)	# getDevKpiYear data for device save
+				#Save as XML
+			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<Device>\r" > Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".xml
+				echo -e "${xml[$count]}" >> Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".xml
+				echo -e "</Device>" >> Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".xml
+				
+				$DIALOG  \
+	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nYears_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_from_plant_${stations_Code_array[$count]}.xml" 15 50
+				
+				getDevKpiYear_results			
+        			;; 
+        			
+        		4)	# getDevKpiYear data for device save
+				#Save as josn
+			 	echo -e "{\r	\"Device\": {\r" > Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".josn
+				echo -e "${josn[$count]}" >> Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".josn
+				echo -e "	}\r}" >> Years_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_from_plant_"${stations_Code_array[$count]}".josn
+				
+				$DIALOG  \
+	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 			--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nYears_starting_from_"$(date +"%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_from_plant_${stations_Code_array[$count]}.josn" 15 50
+				
+				getDevKpiYear_results			
+        			;; 
+        				      					
+ 			 *) 	$DIALOG  --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 			--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+				--msgbox  "Nothing chosen" 10 50
+				
+				getDevKpiYear_save_to_file
+				
+		esac	
+		
+    	elif [ $exitstatus = 1 ]; 
+    	then		
+		#logout from account
+    		logout_from_API
+    		
+    		$DIALOG --ok-label "List of Login's" --extra-button --extra-label "Exit" --default-button "extra" --title "List of Power Stations" \
+ 		--backtitle "Logout from API" \
+		--msgbox  "$info_for_dialog_screen" 10 50
+    		
+    		exitstatus=$?
+			if [ $exitstatus = 0 ];
+        	 	then
+        	 		#we chosen List of Login's button
+        	 		# go back to menu of accounts and URL's
+    				main_function			
+        	 	elif [ $exitstatus = 3 ];
+        	 	then
+        	 		#We chosen extra Exit button
+        	 		#clear #clears the terminal screen
+				exit 
+        	 	else
+        	 		#clear #clears the terminal screen
+				exit 
+        	 	fi		
+		
+	elif [ $exitstatus = 3 ]; 
+    	then	
+	        #go back to menu of Devices
+		Devices_list	
+	else
+    		
+    		#clear #clears the terminal screen
+    		exit
+	fi
+
+}
+
+
 
 kioskmode_entry() {
 
