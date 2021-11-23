@@ -127,7 +127,7 @@ Then inside you can check:
   - [x] actually and historical data device performance resolution every 5 minutes inside day
   - [x] actually and historical data device performace resolution 30 days
   - [x] actually and historical data device performace resolution 12 month
-  - [ ] actually and historical data device performace resolution all years
+  - [x] actually and historical data device performace resolution all years
  
 Also list of devices which are inside plant together with their performance. Also is possible save data's to a file TXT CSV XML JOSN are suported. This program is now partialy working so not every functionality is already implemented as you can see above. You will be advised if you chose not working yet part. When will be finished will have the same usability as text version.
 
