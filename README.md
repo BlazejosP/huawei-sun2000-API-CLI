@@ -39,7 +39,7 @@ SN Inverter: <--here data-->
 
 ## Device Sun2000-(from 3KTL to 100KTL meaby also others)-M0/M1
 
- Confirmed working with the following devices
+ Confirmed by user of this software devices which are working for certain (devices not marked should work because are implemented but we haven't any confirmation to be certain) 
 
 - [x] String inverter
   - [X] SUN2000-5KTL-M0
