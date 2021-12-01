@@ -773,7 +773,7 @@ getDeviceKPI_results() {
        	elif [ $exitstatus = 3 ];
        	then 
        		#save to different files csv/txt/xml/josn		
-			save_to_file
+			save_to_file_for_getDeviceKPI
         	else
     		
     			#clear #clears the terminal screen
@@ -781,6 +781,127 @@ getDeviceKPI_results() {
     		
 		fi
 		
+}
+
+save_to_file_for_getDeviceKPI() {
+
+	Our_menu_save_to_file=$($DIALOG  --ok-label "Save" --extra-button --extra-label "Back" --cancel-label "Logout" 		 --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 --backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+	 --menu "Choose format?" 15 60 10 \
+	 1 "TXT" \
+	 2 "CSV" \
+	 3 "XML" \
+	 4 "JOSN" \
+	 --output-fd 1)
+
+	exitstatus=$?
+        #echo $exitstatus
+        if [ $exitstatus = 0 ];
+        then 
+		
+	case "$Our_menu_save_to_file" in
+	
+			# Options for save files from API
+			 1)	# Real-time data for Plant save
+			 	#Save as TXT
+			 	echo -e "${results_for_dialog_screen[$count]}" > Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".txt
+			 	
+			 	$DIALOG  \
+    				--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nRealtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".txt" 15 50
+			 	
+			 	getDeviceKPI_results			
+        			;; 
+			 
+			 2)	# Real-time data for Plant save
+				#Save as CSV
+       			echo -e "Description;Value;Units" > Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".csv
+				echo -e "${csv[$count]}" >> Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".csv
+				
+				$DIALOG  \
+    				--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nRealtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".csv" 15 50
+				
+				getDeviceKPI_results			
+        			;; 
+				
+			 3)	# Real-time data for Plant save
+				#Save as XML
+			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<Device>\r" > Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".xml
+				echo -e "${xml[$count]}" >> Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".xml
+				echo -e "</Device>" >> Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".xml
+				
+				$DIALOG  \
+    				--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nRealtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".xml" 15 50
+				
+				getDeviceKPI_results			
+        			;; 
+        			
+        		4)	# Real-time data for Plant save
+				#Save as JOSN
+			 	echo -e "{\r	\"Device\": {\r" > Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".josn
+				echo -e "${josn[$count]}" >> Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".josn
+				echo -e "	}\r}" >> Realtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".josn
+				
+				$DIALOG  \
+    				--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
+ 				--output-fd 1 \
+				--msgbox  "Data saved in file \nRealtime_data_from_"$(date +"%R_%d_%m_%Y" -d @$(echo ${curent_time_actually}))"_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"_plant_"${stations_Code_array[$count]}".josn" 15 50
+				
+				getDeviceKPI_results			
+        			;; 
+        				      					
+ 			 *) 	$DIALOG --title "Plant ${number_plant[$count]}: ${stations_Code_array[$count]}" \
+ 			 	--backtitle "Plant ${number_plant[$count]}: ${stations_Code_array[$count]}" \
+				--msgbox  "Nothing chosen" 10 50
+				
+				save_to_file_for_getDeviceKPI
+				
+		esac	
+		
+    	elif [ $exitstatus = 1 ]; 
+    	then		
+		#logout from account
+    		logout_from_API
+    		
+    		$DIALOG --ok-label "List of Login's" --extra-button --extra-label "Exit" --default-button "extra" --title "List of Power Stations" \
+ 		--backtitle "Logout from API" \
+		--msgbox  "$info_for_dialog_screen" 10 50
+    		
+    		exitstatus=$?
+			if [ $exitstatus = 0 ];
+        	 	then
+        	 		#we chosen List of Login's button
+        	 		# go back to menu of accounts and URL's
+    				main_function			
+        	 	elif [ $exitstatus = 3 ];
+        	 	then
+        	 		#We chosen extra Exit button
+        	 		#clear #clears the terminal screen
+				exit 
+        	 	else
+        	 		#clear #clears the terminal screen
+				exit 
+        	 	fi		
+		
+	elif [ $exitstatus = 3 ]; 
+    	then	
+	        #go back to menu of plants
+		getDeviceKPI_results	
+	else
+    		
+    		#clear #clears the terminal screen
+    		exit
+	fi
+
 }
 
 getDevFiveMinutes_entry() {
@@ -875,7 +996,7 @@ then
 
        $DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
  	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
-	--msgbox  "There is no data on Huawei server from $(date +"%d %B %Y" -d @$(echo ${date_choosen_within_dialog::-3}))\n\n ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} was not commisioned at that time / switch off or device were without connection to Internet at that time." 10 50
+	--msgbox  "There is no data on Huawei server from $(date +"%d %B %Y" -d @$(echo ${date_choosen_within_dialog::-3}))\n\n Possible Reasons: Is night new day after midnight before device was on today or ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]} was not commisioned at that time / switch off or device were without connection to Internet at that particular time." 10 50
 				
 	#go back to Calendar
 	getDevFiveMinutes_entry
@@ -887,7 +1008,11 @@ else
 			do 
 			
 				times_number_array_for_dialog[$(( $c-1 ))]=$c	
-				every_5min_times_list_array_for_dialog[$(( $c-1 ))]=$(echo "${results_for_dialog_screen_time[$(( $c-1 ))]}" )
+				every_5min_times_list_array_for_dialog[$(( $c-1 ))]=$(echo "${results_for_dialog_screen_time[$(( $c-1 ))]}->${active_power_array[(( $c-1 ))]}Kw" )
+				
+				#preparaton of 5min slots for save to file
+				#every_5min_times_list_array_for_5min_slots_in_save_function[$(( $c-1 ))]=$(echo ${results_for_dialog_screen_time[$(( $c-1 ))]})
+				
 				#final answer with times as a string for dialog
 				every_5min_times_number_and_list_array_for_dialog[$(( $c-1 ))]=$(echo ${times_number_array_for_dialog[$(( $c-1 ))]} ${every_5min_times_list_array_for_dialog[$(( $c-1 ))]})
 				
@@ -1101,8 +1226,7 @@ save_to_file_for_getDevFiveMinutes() {
 				fi
 							 
 			 	#Save as TXT
-			 	echo -e "${results_for_dialog_screen[0]}$answer_for_txt" > every_5_minutes_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}".txt
-			 	
+			 	echo -e "${results_for_dialog_screen[0]}$answer_for_txt" > Every_5_minutes_data_from_${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}_$(date +"%d_%B_%Y" -d @$(echo ${choose_date_for_getDevFiveMinutes}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_${stations_Code_array[$count]}.txt
 
 				
 				#save to file finaly data from one 5 minutes slot
@@ -1112,7 +1236,7 @@ save_to_file_for_getDevFiveMinutes() {
     				--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
  				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nevery_5_minutes_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" 15 50
+				--msgbox  "Data saved in file \nEvery_5_minutes_data_from_${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}_$(date +"%d_%B_%Y" -d @$(echo ${choose_date_for_getDevFiveMinutes}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_${stations_Code_array[$count]}.txt" 15 50
 			 	
 			 	getDevFiveMinutes_results
         			;; 
@@ -1156,7 +1280,7 @@ save_to_file_for_getDevFiveMinutes() {
 				fi	
 				
 				#Save as CSV
-       			echo -e "Description;Value;Units${csv[0]}$answer_for_csv" > every_5_minutes_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}".csv
+       			echo -e "Description;Value;Units${csv[0]}$answer_for_csv" > Every_5_minutes_data_from_${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}_$(date +"%d_%B_%Y" -d @$(echo ${choose_date_for_getDevFiveMinutes}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_${stations_Code_array[$count]}.csv
 				#echo -e "${csv[0]}" >> every_5_minutes_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}".csv
 				
 
@@ -1168,7 +1292,7 @@ save_to_file_for_getDevFiveMinutes() {
     				--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nevery_5_minutes_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}.csv" 15 50
+				--msgbox  "Data saved in file \nEvery_5_minutes_data_from_${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}_$(date +"%d_%B_%Y" -d @$(echo ${choose_date_for_getDevFiveMinutes}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_${stations_Code_array[$count]}.csv" 15 50
 				
 				getDevFiveMinutes_results			
         			;; 
@@ -1212,14 +1336,14 @@ save_to_file_for_getDevFiveMinutes() {
 				fi	
 			
 				#Save as XML
-			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<device>\r${xml[0]}$answer_for_xml</device>" > every_5_minutes_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}".xml
+			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<device>\r${xml[0]}$answer_for_xml</device>" > Every_5_minutes_data_from_${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}_$(date +"%d_%B_%Y" -d @$(echo ${choose_date_for_getDevFiveMinutes}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_${stations_Code_array[$count]}.xml
 			 	
 				
 				$DIALOG  \
     				--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nevery_5_minutes_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}.xml" 15 50
+				--msgbox  "Data saved in file \nEvery_5_minutes_data_from_${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}_$(date +"%d_%B_%Y" -d @$(echo ${choose_date_for_getDevFiveMinutes}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_${stations_Code_array[$count]}.xml" 15 50
 				
 				getDevFiveMinutes_results			
         			;; 
@@ -1262,13 +1386,13 @@ save_to_file_for_getDevFiveMinutes() {
 				fi	
 				
 				#Save as JOSN
-			 	echo -e "{\r	\"device\": {\r${josn[0]}$answer_for_josn	}\r}" > every_5_minutes_data_device_"${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}".josn
+			 	echo -e "{\r	\"device\": {\r${josn[0]}$answer_for_josn	}\r}" > Every_5_minutes_data_from_${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}_$(date +"%d_%B_%Y" -d @$(echo ${choose_date_for_getDevFiveMinutes}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_${stations_Code_array[$count]}.josn
 				
 				$DIALOG  \
     				--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}}" \
  				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nRealtime_data_plant_${stations_Code_array[$count]}.josn" 15 50
+				--msgbox  "Data saved in file \nEvery_5_minutes_data_from_${every_5min_all_the_data_list_array_for_dialog[$(( $getDevFiveMinutes_results-1 ))]}_$(date +"%d_%B_%Y" -d @$(echo ${choose_date_for_getDevFiveMinutes}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_${stations_Code_array[$count]}.josn" 15 50
 				
 				getDevFiveMinutes_results			
         			;; 
@@ -1361,8 +1485,12 @@ choose_date_for_getDevKpiDay=$($DIALOG --title "Device ${devices_list_array_for_
 			
 			# we add to unix time milisecound to made this compatibile with API which accept unix times in milisecounds format that is why we add "000" to time string
         		local date_choosen_in_dialog=$choose_date_for_getDevKpiDay_with_actually_time_secounds_format"000" 
+       		
+       		#testing of chosen date and actually time
+       		#echo "chosen day" $(date +"%d" -d@$( echo ${date_choosen_in_dialog::3})) " " ${date_choosen_in_dialog}
+       		#echo "current time" $(date +"%d" -d@$( echo ${curent_time::3})) " " ${curent_time}
        	
-       		if (( date_choosen_in_dialog > $curent_time  ));
+       		if [[ $(date +"%d" -d@$( echo ${date_choosen_in_dialog::3})) -gt $(date +"%d" -d@$( echo ${curent_time::3})) ]];
        		then
        			$DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
  			 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
@@ -1374,7 +1502,7 @@ choose_date_for_getDevKpiDay=$($DIALOG --title "Device ${devices_list_array_for_
 				Devices_list_menu 
 				
 			# we check dat choosen date is from before 01/01/2010 in that case Hauwei devices from Sun2000 were certain not build yet 	
-			elif (( date_choosen_in_dialog < 1262304000000  ));
+			elif [[ "$date_choosen_in_dialog" -le 1262304000000 ]];
        		then	
 				$DIALOG --title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
  			 	--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}"  \
@@ -1474,57 +1602,57 @@ getDevKpiDay_save_to_file() {
 			# Options for save files from API
 			 1)	# getDevKpiDay data for device save
 			 	#Save as TXT
-			 	echo -e "${results_for_dialog_screen[$count]}" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".txt
+			 	echo -e "${results_for_dialog_screen[$count]}" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.txt
 			 	
 			 	$DIALOG  \
 	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.txt" 15 50
+				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.txt" 15 50
 			 	
 			 	getDevKpiDay_results			
         			;; 
 			 
 			 2)	# getDevKpiDay data for device save
 				#Save as CSV
-       			echo -e "Description;Value;Units" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".csv
-				echo -e "${csv[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".csv
+       			echo -e "Description;Value;Units" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.csv
+				echo -e "${csv[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.csv
 				
 				$DIALOG  \
 	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.csv" 15 50
+				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.csv" 15 50
 				
 				getDevKpiDay_results			
         			;; 
 				
 			 3)	# getDevKpiDay data for Plant save
 				#Save as XML
-			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<Device>\r" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
-				echo -e "${xml[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
-				echo -e "</Device>" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".xml
+			 	echo -e "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r<Device>\r" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.xml
+				echo -e "${xml[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.xml
+				echo -e "</Device>" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.xml
 				
 				$DIALOG  \
 	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
 				--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.xml" 15 50
+				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.xml" 15 50
 				
 				getDevKpiDay_results			
         			;; 
         			
         		4)	# getDevKpiDaydata for Plant save
 				#Save as XML
-			 	echo -e "{\r	\"Device\": {\r" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
-				echo -e "${josn[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
-				echo -e "	}\r}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_"${stations_Code_array[$count]}".josn
+			 	echo -e "{\r	\"Device\": {\r" > Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.josn
+				echo -e "${josn[$count]}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.josn
+				echo -e "	}\r}" >> Every_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.josn
 				
 				$DIALOG  \
 	 			--title "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
 	 			--backtitle "Device ${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}" \
  				--output-fd 1 \
-				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))"_data_device_${stations_Code_array[$count]}.josn" 15 50
+				--msgbox  "Data saved in file \nEvery_day_inside_"$(date +"%B_%Y" -d @$(echo ${date_choosen_within_dialog::-3}))_data_device_${devices_list_array_for_dialog[$(( $Our_menu_devices_list-1 ))]}_plant_"${stations_Code_array[$count]}.josn" 15 50
 				
 				getDevKpiDay_results			
         			;; 

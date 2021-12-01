@@ -3999,7 +3999,7 @@ fi
 #shorter time for read in unix
 if [[ $success == "true"  ]];
 	then	
-		local curent_time_actually=$(echo ${currentTime::-3})
+		curent_time_actually=$(echo ${currentTime::-3})
 		local curent_time_of_request=$(date -d @$curent_time_actually)
 		
 		if [ ! -z "$DIALOG" ];
