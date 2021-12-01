@@ -14,13 +14,9 @@ If you found this software usefully and do like to say thank you!
 -
 You can donate for charity and support small <B>Maks</B> in his fight against cancer his parents try collect $358000 for cancer treatment in hospital in Barcelona, Spain because in Ukraine they can't help him anymore. In Spain they can so situation isn't without hope but is necesarry to pay <a href="https://www.siepomaga.pl/en/maks-nazarenko#wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Maks%20Nazarenko%20versus%20Cancer&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaks-nazarenko%23wplaty"></a> link and full desciption (unfortunetly only in Polish) they collecting until end of this year now have 10% only
 
-Maria is now fully funded if we talked about SMA gene therapy thanks to all you too! She collected $2.1 million for moust expensive drug medicine on the Word.
-<a href="https://www.siepomaga.pl/en/maria#wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Small%20Maria%20versus%20SMA%20type%201&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaria%23wplaty"></a>
-.
-
 Linux Command line tool for acess Huawei FusionSolarApp API
 -
-Huawei sun2000-(3KTL-100KTL)-M0/M1 all models comand line bash API for download data from their FusionSolarApp web service. To use this tool you may need kioskmode link as a minimum. But to fully use this tool you need an acount in their service and then request developer account. That all means that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
+Huawei sun2000 series (here list of the devices https://solar.huawei.com/eu) should work with all devices which are working in their cloud service. This is command line bash API for view/download data from their FusionSolarApp web service without use of their webpage. To use this tool you may need kioskmode link as a minimum. But to fully use this tool you need an acount in their service and then request developer account. That all means that you need Huawei sun2000 https://solar.huawei.com/eu/products series PV inverter configured already with their cloud service or someone who give you acess to cloud service related with his Huawei device.
 
 To use this script you must have as a minimum kioskmode link given to you by someone else who has Huawei account. But to fully use this software
 you need account on Huawei FusionSolar https://eu5.fusionsolar.huawei.com and developer privilege.
@@ -43,7 +39,7 @@ SN Inverter: <--here data-->
 
 ## Device Sun2000-(from 3KTL to 100KTL meaby also others)-M0/M1
 
- Confirmed working with the following devices
+ Confirmed by user of this software devices which are working for certain (devices not marked should work because are implemented but we haven't any confirmation to be certain) 
 
 - [x] String inverter
   - [X] SUN2000-5KTL-M0
@@ -56,7 +52,7 @@ SN Inverter: <--here data-->
 - [ ] EMI
 - [x] Meter (Grid meter)
 - [ ] Power Sensor
-- [x] Battery (LG batteries)
+- [ ] Battery (LG batteries)
 - [x] Battery (Huawei Luna2000)
 
 Device itself must be equipped with Smart Dongle existing two types: 
