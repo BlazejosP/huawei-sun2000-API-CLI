@@ -12,7 +12,7 @@
 
 If you found this software usefully and do like to say thank you!
 -
-You can donate for charity and support small <B>Maks</B> in his fight against cancer his parents try collect $358000 for cancer treatment in hospital in Barcelona, Spain because in Ukraine they can't help him anymore. In Spain they can so situation isn't without hope but is necesarry to pay <a href="https://www.siepomaga.pl/en/maks-nazarenko#wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Maks%20Nazarenko%20versus%20Cancer&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaks-nazarenko%23wplaty"></a> link and full desciption (unfortunetly only in Polish) they collecting until end of this year now have 10% only
+You can donate for charity and support small <B>Maks</B> in his fight against cancer his parents try collect $358000 for cancer treatment in hospital in Barcelona, Spain because in Ukraine they can't help him anymore. In Spain they can so situation isn't without hope but is necesarry to pay <a href="https://www.siepomaga.pl/en/maks-nazarenko#wplaty"><img alt="Twitter" src="https://img.shields.io/twitter/url?color=yellow&label=Maks%20Nazarenko%20versus%20Cancer&logo=github&logoColor=black&url=https%3A%2F%2Fwww.siepomaga.pl%2Fen%2Fmaks-nazarenko%23wplaty"></a> link and full desciption (unfortunetly only in Polish) they collecting until 01 April 2022 now have 50%
 
 Linux Command line tool for acess Huawei FusionSolarApp API
 -
