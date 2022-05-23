@@ -5,7 +5,7 @@
 [![GitHub license](https://img.shields.io/github/license/BlazejosP/huawei-sun2000-API-CLI)](https://github.com/BlazejosP/huawei-sun2000-API-CLI/blob/master/LICENSE)
  [![GitHub issues](https://img.shields.io/github/issues/BlazejosP/huawei-sun2000-API-CLI)](https://github.com/BlazejosP/huawei-sun2000-API-CLI/issues)
  ![Language](https://img.shields.io/badge/made%20with-bash-green)
-![Lines of code](https://img.shields.io/tokei/lines/github/BlazejosP/huawei-sun2000-API-CLI)
+#![Lines of code](https://img.shields.io/tokei/lines/github/BlazejosP/huawei-sun2000-API-CLI)
 ![GitHub repo size](https://img.shields.io/github/repo-size/BlazejosP/huawei-sun2000-API-CLI)
 ![GitHub forks](https://img.shields.io/github/forks/BlazejosP/huawei-sun2000-API-CLI)
 ![GitHub Repo stars](https://img.shields.io/github/stars/BlazejosP/huawei-sun2000-API-CLI?style=social)
