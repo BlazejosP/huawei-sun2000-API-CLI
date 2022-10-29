@@ -991,16 +991,27 @@ local josn=$logowanie
 #echo $josn
 
 
+IFS=':'
+local array=( $logowanie )
+
+# showing diffrent values experimenting with postion in array
+#echo ""
+#echo ""
+#echo "value = ${array[18]}"
+
+local logowanie=${array[18]}
+#jsesionid=${array[6]}
+
 IFS=';'
 local array=( $logowanie )
 
 # showing diffrent values experimenting with postion in array
 #echo ""
 #echo ""
-#echo "value = ${array[2]}"
+#echo "value = ${array[0]}"
 
-local logowanie=${array[2]}
-#jsesionid=${array[6]}
+local logowanie=${array[0]}
+
 
 IFS=':'
 local array=( $logowanie )
@@ -1008,10 +1019,9 @@ local array=( $logowanie )
 # showing diffrent values experimenting with postion in array
 #echo ""
 #echo ""
-#echo "value = ${array[1]}"
+#echo "value = ${array[0]}"
 
-local logowanie=${array[1]}
-
+local logowanie=${array[0]}
 
 IFS='='
 local array=( $logowanie )
