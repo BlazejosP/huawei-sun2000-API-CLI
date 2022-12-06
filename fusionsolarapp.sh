@@ -191,14 +191,14 @@ then
 		getStationList
 		
 			# Define current date variable based on command-line input or default 2021-05-25
-			if test "$mydate" != "0"; then
+			#if test "$mydate" != "0"; then
                           #echo Extracting hourly data for date=$mydate
-                          curent_time=$(date -d$mydate +%s)000
+                        #  curent_time=$(date -d$mydate +%s)000
                           #echo corresponding to $curent_time s since 1970 01 01
-                        else
-                          curent_time=1621981136530
-                          mydate=$(date -d@${curent_time} +%Y%m%d)
-                        fi
+                        #else
+                        #  curent_time=1621981136530
+                        #  mydate=$(date -d@${curent_time} +%Y%m%d)
+                        #fi
 		
 		
 		if [[ $getStationList_connection == true  ]];
@@ -211,52 +211,23 @@ then
 			#getKpiStationHour ${stations_Code_array[0]} 1630328098623
 			
 			#  Creation of a formatted output file of hourly production for a given date:
-			getKpiStationHour ${stations_Code_array[0]} $curent_time
-			less ${out}.json | jq '.data[].dataItemMap.inverterPower' > ${out}.power
-                        less ${out}.json | jq '.data[].collectTime' > ${out}.time
-                        while read d; do
-                            d3=$(echo ${d::-3})
-                            date -d@${d3} +%Y-%m-%dT%H:%M:%S%z >> ${out}.dates
-                        done < ${out}.time
-                        paste -d'|' ${out}.dates ${out}.power > device1_${mydate}.production
+			#getKpiStationHour ${stations_Code_array[0]} $curent_time
+			#less ${out}.json | jq '.data[].dataItemMap.inverterPower' > ${out}.power
+                       # less ${out}.json | jq '.data[].collectTime' > ${out}.time
+                       # while read d; do
+                       #     d3=$(echo ${d::-3})
+                       #     date -d@${d3} +%Y-%m-%dT%H:%M:%S%z >> ${out}.dates
+                       # done < ${out}.time
+                       # paste -d'|' ${out}.dates ${out}.power > device1_${mydate}.production
 			
 			#getKpiStationDay ${stations_Code_array[0]} $curent_time
 			#getKpiStationMonth ${stations_Code_array[0]} $curent_time
 			#getKpiStationYear ${stations_Code_array[0]} $curent_time
 			
-			
-			# Statistical data about particular device/devices inside Power Plant
-			# We start function to get list of devices inside one particular plant this fuction is necessary to work if you d'like use other functions from getDev*
-			getDevList ${stations_Code_array[0]} $number_of_plants
-			
-			if [[ $getDevList_connection == true  ]];
-			then
-			echo "Activated functions for Device: "${device_Id_array[0]}
-			# Devices data precisious all voltages etc real-time
-			#getDevRealKpi  ${device_Id_array[0]} ${device_TypeId_array[0]}			
-			#getDevFiveMinutes ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
-			#getDevKpiDay ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
-			#getDevKpiMonth ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time
-			#Months in previous year
-			#getDevKpiMonth ${device_Id_array[0]} ${device_TypeId_array[0]} $(expr $curent_time - 31622399000) # minus one year
-			#getDevKpiYear ${device_Id_array[0]} ${device_TypeId_array[0]} $(expr $curent_time - 31622399000) # minus one year
-			#getDevKpiYear ${device_Id_array[0]} ${device_TypeId_array[0]} $curent_time #actually year
-			
-			elif [[ $getDevList_connection == false ]];
-			then
-				#logout from API with unregistration of Xsrf token is good practise to have this function as the last
-				logout_from_API
-				exit
-			else
-				#logout from API with unregistration of Xsrf token is good practise to have this function as the last
-				logout_from_API
-				exit
-			fi
-			
 			#Error comunicates
 			#---------
 			
-			# we cover one month before chosen date that is as far as API allows 2629743000 is exactly one mont in secounds
+			# we cover one month before chosen date that is as far as API allows 2629743000 is exactly one month in secounds
 			Begining_time=$(expr $curent_time - 2629743000)			
 			#Languages. The value must be zh_CN, en_UK, ja_JP, it_IT, nl_NL, pt_BR, de_DE, fr_FR, es_ES, or po_PO.
 			language="en_UK"
@@ -273,6 +244,39 @@ then
 			#getAlarmList ${stations_Code_array[0]} $Begining_time $date $language $status $alarm_severity $alarm_type $device_type
 			
 			#---------
+			
+			
+			
+			# Statistical data about particular device/devices inside Power Plant
+			# We start function to get list of devices inside one particular plant this fuction is necessary to work if you d'like use other functions from getDev*
+			#getDevList ${stations_Code_array[0]} $number_of_plants
+			
+			if [[ $getDevList_connection == true  ]];
+			then
+			echo "Activated functions for Device: "${device_Id_array[1]}
+			# Devices data precisious all voltages etc real-time
+			#getDevRealKpi  ${device_Id_array[1]} ${device_TypeId_array[1]}			
+			#getDevFiveMinutes ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
+			#getDevKpiDay ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
+			#getDevKpiMonth ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time
+			#Months in previous year
+			#getDevKpiMonth ${device_Id_array[1]} ${device_TypeId_array[1]} $(expr $curent_time - 31622399000) # minus one year		
+			#getDevKpiYear ${device_Id_array[1]} ${device_TypeId_array[1]} $(expr $curent_time - 31622399000 - 31622399000) # minus two years. 31622399000 is number of secound within one year
+			#getDevKpiYear ${device_Id_array[1]} ${device_TypeId_array[1]} $(expr $curent_time - 31622399000) # minus one year.31622399000 is number of secound within one year
+			#getDevKpiYear ${device_Id_array[1]} ${device_TypeId_array[1]} $curent_time #actually year
+			
+			elif [[ $getDevList_connection == false ]];
+			then
+				#logout from API with unregistration of Xsrf token is good practise to have this function as the last
+				logout_from_API
+				exit
+			else
+				#logout from API with unregistration of Xsrf token is good practise to have this function as the last
+				logout_from_API
+				exit
+			fi
+			
+
 			
 			#logout from API with unregistration of Xsrf token is good practise to have this function as the last
 			logout_from_API

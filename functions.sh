@@ -18,7 +18,7 @@ timezones_adjust_for_huawei_api_question () {
  					correct_date=$(echo $(($2+$timezone_offset)))
 				elif [ $Timezone == "-1000"  ];
 				then
- 					declare timezone_offset=36000 # UTC-10:00 in secounds 10 hours difference
+ 					declare timezone_offset=72000 # UTC-10:00 in secounds 10 hours difference
  					correct_date=$(echo $(($2+$timezone_offset)))
 				elif [ $Timezone == "-0930"  ];
 				then
@@ -62,7 +62,7 @@ timezones_adjust_for_huawei_api_question () {
  					correct_date=$(echo $(($2+$timezone_offset)))
 				elif [ $Timezone == "-0100"  ];
 				then
- 					declare timezone_offset=3600 # UTC-01:00 in secounds 1 hours difference
+ 					declare timezone_offset=7200 # UTC-01:00 in secounds 1 hours difference
  					correct_date=$(echo $(($2+$timezone_offset)))
 			 	elif [ $Timezone == "+0000"  ];
 				then
@@ -70,7 +70,7 @@ timezones_adjust_for_huawei_api_question () {
  					correct_date=$(echo $2)
  				elif [ $Timezone == "+0100"  ];
 				then
- 					declare timezone_offset=3600 # UTC+01:00 in secounds 1 hours difference
+ 					declare timezone_offset=7200 # UTC+01:00 in secounds 1 hours difference
  					correct_date=$(echo $(($2-$timezone_offset)))
 				elif [ $Timezone == "+0200"  ];
 				then
@@ -134,7 +134,7 @@ timezones_adjust_for_huawei_api_question () {
  					correct_date=$(echo $(($2-$timezone_offset)))
  				elif [ $Timezone == "+1000"  ];
  				then
-					declare timezone_offset=36000 # UTC+10:00 in secounds 10 hours difference
+					declare timezone_offset=72000 # UTC+10:00 in secounds 10 hours difference
  					correct_date=$(echo $(($2-$timezone_offset)))
  				elif [ $Timezone == "+1030"  ];
  				then
@@ -861,7 +861,7 @@ then
 		echo "The query start time cannot be later than the query end time."
 	fi
 	
-elif [ "$1" == "20024"  ];
+elif [ "$1" == "20024"  ]; 
 then	
 	if [ ! -z "$DIALOG" ];
 	then
@@ -977,7 +977,7 @@ then
 fi
 
 # Login to FusionSolarAPI with Username and Password
-local logowanie=$(echo '{"userName": "'${huawei_account_login["$1"]}'", "systemCode": "'${huawei_account_login["$2"]}'"}'| http --print=hb --follow --timeout 3600 POST 'https://eu5.fusionsolar.huawei.com/thirdData/login' Content-Type:'application/json' Cookie:'Cookie_1=value; web-auth=true;')
+local logowanie=$(echo '{"userName": "'${huawei_account_login["$1"]}'", "systemCode": "'${huawei_account_login["$2"]}'"}'| http --print=hb --follow --timeout 7200 POST 'https://eu5.fusionsolar.huawei.com/thirdData/login' Content-Type:'application/json' Cookie:'Cookie_1=value; web-auth=true;')
  
 #show as answer of of API for question
 #echo $logowanie
@@ -997,12 +997,13 @@ local array=( $logowanie )
 # showing diffrent values experimenting with postion in array
 #echo ""
 #echo ""
-#echo "value = ${array[18]}"
+#echo "value = ${array[21]}"
 
-local logowanie=${array[18]}
+local logowanie=${array[21]}
 #jsesionid=${array[6]}
 
-IFS=';'
+IFS='
+'
 local array=( $logowanie )
 
 # showing diffrent values experimenting with postion in array
@@ -1013,7 +1014,18 @@ local array=( $logowanie )
 local logowanie=${array[0]}
 
 
-IFS=':'
+#IFS=':'
+#local array=( $logowanie )
+
+# showing diffrent values experimenting with postion in array
+#echo ""
+#echo ""
+#echo "value = ${array[0]}"
+
+#local logowanie=${array[0]}
+
+
+IFS=' '
 local array=( $logowanie )
 
 # showing diffrent values experimenting with postion in array
@@ -1022,19 +1034,10 @@ local array=( $logowanie )
 #echo "value = ${array[0]}"
 
 local logowanie=${array[0]}
-
-IFS='='
-local array=( $logowanie )
-
-# showing diffrent values experimenting with postion in array
-#echo ""
-#echo ""
-#echo "value = ${array[1]}"
-
-local logowanie=${array[1]}
 
 # finally XSRF-TOKEN extracted
 xsrf_token=$logowanie
+xsrf_token=$(echo $xsrf_token)
 
 #echo ""
 #echo "XSRF-TOKEN: "$xsrf_token
@@ -1324,10 +1327,9 @@ if [ ! -z "$DIALOG" ];
 #echo $xsrf_token
 
 # Request to API logout
-local logout=$(printf '{"xsrfToken": "'$xsrf_token'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/logout  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local logout=$(printf '{"xsrfToken":"'$(echo $xsrf_token)'"}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/logout  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
-
-
+ 
 #show result of qustion in JOSN
 #echo $logout  | jq
 
@@ -1510,26 +1512,29 @@ fi
 
 # Testing that data are correct
 #echo $xsrf_token
-
 # Request to API getStationList
-local getStationList=$(printf '{}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getStationList=$(printf '{}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationList  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true;  XSRF-TOKEN=$xsrf_token')
 
+ 
 #show result of qustion in JOSN
-#echo $getStationList  | jq
+#echo $getStationList | jq
+
 
 
 local success=$(echo ''$getStationList''  | jq '.success' )
 local failCode=$(echo ''$getStationList''  | jq '.failCode' )
 local message=$(echo ''$getStationList''  | jq '.message' )
 
+
+
 # we take actually time for other question to API too
 curent_time=$(echo ''$getStationList''  | jq '.params' )
 	curent_time=$(echo ''$curent_time''  | jq '.currentTime' )
 
-curent_time_actually=$(echo ${curent_time::-3})
+#curent_time_actually=$(echo ${curent_time::-3})
 
 
-#curent_time_actually=${curent_time::-3}
+curent_time_actually=${curent_time::-3}
 #echo $curent_time_actually
 
 #shorter time for read in unix
@@ -1851,7 +1856,7 @@ fi
 
 
 # Request to API getDevList
-local getDevList=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getDevList=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevList  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 #show result of qustion in JOSN
 #echo $getDevList | jq
@@ -2149,7 +2154,7 @@ fi
 
 
 # Request to API getStationRealKpi
-local getStationRealKpi=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getStationRealKpi=$(printf '{"stationCodes": "'$1'"}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getStationRealKpi  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 
 #show result of qustion in JOSN
@@ -2261,7 +2266,7 @@ fi
 #shorter time for read in unix
 if [[ $success == "true"  ]];
 	then	
-		local curent_time_actually=$(echo ${currentTime::-3})
+		curent_time_actually=$(echo ${currentTime::-3})
 		local curent_time_actually=$(date -d @$curent_time_actually)
 		
 		if [ ! -z "$DIALOG" ];
@@ -2415,27 +2420,42 @@ echo ""
 
 function getKpiStationHour {
 
-# Request to API getKpiStationHour
-local getKpiStationHour=$(printf '{"stationCodes": "'$1'", "collectTime": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+# window for dialog TUI progress of login or simple echo in case if dialog TUI wasn't in use.
+if [ ! -z "$DIALOG" ];
+	then
+			if [ $DIALOG == "whiptail" ]
+			then
+			TERM=ansi $DIALOG --title "Please wait connecting!" \
+			     	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetKpiStationHour" 10 30  		
+			else
+			$DIALOG --title "Please wait connecting!" \
+			      	--backtitle "Huawei FusionSolarApp API" \
+       			--infobox "\nQuestion to API:\ngetKpiStationHour" 10 30
+       		fi
+	
+fi
 
-echo $2
-echo $getKpiStationHour | jq
+# Request to API getKpiStationHour
+local getKpiStationHour=$(printf '{"stationCodes": "'$1'", "collectTime": "'$2'"}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationHour  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
+
+#echo $2
+#echo $getKpiStationHour | jq
 #echo $getKpiStationHour | jq '.data[]'
 #echo $getKpiStationHour | jq '.data[].collectTime, .data[].dataItemMap.inverter_power'
 
 local success=$(echo ''$getKpiStationHour''  | jq '.success' )
-local buildCode=$(echo ''$getKpiStationHour''  | jq '.buildCode' )
 local failCode=$(echo ''$getKpiStationHour''  | jq '.failCode' )
 local message=$(echo ''$getKpiStationHour''  | jq '.message' )
 
 
-local hour_of_the_day=( $(echo ''$getKpiStationHour''  | jq '.data[].collectTime' ) )
-	local stationCode=( $(echo ''$getKpiStationHour''  | jq '.data[].stationCode' ) )
-		local radiation_intensity=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.radiation_intensity' ) )
-		local theory_power=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.theory_power' ) )
-		local power_inverted=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.inverter_power' ) )
-		local ongrid_power=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.ongrid_power' ) )
-		local power_profit=( $(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.power_profit' ) )
+local hour_of_the_day=$(echo ''$getKpiStationHour''  | jq '.data[].collectTime' )
+	local stationCode=$(echo ''$getKpiStationHour''  | jq '.data[].stationCode' )
+		local radiation_intensity=$(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.radiation_intensity' ) 
+		local theory_power=$(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.theory_power' ) 
+		local power_inverted=$(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.inverter_power' ) 
+		local ongrid_power=$(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.ongrid_power' ) 
+		local power_profit=$(echo ''$getKpiStationHour''  | jq '.data[].dataItemMap.power_profit' ) 
 
 local data_getKpiStationHour=$(echo ''$getKpiStationHour''  | jq '.params' )
 	local currentTime=$(echo ''$data_getKpiStationHour''  | jq '.currentTime' )
@@ -2443,7 +2463,7 @@ local data_getKpiStationHour=$(echo ''$getKpiStationHour''  | jq '.params' )
 	local stationCodes=$(echo ''$data_getKpiStationHour''  | jq '.stationCodes' )
 
 #removing " on begining and end
-local buildCode="$(echo "$buildCode" | tr -d '"')"
+#local buildCode="$(echo "$buildCode" | tr -d '"')"
 
 
 # Here comma is our delimiter value to array of stations codes given by user as a parameter in question
@@ -2452,13 +2472,14 @@ IFS="," read -a stationCodes_array <<< $stationCodes
 # Conversion of long variable string with hours in unix format to bash array 
 eval "hour_of_the_day_array=(${hour_of_the_day})"
 
+
 #we cut last three digits for corect time and date  in loop + corect timezone for grafana
 count=0
 for s in "${hour_of_the_day_array[@]}"; do 
     local date_with_cut_three_digits=$(echo ${s::-3})
 
     #convert UCT timestamp to CEST we add +1h in secounds
-    local date_with_cut_three_digits=$(( $date_with_cut_three_digits+3600 ))
+    #local date_with_cut_three_digits=$(( $date_with_cut_three_digits+7200 ))
 
     hour_of_the_day_array[$count]=$date_with_cut_three_digits
     (( count++ ))
@@ -2472,9 +2493,8 @@ eval "power_inverted_array=(${power_inverted})"
 eval "ongrid_power_array=(${ongrid_power})"
 eval "power_profit_array=(${power_profit})"
 
-#Tested variable to text file for checking what is on output
-#truncate=$(truncate -s0 wyjscie.txt)
-#echo $hour_of_the_day >> wyjscie.txt
+#truncate=$(truncate -s0 exit_from_log.txt)
+#echo ${hour_of_the_day_array[@]} >> exit_from_log.txt
 
 #printf '%s\n' "${hour_of_the_day_array[@]}"
 #echo "Number of positions in array ""${#hour_of_the_day_array[@]}"
@@ -2494,17 +2514,33 @@ eval "power_profit_array=(${power_profit})"
 #echo "Request success or failure flag: " $success
 if [[ $success == "true"  ]];
 	then	
-		echo ""
-		echo -e "API \e[4mgetKpiStationHour\e[0m connection \e[42mOK\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getKpiStationHour connection OK"
+		else
+				echo ""
+				echo -e "API \e[4mgetKpiStationHour\e[0m connection \e[42mOK\e[0m"
+		fi	
 		getKpiStationHour_connection=true
-elif [[ $success == "false" ]];
+elif [[ $success == "false" ]];	
 	then
-		echo ""
-		echo -e "API \e[4mgetKpiStationHour\e[0m connection \e[41mError\e[0m"
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="getKpiStationHour connection Error"
+		else
+				echo ""
+				echo -e "API \e[4mgetKpiStationHour\e[0m connection \e[41mError\e[0m"
+		fi
 		getKpiStationHour_connection=false
 else
-	echo ""
-	echo -e "\e[41mNetwork Error :(\e[0m" 
+		if [ ! -z "$DIALOG" ];
+			then
+				info_for_dialog_screen="Undefined Error "
+		else
+				echo ""
+				echo -e "\e[41Undefined Error\e[0m" 
+				echo "\nReturned data: "$data
+		fi
 	#program stops
 	exit
 fi
@@ -2526,54 +2562,170 @@ then
 		fi
 	fi
 fi
-
-
-local curent_time_actually=$(echo ${currentTime::-3})
-local curent_time_of_request=$(echo ${collectTime::-3})
-local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
-
-local curent_time_of_request=$(date -d @$curent_time_of_request)
-echo "Time of your Request to API: "$curent_time_of_request
-
-echo "Response time: "$difference_in_secounds" s"
-#local curent_time_actually=$(date -d @$curent_time_actually)
-#echo "Actuall time: "$curent_time_actually
-		
-
-
+	
+#echo "Current Time: "$currentTime
+#shorter time for read in unix
 if [[ $success == "true"  ]];
-	then
-	
-	echo ""
-	echo "Numbers of plants to check: "${#stationCodes_array[@]}
-	echo ""
-	echo -e "\e[93m"$(date "+%d %B %Y" -d @${hour_of_the_day_array[$c]})"\e[0m"
-	echo ""
-	
-	for (( c=0; c<=((${#stationCode_array[@]}-1)); c++ )); do
-			echo -e "\e[1m	"$(date "+%X %Z" -d @${hour_of_the_day_array[$c]})" \e[0m"${number_plant_array[$c]}" "${stationCode_array[$c]}
-			if [[ ! ${radiation_intensity_array[$c]} == null  ]];
-			then	
-				echo -e "	Global irradiation: "${radiation_intensity_array[$c]}" kWh/m2"
-			fi
-			if [[ ! ${theory_power_array[$c]} == null  ]];
-			then	
-				echo -e "	Theoretical yield: "${theory_power_array[$c]}" kWh"
-			fi
-			if [[ ! ${power_inverted_array[$c]} == null  ]];
-			then	
-				echo -e "	Inverter yield: "${power_inverted_array[$c]}" kWh"
-			fi
-			if [[ ! ${ongrid_power_array[$c]} == null  ]];
-			then	
-				echo -e "	Grid feed-in: "${ongrid_power_array[$c]}" kWh"
-			fi
-			if [[ ! ${power_profit_array[$c]} == null  ]];
-			then	
-				echo -e "	Revenue: "${power_profit_array[$c]}" ¥"
-			fi
+	then	
+		curent_time_actually=$(echo ${currentTime::-3})
+		local curent_time_of_request=$(echo ${collectTime::-3})
+		local difference_in_secounds=$(( $curent_time_actually-$curent_time_of_request ))
+		local curent_time_of_request=$(date -d @$curent_time_actually)
+		#local curent_time_of_request=$(date -d @$curent_time_of_request)
+		
+		if [ ! -z "$DIALOG" ];
+		then
+				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_of_request"\n"
+				# Response time of API: "$difference_in_secounds" s"
+		else
+				echo "Time of your Request to API: "$curent_time_of_request
+				#echo "Response time: "$difference_in_secounds" s"
+				#local curent_time_actually=$(date -d @$curent_time_actually)
+				#echo "Actuall time: "$curent_time_actually
+		fi
+
+		if [ ! -z "$DIALOG" ];
+		then
+			summary_for_dialog_screen="\nNumbers of Plants to check: "${#stationCodes_array[@]}
+		else
 			echo ""
-	done
+			echo "Numbers of Plants to check: "${#stationCodes_array[@]}
+			echo ""
+			echo ""
+		fi
+		
+		#clear this array to make ready for new data produced by this function
+		unset results_for_dialog_screen_for_getKpiStationHour
+		
+		#loop for every plant
+		for (( count=0; count<=((${#stationCodes_array[@]}-1)); count++ )); do
+		
+			if [[ ! ${stationCode_array[$count]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					plant_and_day_results_for_dialog_screen[$count]="Plant $number_plant: ${stationCode_array[$count]}"
+				else
+					echo -e "	\e[93mPlant $number_plant: \e[0m\e[1m${stationCode_array[$count]}\e[0m"
+					echo ""
+				fi
+				csv[$count]="Plant $number_plant;${stationCode_array[$count]}\r"
+				xml[$count]="<Plant_$number_plant>${stationCode_array[$count]}</Plant_$number_plant>\r" 
+				josn[$count]="		\"Plant_$number_plant\": \"${stationCode_array[$count]}\",\r"
+			fi 
+			
+			if [[ ! ${hour_of_the_day_array[$count]} == null  ]];
+			then	
+				if [ ! -z "$DIALOG" ];
+				then
+					plant_and_day_results_for_dialog_screen[$count]="${plant_and_day_results_for_dialog_screen[$count]}\n\nEvery hour data from the day: $(date "+%d %B %Y" -d @${hour_of_the_day_array[$count]})\n\n"
+				else
+					echo -e "	Every hour data from the day: \e[1m$(date "+%d %B %Y" -d @${hour_of_the_day_array[$a]})\e[0m"
+					echo ""
+				fi
+		
+				csv[$count]=${csv[$count]}"Day;"$(date "+%d %B %Y" -d @${hour_of_the_day_array[$count]})"\r"
+				xml[$count]=${xml[$count]}"<Day>$(date "+%d %B %Y" -d @${hour_of_the_day_array[$count]})</Day>\r" 
+				josn[$count]=${josn[$count]}"		\"Day\": \"$(date "+%d %B %Y" -d @${hour_of_the_day_array[$count]})\",\r"
+			fi 	
+
+				#loop for every hour inside day
+				for (( c=0; c<=((${#hour_of_the_day_array[@]}-1)); c++ )); do
+					if [[ ${radiation_intensity_array[$c]} == null  ]] && [[ ${theory_power_array[$c]} == null  ]] && [[ ${power_inverted_array[$c]} == null  ]] && [[ ${ongrid_power_array[$c]} == null  ]] && [[ ${power_profit_array[$c]} == null  ]];
+					then
+							if [ ! -z "$DIALOG" ];
+							then
+								#hours which existing in databases but without any data uncomment if you need them for TUI
+								#results_for_dialog_screen_time[$count]="${results_for_dialog_screen_time[$count]}\n$(date "+%H:%M" -d @${hour_of_the_day_array[$c]})\nThis hour is without data\n"
+								:
+							else
+								#hours which existing in databases but without any data uncomment if you need them for API textual interface
+								#echo -e "\e[1m	"$(date "+%H:%M" -d @${hour_of_the_day_array[$c]})" \e[0m"
+								#echo  "	This hour is without data"
+								:
+							fi					
+					else
+						if [[ ! ${hour_of_the_day_array[$c]} == null  ]];
+						then
+							if [ ! -z "$DIALOG" ];
+							then
+								results_for_dialog_screen_for_getKpiStationHour[$count]="${results_for_dialog_screen_for_getKpiStationHour[$count]}\n$(date "+%H:%M" -d @${hour_of_the_day_array[$c]})"
+							else
+								echo -e "\e[1m	"$(date "+%H:%M" -d @${hour_of_the_day_array[$c]})" \e[0m"
+							fi
+						fi
+					
+						if [[ ! ${radiation_intensity_array[$c]} == null  ]];
+						then
+							if [ ! -z "$DIALOG" ];
+							then
+								results_for_dialog_screen_for_getKpiStationHour[$count]="${results_for_dialog_screen_for_getKpiStationHour[$count]}\nGlobal irradiation: "${radiation_intensity_array[$c]}" kWh/m2"
+							else		
+								echo  "	Global irradiation: "${radiation_intensity_array[$c]}" kWh/m²"
+							fi
+							csv[$count]=${csv[$count]}"Global irradiation;"${radiation_intensity_array[$c]}";kWh/m²\r"
+							xml[$count]=${xml[$count]}"<Global_irradiation><value>${radiation_intensity_array[$c]}</value><unit>kWh/m²</unit></Global_irradiation>\r"
+							josn[$count]=${josn[$count]}"		\"Global irradiation\": {\r			\"value\": \"${radiation_intensity_array[$c]}\",\r			\"unit\": \"kWh/m²\"\r		},\r"
+						fi
+										
+						if [[ ! ${theory_power_array[$c]} == null  ]];
+						then
+							if [ ! -z "$DIALOG" ];
+							then
+								results_for_dialog_screen_for_getKpiStationHour[$count]="${results_for_dialog_screen_for_getKpiStationHour[$count]}\nTheoretical yield: "${theory_power_array[$c]}" kWh"
+							else		
+								echo  "	Theoretical yield: "${theory_power_array[$c]}" kWh"
+							fi
+							csv[$count]=${csv[$count]}"Theoretical yield;"${theory_power_array[$c]}";kWh\r"
+							xml[$count]=${xml[$count]}"<Theoretical_yield><value>${theory_power_array[$c]}</value><unit>kWh</unit></Theoretical_yield>\r"
+							josn[$count]=${josn[$count]}"		\"Theoretical yield\": {\r			\"value\": \"${theory_power_array[$c]}\",\r			\"unit\": \"kWh\"\r		},\r"
+						fi
+					
+						if [[ ! ${power_inverted_array[$c]} == null  ]];
+						then
+							if [ ! -z "$DIALOG" ];
+							then
+								results_for_dialog_screen_for_getKpiStationHour[$count]="${results_for_dialog_screen_for_getKpiStationHour[$count]}\nInverter yield: "${power_inverted_array[$c]}" kWh"
+							else		
+								echo  "	Inverter yield: "${power_inverted_array[$c]}" kWh"
+							fi
+							csv[$count]=${csv[$count]}"Inverter yield;"${power_inverted_array[$c]}";kWh\r"
+							xml[$count]=${xml[$count]}"<Inverter_yield><value>${power_inverted_array[$count]}</value><unit>kWh</unit></Inverter_yield>\r"
+							josn[$count]=${josn[$count]}"		\"Inverter yield\": {\r			\"value\": \"${power_inverted_array[$c]}\",\r			\"unit\": \"kWh\"\r		},\r"
+						fi
+					
+						if [[ ! ${ongrid_power_array[$c]} == null  ]];
+						then
+							if [ ! -z "$DIALOG" ];
+							then
+								results_for_dialog_screen_for_getKpiStationHour[$count]="${results_for_dialog_screen_for_getKpiStationHour[$count]}\nGrid feed-in: "${ongrid_power_array[$c]}" kWh"
+							else		
+								echo  "	Grid feed-in: "${ongrid_power_array[$c]}" kWh"
+							fi
+							csv[$count]=${csv[$count]}"Grid feed-in;"${ongrid_power_array[$c]}";kWh\r"
+							xml[$count]=${xml[$count]}"<Grid_feed_in><value>${ongrid_power_array[$c]}</value><unit>kWh</unit></Grid_feed_in>\r"
+							josn[$count]=${josn[$count]}"		\"Grid feed-in\": {\r			\"value\": \"${ongrid_power_array[$c]}\",\r			\"unit\": \"kWh\"\r		},\r"
+						fi		
+
+						if [[ ! ${power_profit_array[$c]} == null  ]];
+						then
+							if [ ! -z "$DIALOG" ];
+							then
+								results_for_dialog_screen_for_getKpiStationHour[$count]="${results_for_dialog_screen_for_getKpiStationHour[$count]}\nRevenue: "${power_profit_array[$c]}" ¥"
+							else		
+								echo  "	Revenue: "${power_profit_array[$c]}" ¥"
+							fi
+							csv[$count]=${csv[$count]}"Revenue;"${power_profit_array[$c]}";¥\r"
+							xml[$count]=${xml[$count]}"<Revenue><value>${power_profit_array[$c]}</value><unit>¥</unit></Revenue>\r"
+							josn[$count]=${josn[$count]}"		\"Revenue\": {\r			\"value\": \"${power_profit_array[$c]}\",\r			\"unit\": \"¥\"\r		},\r"
+						fi
+					
+						results_for_dialog_screen_for_getKpiStationHour[$count]="${results_for_dialog_screen_for_getKpiStationHour[$count]}\n"
+					#end of loonger loop which check if results are empty
+					fi
+		
+				done
+		done
 
 fi
 
@@ -2585,7 +2737,6 @@ if [[ $success == "false"  ]];
 		
 fi
 
-echo ""
 
 
 }
@@ -2594,10 +2745,10 @@ echo ""
 function getKpiStationDay {
 
 # Request to API getKpiStationDay
-local getKpiStationDay=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationDay  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getKpiStationDay=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationDay  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 
-echo $getKpiStationDay | jq
+#echo $getKpiStationDay | jq
 
 
 local success=$(echo ''$getKpiStationDay''  | jq '.success' )
@@ -2639,7 +2790,7 @@ for s in "${day_array[@]}"; do
     day_with_cut_three_digits=$(echo ${s::-3})
 
     #convert UCT timestamp to CEST we add -1h in secounds
-    #day_with_cut_three_digits=$(( $day_with_cut_three_digits-3600 ))
+    #day_with_cut_three_digits=$(( $day_with_cut_three_digits-7200 ))
 
     day_array[$count_day]=$day_with_cut_three_digits
     (( count_day++ ))
@@ -2809,9 +2960,9 @@ echo ""
 function getKpiStationMonth {
 
 # Request to API getKpiStationMonth
-local getKpiStationMonth=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationMonth  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'; JSESSIONID='$jsesionid'')
+local getKpiStationMonth=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationMonth  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
-echo $getKpiStationMonth | jq
+#echo $getKpiStationMonth | jq
 
 local success=$(echo ''$getKpiStationMonth''  | jq '.success' )
 local buildCode=$(echo ''$getKpiStationMonth''  | jq '.buildCode' )
@@ -3017,7 +3168,7 @@ function getKpiStationYear {
 
 
 # Request to API getKpiStationYear
-local getKpiStationYear=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getKpiStationYear=$(printf '{"stationCodes": "'$1'", "collectTime": '$2'}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getKpiStationYear  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 
 echo $getKpiStationYear | jq
@@ -3234,7 +3385,7 @@ fi
 
 
 # Request to API getDevRealKpi
-local getDevRealKpi=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevRealKpi  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getDevRealKpi=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'"}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevRealKpi  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 #echo $getDevRealKpi | jq
 
@@ -7063,7 +7214,7 @@ if [ ! -z "$DIALOG" ];
 fi
 
 # Request to API getKpiStationYear
-local getDevFiveMinutes=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevFiveMinutes  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getDevFiveMinutes=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevFiveMinutes  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 #echo $getDevFiveMinutes | jq
 
@@ -10848,8 +10999,8 @@ if [ ! -z "$DIALOG" ];
 	
 fi
 
-# Request to API getKpiStationYear
-local getDevKpiDay=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiDay  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+# Request to API getDevKpiDay
+local getDevKpiDay=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiDay  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 #echo $getDevKpiDay | jq
 
@@ -11016,7 +11167,7 @@ if [[ $success == "true"  ]];
 				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_of_request"\nResponse time of API: "$difference_in_secounds" s"
 		else
 				echo "Time of your Request to API: "$curent_time_of_request
-				echo "Response time: "$difference_in_secounds" s"
+				#echo "Response time: "$difference_in_secounds" s"
 				#local curent_time_actually=$(date -d @$curent_time_actually)
 				#echo "Actuall time: "$curent_time_actually
 		fi
@@ -11499,8 +11650,8 @@ if [ ! -z "$DIALOG" ];
 	
 fi
 
-# Request to API getKpiStationYear
-local getDevKpiMonth=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiMonth  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+# Request to API getDevKpiMonth
+local getDevKpiMonth=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiMonth  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 #echo $getDevKpiMonth | jq
 
@@ -11664,7 +11815,7 @@ if [[ $success == "true"  ]];
 				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_of_request"\nResponse time of API: "$difference_in_secounds" s"
 		else
 				echo "Time of your Request to API: "$curent_time_of_request
-				echo "Response time: "$difference_in_secounds" s"
+				#echo "Response time: "$difference_in_secounds" s"
 				#local curent_time_actually=$(date -d @$curent_time_actually)
 				#echo "Actuall time: "$curent_time_actually
 		fi
@@ -12147,8 +12298,8 @@ if [ ! -z "$DIALOG" ];
 	
 fi
 
-# Request to API getKpiStationYear
-local getDevKpiYear=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiYear  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+# Request to API getDevKpiYear
+local getDevKpiYear=$(printf '{"devIds": "'$1'", "devTypeId": "'$2'", "collectTime": '$3'}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getDevKpiYear  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 #echo $getDevKpiYear| jq
 
@@ -12320,7 +12471,7 @@ if [[ $success == "true"  ]];
 				info_for_dialog_screen=$info_for_dialog_screen"\nTime of your Request to API: "$curent_time_of_request"\nResponse time of API: "$difference_in_secounds" s"
 		else
 				echo "Time of your Request to API: "$curent_time_of_request
-				echo "Response time: "$difference_in_secounds" s"
+				#echo "Response time: "$difference_in_secounds" s"
 				#local curent_time_actually=$(date -d @$curent_time_actually)
 				#echo "Actuall time: "$curent_time_actually
 		fi
@@ -12362,7 +12513,20 @@ if [[ $success == "true"  ]] && [[  $2 == 1  ]];
 			Device_type_ID ${devTypeId_array[$a]}
 			echo -e "\e[0m ID: "${devId_array[$a]}
 			echo ""
-			echo -e "	Data from the years: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+			
+				if [[ ${#collectTime_array[@]} < "2"  ]];
+				then	
+					printf "	Data from the year: \e[1m"
+				else
+					printf "	Data from the years: \e[1m"
+				fi
+			
+				for (( b=0; b<=((${#collectTime_array[@]}-1)); b++ )) 
+				do
+					printf "$(date +"%Y" -d @$(echo ${collectTime_array[$b]::-3})) "
+				done
+			printf "\e[0m"
+			echo ""
 			echo ""
 		fi
 		
@@ -12518,8 +12682,21 @@ if [[ $success == "true"  ]] && [[  $2 == 39  ]];
 			Device_type_ID ${devTypeId_array[$a]}
 			echo -e "\e[0m ID: "${devId_array[$a]}
 			echo ""
-			echo -e "	Data from the year: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+				if [[ ${#collectTime_array[@]} < "2"  ]];
+				then	
+					printf "	Data from the year: \e[1m"
+				else
+					printf "	Data from the years: \e[1m"
+				fi
+			
+				for (( b=0; b<=((${#collectTime_array[@]}-1)); b++ )) 
+				do
+					printf "$(date +"%Y" -d @$(echo ${collectTime_array[$b]::-3})) "
+				done
+			printf "\e[0m"
 			echo ""
+			echo ""
+			
 		fi
 		
 		csv[$a]=$(printf "\nDevice Type;"
@@ -12692,7 +12869,19 @@ if [[ $success == "true"  ]] && [[  $2 == 38  ]];
 			Device_type_ID ${devTypeId_array[$a]}
 			echo -e "\e[0m ID: "${devId_array[$a]}
 			echo ""
-			echo -e "	Data from the years: \e[1m"$(date +"%Y" -d @$(echo ${collectTime_array[0]::-3}))"\e[0m"
+				if [[ ${#collectTime_array[@]} < "2"  ]];
+				then	
+					printf "	Data from the year: \e[1m"
+				else
+					printf "	Data from the years: \e[1m"
+				fi
+			
+				for (( b=0; b<=((${#collectTime_array[@]}-1)); b++ )) 
+				do
+					printf "$(date +"%Y" -d @$(echo ${collectTime_array[$b]::-3})) "
+				done
+			printf "\e[0m"
+			echo ""
 			echo ""
 		fi
 		
@@ -12832,7 +13021,7 @@ function getAlarmList {
 
 
 # Request to API getAlarmList
-local getAlarmList=$(printf '{"stationCodes": "'$1'", "beginTime":'$2', "endTime":'$3', "language":"'$4'", "types":"'$7'", "devTypes":"'$8'", "levels":"'$6'", "status":"'$5'"}'| http  --follow --timeout 3600 POST https://eu5.fusionsolar.huawei.com/thirdData/getAlarmList  XSRF-TOKEN:''$xsrf_token''  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN='$xsrf_token'')
+local getAlarmList=$(printf '{"stationCodes": "'$1'", "beginTime":'$2', "endTime":'$3', "language":"'$4'", "types":"'$7'", "devTypes":"'$8'", "levels":"'$6'", "status":"'$5'"}'| http  --follow --timeout 7200 POST https://eu5.fusionsolar.huawei.com/thirdData/getAlarmList  XSRF-TOKEN:$xsrf_token  Content-Type:'application/json'  Cookie:'web-auth=true; XSRF-TOKEN=$xsrf_token')
 
 
 #echo $getAlarmList | jq
@@ -13108,7 +13297,7 @@ local kiosk_mode_token=`echo "$kiosk_mode_token" | grep -Po '^.{3}\K.*'`
 
 
 # Request to unofficial API checkKioskToken
-local kioskmode=$(http --follow --timeout 3600 GET https://region02eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=$kiosk_mode_token)
+local kioskmode=$(http --follow --timeout 7200 GET https://region02eu5.fusionsolar.huawei.com/rest/pvms/web/kiosk/v1/station-kiosk-file?kk=$kiosk_mode_token)
 
 #echo $kioskmode | jq
 
@@ -13580,5 +13769,3 @@ fi
 	
 
 }
-
-
