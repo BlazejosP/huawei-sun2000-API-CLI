@@ -997,9 +997,9 @@ local array=( $logowanie )
 # showing diffrent values experimenting with postion in array
 #echo ""
 #echo ""
-#echo "value = ${array[21]}"
+#echo "value = ${array[22]}"
 
-local logowanie=${array[21]}
+local logowanie=${array[22]}
 #jsesionid=${array[6]}
 
 IFS='
