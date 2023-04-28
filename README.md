@@ -84,6 +84,11 @@ sudo apt-get install mosquitto-clients (if MQTT sending option will be used)
 sudo apt-get install dialog (if TUI will be used)
 
 ```
+or at once all with
+```
+sudo apt-get install curl jq grep httpie dialog mosquitto-clients
+```
+
 On other linux distributions check used package system but that are standard linux command line tools so should be avaiable without problems if are not installed already. 
 
 Configuration&Usage
